@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dart:developer' as developer;
+
 //import 'package:encrypt/encrypt.dart' as encrypt;
 //import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
@@ -38,6 +40,23 @@ void main() {
   //HttpOverrides.global = new MyHttpOverrides();
   runApp(MyApp());
 }
+
+class webComunicater {
+  static final String _ipToAsk = 'bombelczyk-aufzuege.de';
+
+  static Future<http.Response> sendRequest(Map<String, String> body,{bool login=false}) async{
+    return await http.post(
+      //Uri.https('silas.lan.home', 'BombelarApp/index.php'),
+      Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk2/'+((login)?'login.php':'index.php')),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(body),
+    );
+
+  }
+}
+
 
 class AufzugsArgumente {
   final String json;
@@ -97,14 +116,26 @@ class AufzugPageState extends State<AufzugPage> {
     final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
     //Map<String, dynamic> _responseMap = Map<String, dynamic>.from(jsonDecode(args.json));
     List<Widget> workWidget = [];
+    //developer.log("args.json:"+args.json);
 
     Map<String, dynamic> responseMap =
         Map<String, dynamic>.from(jsonDecode(args.json));
     Map<String, dynamic> arbeitMap;
+    Map<String, dynamic> toDoMap;
     bool workExists = false;
+    bool toDoExists = false;
+
+    //print('responseMap["1"]');
+    //print(responseMap["1"]);
     if (responseMap["1"] != "false") {
       arbeitMap = responseMap["1"];
       workExists = true;
+    }
+    //print('responseMap["2"]');
+    //print(responseMap["2"]);
+    if (responseMap["2"] != "false") {
+      toDoMap = responseMap["2"];
+      toDoExists = true;
     }
     //print("arbeitMap");
     //print(arbeitMap);
@@ -332,12 +363,42 @@ class AufzugPageState extends State<AufzugPage> {
         );
         workWidget.add(Divider(thickness: 3, color: Colors.grey));
       });
-    } else if (!this._showArbeiten) {
-      workWidget.add(Text("hier Kommen To-Dos hin"));
+    } else if (!this._showArbeiten&&toDoExists) {
+      print("TO DOS");
+      toDoMap.remove("error");
+      toDoMap.forEach((key, value) {
+        if (value["created"] == null) {
+          value["created"] = "";
+        }
+        if (value["checked"] == null) {
+          value["checked"] = "";
+        }
+        if (value["text"] == null) {
+          value["text"] = "";
+        }
+
+        print("|"+value["text"]+"|");
+        print("|"+value["checked"]+"|");
+
+        workWidget.add(Text("hier Kommen To-Dos hin"));
+        workWidget.add(
+          Table(
+
+              children: [
+            TableRow(children: [
+              Checkbox(value: value["checked"] != "0000-00-00 00:00:00", onChanged: (bool value) {}),
+              SelectableText(value["text"]),
+            ]),
+          ]),
+        );
+      });
     } else {
+      print(!this._showArbeiten);
+      print(toDoExists);
       //print("keine Arbeit für diesen Aufzug eingetragen");
 
     }
+    //print(toDoMap);
 
     //print("build AufzugPageState");
     return Scaffold(
@@ -715,8 +776,17 @@ class MyHomePageState extends State<MyHomePage> {
     //print(pos);
     double x = pos.latitude;
     double y = pos.longitude;
+    http.Response response = await webComunicater.sendRequest(<String, String>{
+             'posX': x.toString(),
+             'posY': y.toString(),
+             'auth': prefs.getString("key"),
+             'anz': menge.toString(),
+             //'auth':"12345678910",
+             //"sort": _sort.toString(),
+             //"sortDirection": _sortDirection.toString(),
+           });
 
-    http.Response response = await http.post(
+    /*http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
       Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
       headers: <String, String>{
@@ -731,7 +801,7 @@ class MyHomePageState extends State<MyHomePage> {
         //"sort": _sort.toString(),
         //"sortDirection": _sortDirection.toString(),
       }),
-    );
+    );*/
 
     String responseStr = response.body.replaceAll("\n", "");
     //print(responseStr);
@@ -942,7 +1012,10 @@ class MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    http.Response response = await http.post(
+
+    http.Response response = await webComunicater.sendRequest(<String, String>{ 'password': pass}, login:true);
+
+    /*http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
       Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/login.php'),
       headers: <String, String>{
@@ -951,7 +1024,8 @@ class MyHomePageState extends State<MyHomePage> {
       body: jsonEncode(<String, String>{
         'password': pass,
       }),
-    );
+    );*/
+
     //print("test1");
     String respnse = response.body.replaceAll("\n", "");
     //print("test2");
@@ -970,7 +1044,12 @@ class MyHomePageState extends State<MyHomePage> {
     //print("CheckKey:");
     final prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey("key")) {
-      http.Response response = await http.post(
+
+      http.Response response = await webComunicater.sendRequest(<String, String>{
+        'auth': prefs.getString("key"),
+      });
+
+      /*http.Response response = await http.post(
         //Uri.https('silas.lan.home', 'BombelApp/index.php'),
         Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
         headers: <String, String>{
@@ -979,7 +1058,9 @@ class MyHomePageState extends State<MyHomePage> {
         body: jsonEncode(<String, String>{
           'auth': prefs.getString("key"),
         }),
-      );
+      );*/
+
+
       //print(prefs.getString("key"));
       String respnse = response.body.replaceAll("\n", "");
       //print("response:"+respnse);
@@ -1051,8 +1132,18 @@ class MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    http.Response response = await http.post(
+
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
+      //
+      http.Response response = await webComunicater.sendRequest(<String, String>{
+      'search': search,
+      'auth': prefs.getString("key"),
+      //'auth':"12345678910",
+      "sort": _sort.toString(),
+      "sortDirection": _sortDirection.toString(),
+      });
+
+    /*http.Response response = await http.post(
       Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
@@ -1064,7 +1155,7 @@ class MyHomePageState extends State<MyHomePage> {
         "sort": _sort.toString(),
         "sortDirection": _sortDirection.toString(),
       }),
-    );
+    );*/
     //print(response.toString());
     //print(response.body);
 
@@ -1076,7 +1167,7 @@ class MyHomePageState extends State<MyHomePage> {
     }));*/
 
     String responseStr = response.body.replaceAll("\n", "");
-    //print(responseStr);
+    print(responseStr);
     if (responseStr == "false") {
       wrongKey();
       return;
@@ -1087,7 +1178,6 @@ class MyHomePageState extends State<MyHomePage> {
     //print(jsonDecode(respnse).runtimeType);
 
     //print("HALLLLOOO");
-
     _responseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
     //print("HALLLLOOO2");
     //print(_responseMap);
@@ -1270,7 +1360,12 @@ class MyHomePageState extends State<MyHomePage> {
       String ort, String fZ, String schluessel) async {
     final prefs = await SharedPreferences.getInstance();
     //print(nr);
-    http.Response response = await http.post(
+
+    http.Response response = await webComunicater.sendRequest(<String, String>{
+      'AfzIdx': AfzIdx,
+      'auth': prefs.getString("key"),
+    });
+    /*http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
       Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
       headers: <String, String>{
@@ -1280,8 +1375,9 @@ class MyHomePageState extends State<MyHomePage> {
         'AfzIdx': AfzIdx,
         'auth': prefs.getString("key"),
       }),
-    );
+    );*/
     String responseStr = response.body.replaceAll("\n", "");
+    //print("responsStr:"+responseStr);
     //print("test");
     //print(responseStr);
     //AufzugsArgumente(nr, responseStr);

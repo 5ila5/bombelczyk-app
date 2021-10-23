@@ -43,6 +43,7 @@ void main() {
 }
 
 class webComunicater {
+  //test
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
 
   static Future<http.Response> sendRequest(Map<String, String> body,

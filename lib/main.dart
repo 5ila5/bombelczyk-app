@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 import 'dart:developer' as developer;
 
@@ -44,16 +45,26 @@ void main() {
 class webComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
 
-  static Future<http.Response> sendRequest(Map<String, String> body,{bool login=false}) async{
+  static Future<http.Response> sendRequest(Map<String, String> body,
+      {bool login = false}) async {
     return await http.post(
       //Uri.https('silas.lan.home', 'BombelarApp/index.php'),
-      Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk2/'+((login)?'login.php':'index.php')),
+      Uri.https(_ipToAsk,
+          'UpP0UH3nFKMsnJk2/' + ((login) ? 'login.php' : 'index.php')),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(body),
     );
+  }
+}
 
+class Preferences {
+  static SharedPreferences prefs;
+
+  static Future<SharedPreferences> initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+    return prefs;
   }
 }
 
@@ -104,6 +115,16 @@ class AufzugPage extends StatefulWidget {
 
 class AufzugPageState extends State<AufzugPage> {
   bool _showArbeiten = false;
+  Map<String, String> checkboxStates = {};
+  Map<String, String> savedText = {};
+  Map<String,dynamic> addedTodos={};
+
+
+  void printFutureResponse(Future<http.Response> response) async {
+    print("change get Back");
+    print((await response).body);
+  }
+
 
   void switchToDo_Arbeiten(bool arbeiten) {
     this._showArbeiten = arbeiten;
@@ -111,15 +132,42 @@ class AufzugPageState extends State<AufzugPage> {
     this.setState(() {});
   }
 
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  void createNewToDo(String key, String aidx) async{
+     http.Response response = await webComunicater.sendRequest(<String, String>{
+      'auth': Preferences.prefs.getString("key"),
+      'toDoNewText': addedTodos[key]['text'],
+       'AfzIdx': aidx,
+       'toDoSet': (addedTodos[key]["checked"]!="").toString(),
+    });
+     print("create new ToDo"+key);
+     print("response: "+response.body);
+     if (isNumeric(response.body)){
+       addedTodos[key]["idx"] = int.parse(response.body).toString();
+     }
+     setState(() {
+
+     });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
+    final AufzugsArgumente args = ModalRoute
+        .of(context)
+        .settings
+        .arguments;
     //Map<String, dynamic> _responseMap = Map<String, dynamic>.from(jsonDecode(args.json));
     List<Widget> workWidget = [];
     //developer.log("args.json:"+args.json);
 
     Map<String, dynamic> responseMap =
-        Map<String, dynamic>.from(jsonDecode(args.json));
+    Map<String, dynamic>.from(jsonDecode(args.json));
     Map<String, dynamic> arbeitMap;
     Map<String, dynamic> toDoMap;
     bool workExists = false;
@@ -160,13 +208,13 @@ class AufzugPageState extends State<AufzugPage> {
               "." +
               date.year.toString();
           int jZykl =
-              int.parse(value["Zykl"].replaceAll(RegExp("[^\\d.]"), ""));
+          int.parse(value["Zykl"].replaceAll(RegExp("[^\\d.]"), ""));
           DateTime toDoTillYellow =
-              new DateTime(date.year + jZykl, date.month - 3, date.day);
+          new DateTime(date.year + jZykl, date.month - 3, date.day);
           //print("date: "+date.toString());
           //print("date Till Yellow"+toDoTillYellow.toString());
           DateTime toDoTillRed =
-              new DateTime(date.year + jZykl, date.month, date.day);
+          new DateTime(date.year + jZykl, date.month, date.day);
           //print("date Till red "+toDoTillRed.toString());
           if (toDoTillYellow.isBefore(now)) {
             rowColor = Colors.yellow;
@@ -296,7 +344,9 @@ class AufzugPageState extends State<AufzugPage> {
       )
     ]);
 
-    workWidget.add(Divider(thickness: 3, height: 50, color: Colors.black));
+    workWidget.add(Divider(thickness: 3,
+        //height: 50,
+        color: Colors.black));
 
     IconData icon; //= Icons.check_box;
     if (this._showArbeiten && workExists) {
@@ -363,9 +413,53 @@ class AufzugPageState extends State<AufzugPage> {
         );
         workWidget.add(Divider(thickness: 3, color: Colors.grey));
       });
-    } else if (!this._showArbeiten&&toDoExists) {
+    } else if (!this._showArbeiten && toDoExists) {
       print("TO DOS");
       toDoMap.remove("error");
+
+      Map<String,TextEditingController> textController={};
+
+
+      workWidget.addAll([
+        InkWell(
+          child: Icon(Icons.add, size:40,color:Colors.blue),
+          onTap: () {
+            int newKey = 1000;
+            while (toDoMap.containsKey(newKey.toString())) {
+              newKey++;
+            }
+            DateTime now = DateTime.now();
+            DateFormat formatter = DateFormat(
+                'yyyy-MM-dd HH:mm:ss');
+            String formatted = formatter.format(now);
+            addedTodos[newKey.toString()]=<String,String>{
+              "created": formatted,
+              "checked": "",
+              "text":"",
+              //"new": "new",
+            };
+            print("added "+newKey.toString() +" addedTodo:" +addedTodos.toString());
+
+            setState(() {
+            });
+
+
+
+
+          },
+        ),
+        Divider(thickness: 1, color:Colors.grey),
+      ]);
+      //addedTodos.addAll(toDoMap);
+      Map<String,dynamic> newMap={};
+      newMap.addAll(addedTodos);
+      newMap.addAll(toDoMap);
+      toDoMap=newMap;
+      //toDoMap=addedTodos;
+      print("addedTodos"+addedTodos.toString());
+      print("newMap"+newMap.toString());
+      print("toDoMap"+toDoMap.toString());
+
       toDoMap.forEach((key, value) {
         if (value["created"] == null) {
           value["created"] = "";
@@ -377,19 +471,128 @@ class AufzugPageState extends State<AufzugPage> {
           value["text"] = "";
         }
 
-        print("|"+value["text"]+"|");
-        print("|"+value["checked"]+"|");
+        print("|" + value["text"] + "|");
+        print("|" + value["checked"] + "|");
+        print("|" + "toDoMap[" + key.toString() + "][\"checked\"]" + "|");
+        print("|" + toDoMap[key]["checked"] + "|");
 
-        workWidget.add(Text("hier Kommen To-Dos hin"));
+        //workWidget.add(Text("hier Kommen To-Dos hin"));
+
+
+        bool checkBoxVal;
+        if (checkboxStates.containsKey(key)) {
+          checkBoxVal = (checkboxStates[key] != "");
+        } else {
+          checkBoxVal = value["checked"] != "" &&
+              value["checked"] != "0000-00-00 00:00:00" &&
+              value["checked"] != "NULL";
+        }
+
+        if (savedText.containsKey(key)) {
+          print("savedController contains Key");
+          textController[key] = TextEditingController(text:savedText[key]);
+          print(savedText[key]);
+          print(textController[key].text);
+
+        } else {
+          textController[key]=TextEditingController(text: value["text"]);
+        }
+
+
+
+
         workWidget.add(
           Table(
+              columnWidths: {
+                0: FlexColumnWidth(1),
+                1: FlexColumnWidth(6),
+              },
 
               children: [
-            TableRow(children: [
-              Checkbox(value: value["checked"] != "0000-00-00 00:00:00", onChanged: (bool value) {}),
-              SelectableText(value["text"]),
-            ]),
-          ]),
+          TableRow(children: [
+          Checkbox(
+          value: (checkBoxVal),
+          onChanged: (bool newValue) {
+            DateTime now = DateTime.now();
+            DateFormat formatter = DateFormat(
+                'yyyy-MM-dd HH:mm:ss');
+            String formatted = formatter.format(now);
+
+            //printFutureResponse(
+            if (!value.containsKey("idx")) {
+              addedTodos[key]["checked"] = (newValue)? formatted:"";
+              if (newValue) {
+                addedTodos[key]["text"] = textController[key].text;
+                createNewToDo(key.toString(),args.AfzIdx);
+              }
+            } else {
+              webComunicater.sendRequest(<String, String>{
+                'auth': Preferences.prefs.getString("key"),
+                'toDoSet': newValue.toString(),
+                'toDoIdx': value['idx'].toString(),
+              }
+              );
+            }
+            setState(() {
+              if (checkBoxVal) {
+                print("set " + key.toString() + " to False");
+                checkboxStates[key] = "";
+              } else {
+
+                print("set " + key.toString() + " to " + formatted);
+                checkboxStates[key] = formatted;
+              }
+            });
+          },
+        ),
+        Column(children: [
+          (checkBoxVal)?
+          SelectableText(textController[key].text):
+        Column(children: [
+          TextField(
+            controller: textController[key],
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            decoration: const InputDecoration(
+                //border: OutlineInputBorder(),
+                //hintText: 'Enter a search term'
+            ),
+          ),
+          Row(
+            children:[
+            InkWell(
+            child: Icon(Icons.save_outlined,size:40,color:Colors.green),
+            onTap: (){
+
+              if (!value.containsKey("idx")) {
+                addedTodos[key]["text"] = textController[key].text;
+                createNewToDo(key.toString(),args.AfzIdx);
+              } else {
+                webComunicater.sendRequest(<String, String>{
+                  'auth': Preferences.prefs.getString("key"),
+                  'toDoNewText': textController[key].text,
+                  'toDoIdx': value['idx'].toString(),
+                });
+              }
+              setState(() {
+                savedText[key]=textController[key].text;
+              });
+            }
+          ),
+          InkWell(
+            child: Icon(Icons.cancel,size:40, color:Colors.red),
+            onTap: (){setState(() {
+            });},
+          ),]),]),
+
+        ],),
+
+
+        ]),
+        ]),
+        );
+        workWidget.add(
+        Divider(thickness: 1, color:Colors.grey)
         );
       });
     } else {
@@ -526,7 +729,7 @@ class MyHomePageState extends State<MyHomePage> {
                 child: DropdownButton<Sorts>(
                   value: Sorts.values[_sort],
                   items:
-                      Sorts.values.map<DropdownMenuItem<Sorts>>((Sorts value) {
+                  Sorts.values.map<DropdownMenuItem<Sorts>>((Sorts value) {
                     return DropdownMenuItem<Sorts>(
                       value: value,
                       child: Text(value.toString().replaceAll("Sorts.", "")),
@@ -551,18 +754,18 @@ class MyHomePageState extends State<MyHomePage> {
           ]),
           new Expanded(
               child: Padding(
-            padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-            //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-            child: SingleChildScrollView(
-                child: Column(
-              children: _tabelle,
-            )),
-            /*GridView.count(
+                padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+                child: SingleChildScrollView(
+                    child: Column(
+                      children: _tabelle,
+                    )),
+                /*GridView.count(
                 mainAxisSpacing: 10,
               crossAxisCount: 6,
               children: _tabelle //[Text("hallo"),Text("hallo2"),Text("hallo3"),Text("hallo4"),Text("hallo5"),Text("hallo6"),Text("hallo7"),Text("hallo8")]
             ),*/
-          )),
+              )),
         ],
       ),
       SingleChildScrollView(
@@ -742,7 +945,13 @@ class MyHomePageState extends State<MyHomePage> {
   void getNearby(int menge) async {
     bool error = false;
     String errorMessage;
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+
     if (_neaByWidgets.length < 2) {
       createDropDown(menge, true);
     }
@@ -777,14 +986,14 @@ class MyHomePageState extends State<MyHomePage> {
     double x = pos.latitude;
     double y = pos.longitude;
     http.Response response = await webComunicater.sendRequest(<String, String>{
-             'posX': x.toString(),
-             'posY': y.toString(),
-             'auth': prefs.getString("key"),
-             'anz': menge.toString(),
-             //'auth':"12345678910",
-             //"sort": _sort.toString(),
-             //"sortDirection": _sortDirection.toString(),
-           });
+      'posX': x.toString(),
+      'posY': y.toString(),
+      'auth': prefs.getString("key"),
+      'anz': menge.toString(),
+      //'auth':"12345678910",
+      //"sort": _sort.toString(),
+      //"sortDirection": _sortDirection.toString(),
+    });
 
     /*http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
@@ -811,7 +1020,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
     //int dropdownValue = 10;
     Map<String, dynamic> responseMap =
-        Map<String, dynamic>.from(jsonDecode(responseStr));
+    Map<String, dynamic>.from(jsonDecode(responseStr));
     responseMap.remove("error");
 
     List<Widget> tmpWidgets = [createDropDown(menge, true)];
@@ -839,7 +1048,7 @@ class MyHomePageState extends State<MyHomePage> {
     Color Tablecolor = Colors.grey[300];
 
     TextStyle tableRowTopStyle =
-        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
@@ -1004,7 +1213,12 @@ class MyHomePageState extends State<MyHomePage> {
 
   void setKey() async {
     //print("setKey");
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
     String pass = _passwordController.text;
     //print("pass:"+pass);
     if (pass.length < 1) {
@@ -1013,7 +1227,8 @@ class MyHomePageState extends State<MyHomePage> {
     }
 
 
-    http.Response response = await webComunicater.sendRequest(<String, String>{ 'password': pass}, login:true);
+    http.Response response = await webComunicater.sendRequest(
+        <String, String>{ 'password': pass}, login: true);
 
     /*http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
@@ -1042,12 +1257,18 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future<String> checkKey() async {
     //print("CheckKey:");
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey("key")) {
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
 
-      http.Response response = await webComunicater.sendRequest(<String, String>{
-        'auth': prefs.getString("key"),
-      });
+    if (prefs.containsKey("key")) {
+      http.Response response = await webComunicater.sendRequest(
+          <String, String>{
+            'auth': prefs.getString("key"),
+          });
 
       /*http.Response response = await http.post(
         //Uri.https('silas.lan.home', 'BombelApp/index.php'),
@@ -1124,7 +1345,12 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   void search(String search) async {
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
     //print(prefs.getString("key"));
     if (!prefs.containsKey("key")) {
       //print("Send Without Key");
@@ -1133,15 +1359,15 @@ class MyHomePageState extends State<MyHomePage> {
     }
 
 
-      //Uri.https('silas.lan.home', 'BombelApp/index.php'),
-      //
-      http.Response response = await webComunicater.sendRequest(<String, String>{
+    //Uri.https('silas.lan.home', 'BombelApp/index.php'),
+    //
+    http.Response response = await webComunicater.sendRequest(<String, String>{
       'search': search,
       'auth': prefs.getString("key"),
       //'auth':"12345678910",
       "sort": _sort.toString(),
       "sortDirection": _sortDirection.toString(),
-      });
+    });
 
     /*http.Response response = await http.post(
       Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
@@ -1204,7 +1430,7 @@ class MyHomePageState extends State<MyHomePage> {
     Map<String, dynamic> map2Copy;
     List<Widget> tmpTabelle = [];
     TextStyle tableRowTopStyle =
-        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
@@ -1358,7 +1584,12 @@ class MyHomePageState extends State<MyHomePage> {
 
   void selectElevator(String AfzIdx, String nr, String str, String pLZ,
       String ort, String fZ, String schluessel) async {
-    final prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
     //print(nr);
 
     http.Response response = await webComunicater.sendRequest(<String, String>{
@@ -1386,7 +1617,14 @@ class MyHomePageState extends State<MyHomePage> {
       Aufzug.aufzugRoute,
       //MaterialPageRoute(builder: (context) => Aufzug()),
       arguments: AufzugsArgumente(
-          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
+          AfzIdx,
+          nr,
+          responseStr,
+          str,
+          pLZ,
+          ort,
+          fZ,
+          schluessel),
     );
   }
 }

@@ -8,12 +8,14 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
-import 'package:http/io_client.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:archive/archive.dart';
 
 import 'dart:developer' as developer;
 
@@ -38,24 +40,26 @@ enum Sorts {
 }*/
 
 void main() {
-  //HttpOverrides.global = new MyHttpOverrides();
   runApp(MyApp());
 }
 
 class webComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
-
-  static Future<http.Response> sendRequest(Map<String, String> body,
+  static final gzip = GZipCodec();
+  static Future<String> sendRequest(Map<String, String> body,
       {bool login = false}) async {
-    return await http.post(
+    http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelarApp/index.php'),
       Uri.https(_ipToAsk,
           'UpP0UH3nFKMsnJk2/' + ((login) ? 'login.php' : 'index.php')),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        "Content-Encoding": "gzip",
       },
-      body: jsonEncode(body),
+      body: gzip.encode(jsonEncode(body).codeUnits),
     );
+    return response.body;
+
   }
 }
 
@@ -140,16 +144,16 @@ class AufzugPageState extends State<AufzugPage> {
   }
 
   void createNewToDo(String key, String aidx) async{
-     http.Response response = await webComunicater.sendRequest(<String, String>{
+     String response = await webComunicater.sendRequest(<String, String>{
       'auth': Preferences.prefs.getString("key"),
       'toDoNewText': addedTodos[key]['text'],
        'AfzIdx': aidx,
        'toDoSet': (addedTodos[key]["checked"]!="").toString(),
     });
      print("create new ToDo"+key);
-     print("response: "+response.body);
-     if (isNumeric(response.body)){
-       addedTodos[key]["idx"] = int.parse(response.body).toString();
+     print("response: "+response);
+     if (isNumeric(response)){
+       addedTodos[key]["idx"] = int.parse(response).toString();
      }
      setState(() {
 
@@ -985,7 +989,7 @@ class MyHomePageState extends State<MyHomePage> {
     //print(pos);
     double x = pos.latitude;
     double y = pos.longitude;
-    http.Response response = await webComunicater.sendRequest(<String, String>{
+    String response = await webComunicater.sendRequest(<String, String>{
       'posX': x.toString(),
       'posY': y.toString(),
       'auth': prefs.getString("key"),
@@ -1012,7 +1016,7 @@ class MyHomePageState extends State<MyHomePage> {
       }),
     );*/
 
-    String responseStr = response.body.replaceAll("\n", "");
+    String responseStr = response.replaceAll("\n", "");
     //print(responseStr);
     if (responseStr == "false") {
       wrongKey();
@@ -1227,7 +1231,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
 
 
-    http.Response response = await webComunicater.sendRequest(
+    String response = await webComunicater.sendRequest(
         <String, String>{ 'password': pass}, login: true);
 
     /*http.Response response = await http.post(
@@ -1242,7 +1246,7 @@ class MyHomePageState extends State<MyHomePage> {
     );*/
 
     //print("test1");
-    String respnse = response.body.replaceAll("\n", "");
+    String respnse = response.replaceAll("\n", "");
     //print("test2");
     //print("response:"+respnse+"|");
     //print("response:"+respnse.length.toString());
@@ -1265,7 +1269,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
 
     if (prefs.containsKey("key")) {
-      http.Response response = await webComunicater.sendRequest(
+      String response = await webComunicater.sendRequest(
           <String, String>{
             'auth': prefs.getString("key"),
           });
@@ -1283,7 +1287,7 @@ class MyHomePageState extends State<MyHomePage> {
 
 
       //print(prefs.getString("key"));
-      String respnse = response.body.replaceAll("\n", "");
+      String respnse = response.replaceAll("\n", "");
       //print("response:"+respnse);
       if (respnse == "true") return prefs.getString("key");
     }
@@ -1361,7 +1365,7 @@ class MyHomePageState extends State<MyHomePage> {
 
     //Uri.https('silas.lan.home', 'BombelApp/index.php'),
     //
-    http.Response response = await webComunicater.sendRequest(<String, String>{
+    String response = await webComunicater.sendRequest(<String, String>{
       'search': search,
       'auth': prefs.getString("key"),
       //'auth':"12345678910",
@@ -1392,7 +1396,7 @@ class MyHomePageState extends State<MyHomePage> {
       "sortDirection": _sortDirection.toString(),
     }));*/
 
-    String responseStr = response.body.replaceAll("\n", "");
+    String responseStr = response.replaceAll("\n", "");
     print(responseStr);
     if (responseStr == "false") {
       wrongKey();
@@ -1592,7 +1596,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
     //print(nr);
 
-    http.Response response = await webComunicater.sendRequest(<String, String>{
+    String response = await webComunicater.sendRequest(<String, String>{
       'AfzIdx': AfzIdx,
       'auth': prefs.getString("key"),
     });
@@ -1607,7 +1611,7 @@ class MyHomePageState extends State<MyHomePage> {
         'auth': prefs.getString("key"),
       }),
     );*/
-    String responseStr = response.body.replaceAll("\n", "");
+    String responseStr = response.replaceAll("\n", "");
     //print("responsStr:"+responseStr);
     //print("test");
     //print(responseStr);

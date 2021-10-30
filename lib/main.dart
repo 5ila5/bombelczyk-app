@@ -171,6 +171,31 @@ class AufzugsArgumente {
       this.aOrt, this.aFZ, this.schluessel);
 }
 
+class SelectElevator {
+  static void selectElevator(String AfzIdx, String nr, String str, String pLZ,
+      String ort, String fZ, String schluessel,BuildContext context) async {
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+
+    String response = await webComunicater.sendRequest(<String, String>{
+      'AfzIdx': AfzIdx,
+      'auth': prefs.getString("key"),
+    });
+
+    String responseStr = response.replaceAll("\n", "");
+    Navigator.pushNamed(
+      context,
+      Aufzug.aufzugRoute,
+      arguments: AufzugsArgumente(
+          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
+    );
+  }
+}
+
 class Aufzug extends StatelessWidget {
   static const aufzugRoute = '/aufzugRoute';
 
@@ -641,28 +666,7 @@ class ToDoHomeList extends StatefulWidget {
 class ToDoHomeListState extends State<ToDoHomeList> {
   Map<String,bool> expandedToDos= {};
 
-  void selectElevator(String AfzIdx, String nr, String str, String pLZ,
-      String ort, String fZ, String schluessel) async {
-    SharedPreferences prefs;
-    if (Preferences.prefs == null) {
-      prefs = await Preferences.initPrefs();
-    } else {
-      prefs = Preferences.prefs;
-    }
 
-    String response = await webComunicater.sendRequest(<String, String>{
-      'AfzIdx': AfzIdx,
-      'auth': prefs.getString("key"),
-    });
-
-    String responseStr = response.replaceAll("\n", "");
-    Navigator.pushNamed(
-      context,
-      Aufzug.aufzugRoute,
-      arguments: AufzugsArgumente(
-          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -752,7 +756,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                       color: Colors.blue,
                     ),
                     onTap: () {
-                      selectElevator(
+                      SelectElevator.selectElevator(
                           value["AfzIdx"].toString(),
                           value["Anr"].toString(),
                           value["Astr"].toString() +
@@ -761,7 +765,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                           value["plz"].toString(),
                           value["Ort"].toString(),
                           value["FK_zeit"].toString(),
-                          value["Zg_txt"].toString());
+                          value["Zg_txt"].toString(),context);
                     },
                   ),
                 ],
@@ -1165,14 +1169,6 @@ class AufzugPageState extends State<AufzugPage> {
           //crossAxisAlignment: CrossAxisAlignment.stretch,
           children: workWidget,
         ),
-
-        /*
-        child: ElevatedButton(
-          child: Text('Open route'),
-          onPressed: () {
-            // Navigate to second route when tapped.
-          },
-        ),*/
       ),
     );
   }
@@ -1316,29 +1312,6 @@ class AufzugListItem extends StatefulWidget {
 }
 
 class AufzugListItemState extends State<AufzugListItem> {
-  void selectElevator(String AfzIdx, String nr, String str, String pLZ,
-      String ort, String fZ, String schluessel) async {
-    SharedPreferences prefs;
-    if (Preferences.prefs == null) {
-      prefs = await Preferences.initPrefs();
-    } else {
-      prefs = Preferences.prefs;
-    }
-
-    String response = await webComunicater.sendRequest(<String, String>{
-      'AfzIdx': AfzIdx,
-      'auth': prefs.getString("key"),
-    });
-
-    String responseStr = response.replaceAll("\n", "");
-    Navigator.pushNamed(
-      context,
-      Aufzug.aufzugRoute,
-      arguments: AufzugsArgumente(
-          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     TextStyle tableRowTopStyle =
@@ -1377,8 +1350,6 @@ class AufzugListItemState extends State<AufzugListItem> {
       ));
     }
 
-    //print(value.toString());
-    //tmpTabelle.add(
     return Container(
       padding:
           const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
@@ -1394,14 +1365,14 @@ class AufzugListItemState extends State<AufzugListItem> {
                     children: columnChildren,
                   ),
                   onTap: () {
-                    selectElevator(
+                    SelectElevator.selectElevator(
                         widget.AfzIdx,
                         widget.Anr,
                         widget.Astr + " " + widget.Ahnr,
                         widget.plz,
                         widget.Ort,
                         widget.FK_zeit,
-                        widget.Zg_txt);
+                        widget.Zg_txt,context);
                   },
                 ),
               ),
@@ -1428,7 +1399,6 @@ class AufzugListItemState extends State<AufzugListItem> {
         ],
       ),
     );
-    //, //Container
   }
 }
 
@@ -1462,7 +1432,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  //String codeDialog ="";
+
   int _selectedIndex = 0;
   static List<Widget> _widgetOptions;
 
@@ -1473,21 +1443,16 @@ class MyHomePageState extends State<MyHomePage> {
   bool _toDoShowChecked = false;
   bool _toDoShowUnchecked = true;
   Socket socket;
-  int _counter = 0;
+
   Map<String, dynamic> _responseMap;
   Map<String, dynamic> toDoresponseMap;
   bool _requestError = false;
   int _sort = 1;
   int _toDoSort = 1;
   final _searchController = TextEditingController();
-  //final _searchToDoController = TextEditingController();
 
-  final _passwordController = TextEditingController();
-  List<Widget> _tabelletop;
   List<Widget> _tabelle = [Text("")];
-  List<Widget> _ToDotabelle = [Text("")];
   List<Widget> _neaByWidgets = [Text("")];
-  List<Widget> _toDoWidgets = [Text("")];
 
   @override
   void initState() {
@@ -1516,10 +1481,7 @@ class MyHomePageState extends State<MyHomePage> {
                   refreshTable(value);
                 },
                 style: TextStyle(
-                  //height: 1,
-                  //fontSize: 40.0,
                   color: Colors.black,
-                  //backgroundColor: Colors.lightGreen,
                 ),
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search),
@@ -1554,7 +1516,6 @@ class MyHomePageState extends State<MyHomePage> {
                     _sort = newValue.index;
                     refreshTable(_searchController.text);
                   },
-                  //<sorts>[10, 20, 50]
                 ),
               ),
             ),
@@ -1587,116 +1548,7 @@ class MyHomePageState extends State<MyHomePage> {
 
       //To Dos Home
           ToDoHome(),
-          /*
-      Column(
-        children: <Widget>[
-          Container(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
-              //width:200.0,
 
-              child: TextField(
-                controller: _searchToDoController,
-                onChanged: (value) {
-                  refreshToDoTable(value);
-                },
-                style: TextStyle(
-                  //height: 1,
-                  //fontSize: 40.0,
-                  color: Colors.black,
-                  //backgroundColor: Colors.lightGreen,
-                ),
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  border: InputBorder.none,
-                  hintText: 'Suche To-Dos',
-                  enabledBorder: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    borderSide: const BorderSide(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Row(children: <Widget>[
-            Container(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
-                //width:200.0,
-
-                child: DropdownButton<ToDoSorts>(
-                  value: ToDoSorts.values[_toDoSort],
-                  items:
-                    ToDoSorts.values.map<DropdownMenuItem<ToDoSorts>>((ToDoSorts value) {
-                    return DropdownMenuItem<ToDoSorts>(
-                      value: value,
-                      child: Text(value.toString().replaceAll("ToDoSorts.", "")),
-                    );
-                  }).toList(),
-                  onChanged: (ToDoSorts newValue) {
-                    _toDoSort = newValue.index;
-                    refreshToDoTable(_searchToDoController.text);
-                  },
-                  //<sorts>[10, 20, 50]
-                ),
-              ),
-            ),
-
-            InkWell(
-              child: (_toDoSortDirection)
-                  ? Icon(Icons.arrow_downward)
-                  : Icon(Icons.arrow_upward),
-              onTap: () {
-                _toDoSortDirection = !_toDoSortDirection;
-                refreshToDoTable(_searchToDoController.text);
-              },
-            ),
-            Column(children: [
-              Row(
-                children: [
-                  Icon(Icons.check),
-                  Checkbox(
-                    value: _toDoShowChecked,
-                    onChanged: (bool val) {
-                      if (val||_toDoShowUnchecked) {
-                        _toDoShowChecked = !_toDoShowChecked;
-                        refreshToDoTable(_searchToDoController.text);
-                      }
-                    },
-                  )
-                ],),
-              Row(
-                children: [
-                  Icon(Icons.crop_square_sharp),
-                  Checkbox(
-                    value: _toDoShowUnchecked,
-                    onChanged: (bool val) {
-                      if (val||_toDoShowChecked) {
-                        _toDoShowUnchecked = !_toDoShowUnchecked;
-                        refreshToDoTable(_searchToDoController.text);
-                      }
-                    },
-                  )
-
-                ],),
-            ]),
-          ]),
-
-          new Expanded(
-              child: Padding(
-            padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-            //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-            child: SingleChildScrollView(
-              //  child: Column(
-              //children:
-              child:ToDoHomeList(toDoresponseMap: toDoresponseMap,),//_ToDotabelle,
-            //)
-            ),
-          )),
-        ],
-      ),*/
       Column(children: <Widget>[
         new Expanded(
             child: Padding(
@@ -1715,44 +1567,6 @@ class MyHomePageState extends State<MyHomePage> {
       ),
     ];
     //refreshTable("");
-    _tabelletop = [
-      InkWell(
-        onTap: () {
-          sortieren(0);
-        },
-        child: Text("Aufzugsnummer",
-            style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      InkWell(
-        onTap: () {
-          sortieren(1);
-        },
-        child: Text("Straße", style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      //Text("Hausnummer",style: TextStyle(fontWeight:FontWeight.bold)),
-      InkWell(
-        onTap: () {
-          sortieren(2);
-        },
-        child: Text("PLZ", style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      InkWell(
-        onTap: () {
-          sortieren(3);
-        },
-        child: Text("Ort", style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      InkWell(
-        onTap: () {
-          sortieren(4);
-        },
-        child: Text("Fahrzeit", style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-      InkWell(
-        child: Icon(Icons
-            .map_outlined), //Text("maps",style: TextStyle(fontWeight:FontWeight.bold)),
-      ),
-    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -1779,10 +1593,6 @@ class MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.access_time),
             label: 'Historie',
           ),
-          /*BottomNavigationBarItem(
-            icon: Icon(Icons.elevator_outlined),
-            label: 'School',
-          ),*/
         ],
         showSelectedLabels: true,
         showUnselectedLabels: true,
@@ -1801,8 +1611,6 @@ class MyHomePageState extends State<MyHomePage> {
         onTap: _onItemTapped,
 
       ),
-
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
@@ -2104,7 +1912,7 @@ class MyHomePageState extends State<MyHomePage> {
                       ),
                       //Text(value["Anr"].toString()+" "+value["Astr"].toString()+" "+value["Anr"].toString()+" "+value["Ahnr"].toString()+", "+value["plz"].toString()+" "+value["Ort"].toString()+" "),
                       onTap: () {
-                        selectElevator(
+                        SelectElevator.selectElevator(
                             value["AfzIdx"].toString(),
                             value["Anr"].toString(),
                             value["Astr"].toString() +
@@ -2113,7 +1921,7 @@ class MyHomePageState extends State<MyHomePage> {
                             value["plz"].toString(),
                             value["Ort"].toString(),
                             value["FK_zeit"].toString(),
-                            value["Zg_txt"].toString());
+                            value["Zg_txt"].toString(),context);
                       },
                     ),
                   ),
@@ -2149,12 +1957,7 @@ class MyHomePageState extends State<MyHomePage> {
       }
       even = !even;
 
-      /*new InkWell(
-        child: Text(),
-        onTap: () {
-          selectElevator(value["AfzIdx"].toString(), value["Anr"].toString(), map2["Astr"].toString(), value["plz"].toString(), value["Ort"].toString(), value["FK_zeit"].toString());
-        },
-      )*/
+
     });
     setState(() {
       _neaByWidgets = tmpWidgets;
@@ -2372,28 +2175,5 @@ class MyHomePageState extends State<MyHomePage> {
     setState(() {
       _tabelle = tmpTabelle;
     });
-  }
-
-  void selectElevator(String AfzIdx, String nr, String str, String pLZ,
-      String ort, String fZ, String schluessel) async {
-    SharedPreferences prefs;
-    if (Preferences.prefs == null) {
-      prefs = await Preferences.initPrefs();
-    } else {
-      prefs = Preferences.prefs;
-    }
-
-    String response = await webComunicater.sendRequest(<String, String>{
-      'AfzIdx': AfzIdx,
-      'auth': prefs.getString("key"),
-    });
-
-    String responseStr = response.replaceAll("\n", "");
-    Navigator.pushNamed(
-      context,
-      Aufzug.aufzugRoute,
-      arguments: AufzugsArgumente(
-          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
-    );
   }
 }

@@ -55,6 +55,80 @@ void main() {
   runApp(MyApp());
 }
 
+class AuthKey {
+   static final _passwordController = TextEditingController();
+
+
+  static void wrongKey(BuildContext context) {
+      displayTextInputDialog(context);
+    }
+
+     static void setKey(BuildContext context) async {
+       //print("setKey");
+       SharedPreferences prefs;
+       if (Preferences.prefs == null) {
+         prefs = await Preferences.initPrefs();
+       } else {
+         prefs = Preferences.prefs;
+       }
+       String pass = _passwordController.text;
+       //print("pass:"+pass);
+       if (pass.length < 1) {
+         AuthKey.wrongKey(context);
+
+         return;
+       }
+       String response = await webComunicater
+           .sendRequest(<String, String>{'password': pass}, login: true);
+       String respnse = response.replaceAll("\n", "");
+       if (respnse == "false" || respnse.length != 32) {
+         //print("false:");
+         AuthKey.wrongKey(context);
+
+         return;
+       }
+
+       prefs.setString("key", respnse);
+     }
+
+  static Future<void> displayTextInputDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Passwort:'),
+            content: TextField(
+              onSubmitted: (value) {
+                setKey(context);
+                Navigator.pop(context);
+              },
+              controller: _passwordController,
+              decoration: InputDecoration(hintText: "Passwort"),
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  elevation: 10.0,
+                  shadowColor: Colors.blueGrey,
+                  primary: Colors.white,
+                  backgroundColor: Colors.blue,
+                  onSurface: Colors.grey,
+                ),
+                child: Text('OK'),
+                onPressed: () {
+                  //setState(() {
+                    //codeDialog = valueText;
+                    setKey(context);
+                    Navigator.pop(context);
+                  //});
+                },
+              ),
+            ],
+          );
+        });
+  }
+}
+
 class webComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
   static final gzip = GZipCodec();
@@ -114,7 +188,7 @@ class AufzugToDo extends StatefulWidget {
   Map <String,dynamic> toDoMap;
   String AfzIdx;
 
-   AufzugToDo({this.AfzIdx,this.toDoMap,Key key}) : super(key: key  );
+   AufzugToDo({this.AfzIdx,this.toDoMap,Key key}) : super(key: key);
 
 
   @override
@@ -319,12 +393,11 @@ class AufzugToDoState extends State<AufzugToDo> {
   }
 }
 
-
 class ToDoHome extends StatefulWidget {
-  Map <String,dynamic> toDoresponseMap;
-  String AfzIdx;
+  //Map <String,dynamic> toDoresponseMap;
+  //String AfzIdx;
 
-  ToDoHome({this.toDoresponseMap,Key key}) : super(key: key  );
+  ToDoHome({Key key}) : super(key: key  );
 
 
   @override
@@ -332,6 +405,240 @@ class ToDoHome extends StatefulWidget {
 }
 
 class ToDoHomeState extends State<ToDoHome> {
+  bool _toDoSortDirection = false;
+  int _toDoSort = 1;
+  TextEditingController _searchToDoController= new TextEditingController();
+  bool _toDoShowChecked = false;
+  bool _toDoShowUnchecked = true;
+  Future<Map<String, dynamic>> toDoresponseMap;
+  bool firstBuild = true;
+
+  refreshToDoTable(String text) async {
+    setState(() {
+      toDoresponseMap = searchToDos(text);
+
+    });
+  }
+
+  Future<Map<String, dynamic>> searchToDos(String search) async {
+    Map<String, dynamic> tmpResponseMap = {};
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+    if (!prefs.containsKey("key")) {
+      AuthKey.wrongKey(context);
+      return {};
+    }
+
+    String response = await webComunicater.sendRequest(<String, String>{
+      'toDoSearchText': search,
+      'auth': prefs.getString("key"),
+      "toDoSort": _toDoSort.toString(),
+      "sortDirection": _toDoSortDirection.toString(),
+      "showChecked": _toDoShowChecked.toString(),
+      "showUnchecked":_toDoShowUnchecked.toString(),
+    });
+    print("showChecked: "+ _toDoShowChecked.toString()+
+        "\nshowUnchecked: "+_toDoShowUnchecked.toString());
+
+    String responseStr = response.replaceAll("\n", "");
+    print("responseStr:");
+    print(response);
+    if (responseStr == "false") {
+      AuthKey.wrongKey(context);
+
+      return {};
+    }
+    tmpResponseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
+    if (tmpResponseMap["error"]) {
+      //_requestError = true;
+      setState(() {
+        print("setState");
+      });
+      return {};
+    }
+    //_requestError = false;
+    tmpResponseMap.remove("error");
+    //processToDos();
+    return tmpResponseMap;
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if (firstBuild) {
+      refreshToDoTable("");
+      firstBuild = false;
+    }
+    return Column(
+      children: <Widget>[
+        Container(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+            //width:200.0,
+
+            child: TextField(
+              controller: _searchToDoController,
+              onChanged: (value) {
+                refreshToDoTable(value);
+              },
+              style: TextStyle(
+                //height: 1,
+                //fontSize: 40.0,
+                color: Colors.black,
+                //backgroundColor: Colors.lightGreen,
+              ),
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                border: InputBorder.none,
+                hintText: 'Suche To-Dos',
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                  borderSide: const BorderSide(
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+    Row(children: <Widget>[
+      Container(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+          //width:200.0,
+
+          child: DropdownButton<ToDoSorts>(
+            value: ToDoSorts.values[_toDoSort],
+            items:
+            ToDoSorts.values.map<DropdownMenuItem<ToDoSorts>>((ToDoSorts value) {
+              return DropdownMenuItem<ToDoSorts>(
+                value: value,
+                child: Text(value.toString().replaceAll("ToDoSorts.", "")),
+              );
+            }).toList(),
+            onChanged: (ToDoSorts newValue) {
+              _toDoSort = newValue.index;
+              refreshToDoTable(_searchToDoController.text);
+            },
+            //<sorts>[10, 20, 50]
+          ),
+        ),
+      ),
+
+      InkWell(
+        child: (_toDoSortDirection)
+            ? Icon(Icons.arrow_downward)
+            : Icon(Icons.arrow_upward),
+        onTap: () {
+          _toDoSortDirection = !_toDoSortDirection;
+          refreshToDoTable(_searchToDoController.text);
+        },
+      ),
+      Column(children: [
+        Row(
+          children: [
+            Icon(Icons.check),
+            Checkbox(
+              value: _toDoShowChecked,
+              onChanged: (bool val) {
+                if (val||_toDoShowUnchecked) {
+                  _toDoShowChecked = !_toDoShowChecked;
+                  refreshToDoTable(_searchToDoController.text);
+                }
+              },
+            )
+          ],),
+        Row(
+          children: [
+            Icon(Icons.crop_square_sharp),
+            Checkbox(
+              value: _toDoShowUnchecked,
+              onChanged: (bool val) {
+                if (val||_toDoShowChecked) {
+                  _toDoShowUnchecked = !_toDoShowUnchecked;
+                  refreshToDoTable(_searchToDoController.text);
+                }
+              },
+            )
+
+          ],),
+      ]),
+    ]),
+
+    new Expanded(
+    child: Padding(
+    padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+    //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+    child: SingleChildScrollView(
+    //  child: Column(
+    //children:
+    child: FutureBuilder<Map<String, dynamic>>(
+      future:toDoresponseMap,
+      builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+        Widget child;
+        if (snapshot.hasData) {
+          return ToDoHomeList(toDoresponseMap: snapshot.data,);
+        } else if (snapshot.hasError) {
+          return Column(children: <Widget>[
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 60,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text('Error: ${snapshot.error}'),
+            )
+          ]);
+        } else {
+          return Column(children : const <Widget>[
+            SizedBox(
+              child: CircularProgressIndicator(),
+              width: 60,
+              height: 60,
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Text('Läd einträge...'),
+            )
+          ]);
+        }
+
+
+
+      },
+//          }
+
+
+
+    ),
+
+    //_ToDotabelle,
+    //)
+    ),
+    )),
+    ],
+    );
+  }
+
+}
+
+class ToDoHomeList extends StatefulWidget {
+  Map <String,dynamic> toDoresponseMap;
+  String AfzIdx;
+
+  ToDoHomeList({this.toDoresponseMap,Key key}) : super(key: key  );
+
+
+  @override
+  ToDoHomeListState createState() => ToDoHomeListState();
+}
+
+class ToDoHomeListState extends State<ToDoHomeList> {
   Map<String,bool> expandedToDos= {};
 
   void selectElevator(String AfzIdx, String nr, String str, String pLZ,
@@ -484,6 +791,24 @@ class ToDoHomeState extends State<ToDoHome> {
       children: tmpTabelle,
     );
   }
+}
+
+class TodoList extends StatefulWidget {
+  String AfzIdx;
+
+  TodoList(this.AfzIdx,{Key key}) : super(key: key  );
+
+
+  @override
+  TodoListState createState() => TodoListState();
+}
+
+class TodoListState extends State<TodoList> {
+  @override
+  Widget build(BuildContext) {
+
+  }
+
 }
 
 class AufzugPage extends StatefulWidget {
@@ -1155,7 +1480,7 @@ class MyHomePageState extends State<MyHomePage> {
   int _sort = 1;
   int _toDoSort = 1;
   final _searchController = TextEditingController();
-  final _searchToDoController = TextEditingController();
+  //final _searchToDoController = TextEditingController();
 
   final _passwordController = TextEditingController();
   List<Widget> _tabelletop;
@@ -1261,6 +1586,8 @@ class MyHomePageState extends State<MyHomePage> {
       ),
 
       //To Dos Home
+          ToDoHome(),
+          /*
       Column(
         children: <Widget>[
           Container(
@@ -1364,12 +1691,12 @@ class MyHomePageState extends State<MyHomePage> {
             child: SingleChildScrollView(
               //  child: Column(
               //children:
-              child:ToDoHome(toDoresponseMap: toDoresponseMap,),//_ToDotabelle,
+              child:ToDoHomeList(toDoresponseMap: toDoresponseMap,),//_ToDotabelle,
             //)
             ),
           )),
         ],
-      ),
+      ),*/
       Column(children: <Widget>[
         new Expanded(
             child: Padding(
@@ -1486,9 +1813,9 @@ class MyHomePageState extends State<MyHomePage> {
     if (_selectedIndex == 1) {
       getNearby(10);
     }
-    else if (_selectedIndex == 2) {
+    /*else if (_selectedIndex == 2) {
       refreshToDoTable(_searchToDoController.text);
-    }
+    }*/
   }
 
   Future<Position> _determinePosition() async {
@@ -1590,7 +1917,8 @@ class MyHomePageState extends State<MyHomePage> {
 
     if (!prefs.containsKey("key")) {
       //print("Send Without Key");
-      wrongKey();
+      AuthKey.wrongKey(context);
+
       return;
     }
     print("position Start");
@@ -1647,7 +1975,8 @@ class MyHomePageState extends State<MyHomePage> {
     String responseStr = response.replaceAll("\n", "");
     //print(responseStr);
     if (responseStr == "false") {
-      wrongKey();
+      AuthKey.wrongKey(context);
+
       return;
     }
     //int dropdownValue = 10;
@@ -1843,48 +2172,7 @@ class MyHomePageState extends State<MyHomePage> {
     refreshTable(_searchController.text);
   }
 
-  void setKey() async {
-    //print("setKey");
-    SharedPreferences prefs;
-    if (Preferences.prefs == null) {
-      prefs = await Preferences.initPrefs();
-    } else {
-      prefs = Preferences.prefs;
-    }
-    String pass = _passwordController.text;
-    //print("pass:"+pass);
-    if (pass.length < 1) {
-      wrongKey();
-      return;
-    }
 
-    String response = await webComunicater
-        .sendRequest(<String, String>{'password': pass}, login: true);
-
-    /*http.Response response = await http.post(
-      //Uri.https('silas.lan.home', 'BombelApp/index.php'),
-      Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/login.php'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'password': pass,
-      }),
-    );*/
-
-    //print("test1");
-    String respnse = response.replaceAll("\n", "");
-    //print("test2");
-    //print("response:"+respnse+"|");
-    //print("response:"+respnse.length.toString());
-    if (respnse == "false" || respnse.length != 32) {
-      //print("false:");
-      wrongKey();
-      return;
-    }
-    //print("keySet:");
-    prefs.setString("key", respnse);
-  }
 
   Future<String> checkKey() async {
     //print("CheckKey:");
@@ -1917,51 +2205,14 @@ class MyHomePageState extends State<MyHomePage> {
       if (respnse == "true") return prefs.getString("key");
     }
     //showDialog(context: context,
-    wrongKey();
+    AuthKey.wrongKey(context);
+
     return "";
   }
 
-  void wrongKey() {
-    //print("wrongKey:");
-    displayTextInputDialog(context);
-  }
 
-  Future<void> displayTextInputDialog(BuildContext context) async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Passwort:'),
-            content: TextField(
-              onSubmitted: (value) {
-                setKey();
-                Navigator.pop(context);
-              },
-              controller: _passwordController,
-              decoration: InputDecoration(hintText: "Passwort"),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  elevation: 10.0,
-                  shadowColor: Colors.blueGrey,
-                  primary: Colors.white,
-                  backgroundColor: Colors.blue,
-                  onSurface: Colors.grey,
-                ),
-                child: Text('OK'),
-                onPressed: () {
-                  setState(() {
-                    //codeDialog = valueText;
-                    setKey();
-                    Navigator.pop(context);
-                  });
-                },
-              ),
-            ],
-          );
-        });
-  }
+
+
 
   refreshToDoTable(String text) async {
     //if (text.length > 2)
@@ -1983,7 +2234,8 @@ class MyHomePageState extends State<MyHomePage> {
       prefs = Preferences.prefs;
     }
     if (!prefs.containsKey("key")) {
-      wrongKey();
+      AuthKey.wrongKey(context);
+
       return;
     }
 
@@ -2002,7 +2254,9 @@ class MyHomePageState extends State<MyHomePage> {
     print("responseStr:");
     print(response);
     if (responseStr == "false") {
-      wrongKey();
+      AuthKey.wrongKey(context);
+
+
       return;
     }
     toDoresponseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
@@ -2021,130 +2275,6 @@ class MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  /*void processToDos() {
-
-    if (_requestError) return;
-
-    bool even = true;
-    Color Tablecolor = Colors.grey[300];
-
-    Map<String, dynamic> map2;
-    Map<String, dynamic> map2Copy;
-    List<Widget> tmpTabelle = [];
-    TextStyle tableRowTopStyle =
-    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
-    TextStyle tableRowBottomStyle = TextStyle(
-      fontWeight: FontWeight.normal,
-    );
-    //toDoresponseMap.
-    toDoresponseMap.forEach((key, value) {
-
-      value["todos"].remove("error");
-      List<Widget> columnChildren = [
-        Row(children: [
-          Text(
-            value["Anr"].toString() + " ",
-            style: tableRowTopStyle,
-          ),
-          Text(value["Astr"].toString() + " " + value["Ahnr"].toString(),
-              style: tableRowTopStyle),
-        ]),
-        Row(
-          children: [
-            Text(value["plz"].toString() + " ", style: tableRowBottomStyle),
-            Text(value["Ort"].toString(), style: tableRowBottomStyle),
-          ],
-        ),
-        Row(
-          children: [
-            Text("Anfahrt ", style: tableRowBottomStyle),
-            Text(value["FK_zeit"].toString(), style: tableRowBottomStyle),
-          ],
-        ),
-        //Divider(),
-      ];
-      if (value["Zg_txt"].length > 2) {
-        columnChildren.add(Row(
-          children: [
-            Text("Schlüssel ", style: tableRowBottomStyle),
-            Text(value["Zg_txt"].toString(), style: tableRowBottomStyle),
-          ],
-        ));
-      }
-      //print(value.toString());
-      tmpTabelle.add(
-        Container(
-          padding: const EdgeInsets.only(
-              right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
-          //padding: const EdgeInsets.only(left: 10.0),
-          color: Tablecolor,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: new InkWell(
-                      child: Column(
-                        children: columnChildren,
-                      ),
-
-                      onTap: () {
-                        print("onTap");
-
-                        if (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()]) {
-                          expandedToDos[value["AfzIdx"].toString()]=false;
-                          print("unshow");
-                        } else {
-                          expandedToDos[value["AfzIdx"].toString()]=true;
-                          print("show");
-
-                        }
-                        setState(() {});
-                      },
-                    ),
-                  ),
-                  new InkWell(
-                    child: Icon(
-                      Icons.map_outlined,
-                      size: 60,
-                      color: Colors.blue,
-                    ),
-                    onTap: () {
-                      selectElevator(
-                          value["AfzIdx"].toString(),
-                          value["Anr"].toString(),
-                          value["Astr"].toString() +
-                              " " +
-                              value["Ahnr"].toString(),
-                          value["plz"].toString(),
-                          value["Ort"].toString(),
-                          value["FK_zeit"].toString(),
-                          value["Zg_txt"].toString());
-                    },
-                  ),
-                ],
-              ),
-              (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()])?AufzugToDo(AfzIdx: value["AfzIdx"].toString().toString(),toDoMap: value["todos"]):Text(""),
-              //Divider(thickness: 0.0),
-            ],
-          ),
-        ), //Container
-      );
-      print("expandedToDos: "+expandedToDos.toString());
-
-      if (even) {
-        Tablecolor = Colors.white;
-      } else {
-        Tablecolor = Colors.grey[300];
-      }
-      even = !even;
-    });
-
-    setState(() {
-      _ToDotabelle = tmpTabelle;
-    });
-
-  }*/
 
 
   void refreshTable(String text) {
@@ -2167,7 +2297,8 @@ class MyHomePageState extends State<MyHomePage> {
     //print(prefs.getString("key"));
     if (!prefs.containsKey("key")) {
       //print("Send Without Key");
-      wrongKey();
+      AuthKey.wrongKey(context);
+
       return;
     }
 
@@ -2185,7 +2316,8 @@ class MyHomePageState extends State<MyHomePage> {
     String responseStr = response.replaceAll("\n", "");
     print(responseStr);
     if (responseStr == "false") {
-      wrongKey();
+      AuthKey.wrongKey(context);
+
       return;
     }
 

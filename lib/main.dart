@@ -1,4 +1,5 @@
 import 'dart:collection';
+//import 'dart:html';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,17 @@ enum Sorts {
   Ort,
   Anfahrtszeit,
 }
+enum ToDoSorts {
+  Aufzugsnummer,
+  Strasse,
+  Postleitzahl,
+  Ort,
+  Anfahrtszeit,
+  Erledigt_Datum,
+  Erstelldatum,
+  ToDoText,
+}
+
 
 /*class MyHttpOverrides extends HttpOverrides{
   @override
@@ -46,10 +58,10 @@ void main() {
 class webComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
   static final gzip = GZipCodec();
+
   static Future<String> sendRequest(Map<String, String> body,
       {bool login = false}) async {
     http.Response response = await http.post(
-      //Uri.https('silas.lan.home', 'BombelarApp/index.php'),
       Uri.https(_ipToAsk,
           'UpP0UH3nFKMsnJk2/' + ((login) ? 'login.php' : 'index.php')),
       headers: <String, String>{
@@ -59,7 +71,6 @@ class webComunicater {
       body: gzip.encode(jsonEncode(body).codeUnits),
     );
     return response.body;
-
   }
 }
 
@@ -71,7 +82,6 @@ class Preferences {
     return prefs;
   }
 }
-
 
 class AufzugsArgumente {
   final String json;
@@ -93,18 +103,386 @@ class Aufzug extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    //print("build Aufzug");
+
+
+
     return AufzugPage(title: 'Aufzugs Übersicht');
-    /*
-      appBar: AppBar(
-        title: Text("widget"),
+  }
+}
+
+class AufzugToDo extends StatefulWidget {
+  Map <String,dynamic> toDoMap;
+  String AfzIdx;
+
+   AufzugToDo({this.AfzIdx,this.toDoMap,Key key}) : super(key: key  );
+
+
+  @override
+  AufzugToDoState createState() => AufzugToDoState();
+}
+
+class AufzugToDoState extends State<AufzugToDo> {
+  //Map <String,dynamic> toDoMap=Widget.;
+  Map<String,dynamic> addedTodos = {};
+  Map<String, String> checkboxStates = {};
+  Map<String, String> savedText = {};
+
+
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  void createNewToDo(String key, String aidx) async {
+    String response = await webComunicater.sendRequest(<String, String>{
+      'auth': Preferences.prefs.getString("key"),
+      'toDoNewText': addedTodos[key]['text'],
+      'AfzIdx': aidx,
+      'toDoSet': (addedTodos[key]["checked"] != "").toString(),
+    });
+    print("create new ToDo" + key);
+    print("response: " + response);
+    if (isNumeric(response)) {
+      addedTodos[key]["idx"] = int.parse(response).toString();
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Map<String, TextEditingController> textController = {};
+
+    List<Widget> widgetList = [
+      InkWell(
+        child: Icon(Icons.add, size: 40, color: Colors.blue),
+        onTap: () {
+          int newKey = 1000;
+          while (widget.toDoMap.containsKey(newKey.toString())) {
+            newKey++;
+          }
+          DateTime now = DateTime.now();
+          DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+          String formatted = formatter.format(now);
+          addedTodos[newKey.toString()] = <String, String>{
+            "created": formatted,
+            "checked": "",
+            "text": "",
+            //"new": "new",
+          };
+          print("added " +
+              newKey.toString() +
+              " addedTodo:" +
+              addedTodos.toString());
+
+          setState(() {});
+        },
       ),
-      body: Center(
-        child: Text("hi"),
-      ),
+      Divider(thickness: 1, color: Colors.grey),
+    ];
+    //addedTodos.addAll(toDoMap);
+    Map<String, dynamic> newMap = {};
+    newMap.addAll(addedTodos);
+    newMap.addAll(widget.toDoMap);
+    widget.toDoMap = newMap;
+    //toDoMap=addedTodos;
+    print("addedTodos" + addedTodos.toString());
+    print("newMap" + newMap.toString());
+    print("toDoMap" + widget.toDoMap.toString());
+
+    widget.toDoMap.forEach((key, value) {
+      if (value["created"] == null) {
+        value["created"] = "";
+      }
+      if (value["checked"] == null) {
+        value["checked"] = "";
+      }
+      if (value["text"] == null) {
+        value["text"] = "";
+      }
+
+      print("|" + value["text"] + "|");
+      print("|" + value["checked"] + "|");
+      print("|" + "toDoMap[" + key.toString() + "][\"checked\"]" + "|");
+      print("|" + widget.toDoMap[key]["checked"] + "|");
+
+      //workWidget.add(Text("hier Kommen To-Dos hin"));
+
+      bool checkBoxVal;
+      if (checkboxStates.containsKey(key)) {
+        checkBoxVal = (checkboxStates[key] != "");
+      } else {
+        checkBoxVal = value["checked"] != "" &&
+            value["checked"] != "0000-00-00 00:00:00" &&
+            value["checked"] != "NULL";
+      }
+
+      if (savedText.containsKey(key)) {
+        print("savedController contains Key");
+        textController[key] = TextEditingController(text: savedText[key]);
+        print(savedText[key]);
+        print(textController[key].text);
+      } else {
+        textController[key] = TextEditingController(text: value["text"]);
+      }
+
+      widgetList.add(
+        Table(columnWidths: {
+          0: FlexColumnWidth(1),
+          1: FlexColumnWidth(6),
+        }, children: [
+          TableRow(children: [
+            Checkbox(
+              value: (checkBoxVal),
+              onChanged: (bool newValue) {
+                DateTime now = DateTime.now();
+                DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+                String formatted = formatter.format(now);
+
+                //printFutureResponse(
+                if (!value.containsKey("idx")) {
+                  addedTodos[key]["checked"] = (newValue) ? formatted : "";
+                  if (newValue) {
+                    addedTodos[key]["text"] = textController[key].text;
+                    createNewToDo(key.toString(), widget.AfzIdx);
+                  }
+                } else {
+                  webComunicater.sendRequest(<String, String>{
+                    'auth': Preferences.prefs.getString("key"),
+                    'toDoSet': newValue.toString(),
+                    'toDoIdx': value['idx'].toString(),
+                  });
+                }
+                setState(() {
+                  if (checkBoxVal) {
+                    print("set " + key.toString() + " to False");
+                    checkboxStates[key] = "";
+                  } else {
+                    print("set " + key.toString() + " to " + formatted);
+                    checkboxStates[key] = formatted;
+                  }
+                });
+              },
+            ),
+            Column(
+              children: [
+                (checkBoxVal)
+                    ? SelectableText(textController[key].text)
+                    : Column(children: [
+                        TextField(
+                          controller: textController[key],
+                          keyboardType: TextInputType.multiline,
+                          maxLines: null,
+                          decoration: const InputDecoration(
+                              //border: OutlineInputBorder(),
+                              //hintText: 'Enter a search term'
+                              ),
+                        ),
+                        Row(children: [
+                          InkWell(
+                              child: Icon(Icons.save_outlined,
+                                  size: 40, color: Colors.green),
+                              onTap: () {
+                                if (!value.containsKey("idx")) {
+                                  addedTodos[key]["text"] =
+                                      textController[key].text;
+                                  createNewToDo(key.toString(), widget.AfzIdx);
+                                } else {
+                                  webComunicater.sendRequest(<String, String>{
+                                    'auth': Preferences.prefs.getString("key"),
+                                    'toDoNewText': textController[key].text,
+                                    'toDoIdx': value['idx'].toString(),
+                                  });
+                                }
+                                setState(() {
+                                  savedText[key] = textController[key].text;
+                                });
+                              }),
+                          InkWell(
+                            child:
+                                Icon(Icons.cancel, size: 40, color: Colors.red),
+                            onTap: () {
+                              setState(() {});
+                            },
+                          ),
+                        ]),
+                      ]),
+              ],
+            ),
+          ]),
+        ]),
       );
-      */
-    //);
+      widgetList.add(Divider(thickness: 1, color: Colors.grey));
+    });
+    return Column(children:widgetList);
+  }
+}
+
+
+class ToDoHome extends StatefulWidget {
+  Map <String,dynamic> toDoresponseMap;
+  String AfzIdx;
+
+  ToDoHome({this.toDoresponseMap,Key key}) : super(key: key  );
+
+
+  @override
+  ToDoHomeState createState() => ToDoHomeState();
+}
+
+class ToDoHomeState extends State<ToDoHome> {
+  Map<String,bool> expandedToDos= {};
+
+  void selectElevator(String AfzIdx, String nr, String str, String pLZ,
+      String ort, String fZ, String schluessel) async {
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+
+    String response = await webComunicater.sendRequest(<String, String>{
+      'AfzIdx': AfzIdx,
+      'auth': prefs.getString("key"),
+    });
+
+    String responseStr = response.replaceAll("\n", "");
+    Navigator.pushNamed(
+      context,
+      Aufzug.aufzugRoute,
+      arguments: AufzugsArgumente(
+          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.toDoresponseMap==null||(widget.toDoresponseMap.containsKey("error")&&widget.toDoresponseMap.containsKey("error")==true))
+      return Text("Für angegebene Parameter nichts Gefunden");
+    bool even = true;
+    Color Tablecolor = Colors.grey[300];
+
+
+    List<Widget> tmpTabelle = [];
+    TextStyle tableRowTopStyle =
+    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+    TextStyle tableRowBottomStyle = TextStyle(
+      fontWeight: FontWeight.normal,
+    );
+    //toDoresponseMap.
+    widget.toDoresponseMap.forEach((key, value) {
+
+      value["todos"].remove("error");
+      List<Widget> columnChildren = [
+        Row(children: [
+          Text(
+            value["Anr"].toString() + " ",
+            style: tableRowTopStyle,
+          ),
+          Text(value["Astr"].toString() + " " + value["Ahnr"].toString(),
+              style: tableRowTopStyle),
+        ]),
+        Row(
+          children: [
+            Text(value["plz"].toString() + " ", style: tableRowBottomStyle),
+            Text(value["Ort"].toString(), style: tableRowBottomStyle),
+          ],
+        ),
+        Row(
+          children: [
+            Text("Anfahrt ", style: tableRowBottomStyle),
+            Text(value["FK_zeit"].toString(), style: tableRowBottomStyle),
+          ],
+        ),
+        //Divider(),
+      ];
+      if (value["Zg_txt"].length > 2) {
+        columnChildren.add(Row(
+          children: [
+            Text("Schlüssel ", style: tableRowBottomStyle),
+            Text(value["Zg_txt"].toString(), style: tableRowBottomStyle),
+          ],
+        ));
+      }
+      //print(value.toString());
+      tmpTabelle.add(
+        Container(
+          padding: const EdgeInsets.only(
+              right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
+          //padding: const EdgeInsets.only(left: 10.0),
+          color: Tablecolor,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: new InkWell(
+                      child: Column(
+                        children: columnChildren,
+                      ),
+
+                      onTap: () {
+                        print("onTap");
+
+                        if (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()]) {
+                          expandedToDos[value["AfzIdx"].toString()]=false;
+                          print("unshow");
+                        } else {
+                          expandedToDos[value["AfzIdx"].toString()]=true;
+                          print("show");
+
+                        }
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  new InkWell(
+                    child: Icon(
+                      Icons.elevator_outlined,
+                      size: 60,
+                      color: Colors.blue,
+                    ),
+                    onTap: () {
+                      selectElevator(
+                          value["AfzIdx"].toString(),
+                          value["Anr"].toString(),
+                          value["Astr"].toString() +
+                              " " +
+                              value["Ahnr"].toString(),
+                          value["plz"].toString(),
+                          value["Ort"].toString(),
+                          value["FK_zeit"].toString(),
+                          value["Zg_txt"].toString());
+                    },
+                  ),
+                ],
+              ),
+              (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()])
+                  ?AufzugToDo(AfzIdx: value["AfzIdx"].toString().toString(),toDoMap
+                  : value["todos"]):Text(""),
+              //Divider(thickness: 0.0),
+            ],
+          ),
+        ), //Container
+      );
+      print("expandedToDos: "+expandedToDos.toString());
+
+      if (even) {
+        Tablecolor = Colors.white;
+      } else {
+        Tablecolor = Colors.grey[300];
+      }
+      even = !even;
+    });
+
+    //setState(() {
+     // _ToDotabelle = tmpTabelle;
+    //});
+    return Column(
+      children: tmpTabelle,
+    );
   }
 }
 
@@ -118,17 +496,40 @@ class AufzugPage extends StatefulWidget {
 }
 
 class AufzugPageState extends State<AufzugPage> {
+  bool _lastInited = false;
   bool _showArbeiten = false;
   Map<String, String> checkboxStates = {};
   Map<String, String> savedText = {};
-  Map<String,dynamic> addedTodos={};
+  Map<String, dynamic> addedTodos = {};
+
+  void writeInLastAFZs(AufzugsArgumente args) async{
+    _lastInited = true;
+    print("writeInLastAFZs");
+    if (Preferences.prefs==null) {
+      print("prefs==null");
+
+      await Preferences.initPrefs();
+    }
+    if (Preferences.prefs.containsKey("lastAFZs")) {
+      List<String> lastAFZs = Preferences.prefs.getStringList("lastAFZs");
+      if (lastAFZs.contains(args.AfzIdx.toString()))
+        lastAFZs.remove(args.AfzIdx.toString());
+      lastAFZs.insert(0,args.AfzIdx.toString());
+      if (lastAFZs.length>10) {
+        //print("removed: "+lastAFZs[10]);
+        lastAFZs.removeAt(10);
+      }
+      Preferences.prefs.setStringList("lastAFZs", lastAFZs);
+    } else {
+      Preferences.prefs.setStringList("lastAFZs", [args.AfzIdx.toString()]);
+    }
+  }
 
 
   void printFutureResponse(Future<http.Response> response) async {
     print("change get Back");
     print((await response).body);
   }
-
 
   void switchToDo_Arbeiten(bool arbeiten) {
     this._showArbeiten = arbeiten;
@@ -143,35 +544,33 @@ class AufzugPageState extends State<AufzugPage> {
     return double.tryParse(s) != null;
   }
 
-  void createNewToDo(String key, String aidx) async{
-     String response = await webComunicater.sendRequest(<String, String>{
+  void createNewToDo(String key, String aidx) async {
+    String response = await webComunicater.sendRequest(<String, String>{
       'auth': Preferences.prefs.getString("key"),
       'toDoNewText': addedTodos[key]['text'],
-       'AfzIdx': aidx,
-       'toDoSet': (addedTodos[key]["checked"]!="").toString(),
+      'AfzIdx': aidx,
+      'toDoSet': (addedTodos[key]["checked"] != "").toString(),
     });
-     print("create new ToDo"+key);
-     print("response: "+response);
-     if (isNumeric(response)){
-       addedTodos[key]["idx"] = int.parse(response).toString();
-     }
-     setState(() {
-
-     });
+    print("create new ToDo" + key);
+    print("response: " + response);
+    if (isNumeric(response)) {
+      addedTodos[key]["idx"] = int.parse(response).toString();
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final AufzugsArgumente args = ModalRoute
-        .of(context)
-        .settings
-        .arguments;
+
+    final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
+    if (!_lastInited)
+      writeInLastAFZs(args);
     //Map<String, dynamic> _responseMap = Map<String, dynamic>.from(jsonDecode(args.json));
     List<Widget> workWidget = [];
     //developer.log("args.json:"+args.json);
 
     Map<String, dynamic> responseMap =
-    Map<String, dynamic>.from(jsonDecode(args.json));
+        Map<String, dynamic>.from(jsonDecode(args.json));
     Map<String, dynamic> arbeitMap;
     Map<String, dynamic> toDoMap;
     bool workExists = false;
@@ -212,13 +611,13 @@ class AufzugPageState extends State<AufzugPage> {
               "." +
               date.year.toString();
           int jZykl =
-          int.parse(value["Zykl"].replaceAll(RegExp("[^\\d.]"), ""));
+              int.parse(value["Zykl"].replaceAll(RegExp("[^\\d.]"), ""));
           DateTime toDoTillYellow =
-          new DateTime(date.year + jZykl, date.month - 3, date.day);
+              new DateTime(date.year + jZykl, date.month - 3, date.day);
           //print("date: "+date.toString());
           //print("date Till Yellow"+toDoTillYellow.toString());
           DateTime toDoTillRed =
-          new DateTime(date.year + jZykl, date.month, date.day);
+              new DateTime(date.year + jZykl, date.month, date.day);
           //print("date Till red "+toDoTillRed.toString());
           if (toDoTillYellow.isBefore(now)) {
             rowColor = Colors.yellow;
@@ -348,7 +747,8 @@ class AufzugPageState extends State<AufzugPage> {
       )
     ]);
 
-    workWidget.add(Divider(thickness: 3,
+    workWidget.add(Divider(
+        thickness: 3,
         //height: 50,
         color: Colors.black));
 
@@ -420,185 +820,8 @@ class AufzugPageState extends State<AufzugPage> {
     } else if (!this._showArbeiten && toDoExists) {
       print("TO DOS");
       toDoMap.remove("error");
-
-      Map<String,TextEditingController> textController={};
-
-
-      workWidget.addAll([
-        InkWell(
-          child: Icon(Icons.add, size:40,color:Colors.blue),
-          onTap: () {
-            int newKey = 1000;
-            while (toDoMap.containsKey(newKey.toString())) {
-              newKey++;
-            }
-            DateTime now = DateTime.now();
-            DateFormat formatter = DateFormat(
-                'yyyy-MM-dd HH:mm:ss');
-            String formatted = formatter.format(now);
-            addedTodos[newKey.toString()]=<String,String>{
-              "created": formatted,
-              "checked": "",
-              "text":"",
-              //"new": "new",
-            };
-            print("added "+newKey.toString() +" addedTodo:" +addedTodos.toString());
-
-            setState(() {
-            });
-
-
-
-
-          },
-        ),
-        Divider(thickness: 1, color:Colors.grey),
-      ]);
-      //addedTodos.addAll(toDoMap);
-      Map<String,dynamic> newMap={};
-      newMap.addAll(addedTodos);
-      newMap.addAll(toDoMap);
-      toDoMap=newMap;
-      //toDoMap=addedTodos;
-      print("addedTodos"+addedTodos.toString());
-      print("newMap"+newMap.toString());
-      print("toDoMap"+toDoMap.toString());
-
-      toDoMap.forEach((key, value) {
-        if (value["created"] == null) {
-          value["created"] = "";
-        }
-        if (value["checked"] == null) {
-          value["checked"] = "";
-        }
-        if (value["text"] == null) {
-          value["text"] = "";
-        }
-
-        print("|" + value["text"] + "|");
-        print("|" + value["checked"] + "|");
-        print("|" + "toDoMap[" + key.toString() + "][\"checked\"]" + "|");
-        print("|" + toDoMap[key]["checked"] + "|");
-
-        //workWidget.add(Text("hier Kommen To-Dos hin"));
-
-
-        bool checkBoxVal;
-        if (checkboxStates.containsKey(key)) {
-          checkBoxVal = (checkboxStates[key] != "");
-        } else {
-          checkBoxVal = value["checked"] != "" &&
-              value["checked"] != "0000-00-00 00:00:00" &&
-              value["checked"] != "NULL";
-        }
-
-        if (savedText.containsKey(key)) {
-          print("savedController contains Key");
-          textController[key] = TextEditingController(text:savedText[key]);
-          print(savedText[key]);
-          print(textController[key].text);
-
-        } else {
-          textController[key]=TextEditingController(text: value["text"]);
-        }
-
-
-
-
-        workWidget.add(
-          Table(
-              columnWidths: {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(6),
-              },
-
-              children: [
-          TableRow(children: [
-          Checkbox(
-          value: (checkBoxVal),
-          onChanged: (bool newValue) {
-            DateTime now = DateTime.now();
-            DateFormat formatter = DateFormat(
-                'yyyy-MM-dd HH:mm:ss');
-            String formatted = formatter.format(now);
-
-            //printFutureResponse(
-            if (!value.containsKey("idx")) {
-              addedTodos[key]["checked"] = (newValue)? formatted:"";
-              if (newValue) {
-                addedTodos[key]["text"] = textController[key].text;
-                createNewToDo(key.toString(),args.AfzIdx);
-              }
-            } else {
-              webComunicater.sendRequest(<String, String>{
-                'auth': Preferences.prefs.getString("key"),
-                'toDoSet': newValue.toString(),
-                'toDoIdx': value['idx'].toString(),
-              }
-              );
-            }
-            setState(() {
-              if (checkBoxVal) {
-                print("set " + key.toString() + " to False");
-                checkboxStates[key] = "";
-              } else {
-
-                print("set " + key.toString() + " to " + formatted);
-                checkboxStates[key] = formatted;
-              }
-            });
-          },
-        ),
-        Column(children: [
-          (checkBoxVal)?
-          SelectableText(textController[key].text):
-        Column(children: [
-          TextField(
-            controller: textController[key],
-            keyboardType: TextInputType.multiline,
-            maxLines: null,
-            decoration: const InputDecoration(
-                //border: OutlineInputBorder(),
-                //hintText: 'Enter a search term'
-            ),
-          ),
-          Row(
-            children:[
-            InkWell(
-            child: Icon(Icons.save_outlined,size:40,color:Colors.green),
-            onTap: (){
-
-              if (!value.containsKey("idx")) {
-                addedTodos[key]["text"] = textController[key].text;
-                createNewToDo(key.toString(),args.AfzIdx);
-              } else {
-                webComunicater.sendRequest(<String, String>{
-                  'auth': Preferences.prefs.getString("key"),
-                  'toDoNewText': textController[key].text,
-                  'toDoIdx': value['idx'].toString(),
-                });
-              }
-              setState(() {
-                savedText[key]=textController[key].text;
-              });
-            }
-          ),
-          InkWell(
-            child: Icon(Icons.cancel,size:40, color:Colors.red),
-            onTap: (){setState(() {
-            });},
-          ),]),]),
-
-        ],),
-
-
-        ]),
-        ]),
-        );
-        workWidget.add(
-        Divider(thickness: 1, color:Colors.grey)
-        );
-      });
+      print("toDoMap:"+toDoMap.toString());
+      workWidget.add(AufzugToDo(AfzIdx: args.AfzIdx,toDoMap: toDoMap));
     } else {
       print(!this._showArbeiten);
       print(toDoExists);
@@ -627,6 +850,260 @@ class AufzugPageState extends State<AufzugPage> {
         ),*/
       ),
     );
+  }
+}
+
+class History extends StatefulWidget {
+  History({Key key,}) : super(key: key);
+
+
+  @override
+  HistoryState createState() => HistoryState();
+
+}
+
+class HistoryState extends State<History> {
+  Map<String, String> response;
+
+  Future<List<Widget>> getResponse(String listString) async {
+    String response = await webComunicater.sendRequest(<String, String>{
+      'AfzIdxList':listString,
+      'auth': Preferences.prefs.getString("key"),
+    });
+    print("response:"+response);
+    response=response.replaceAll("\n", "");
+    Map<String, dynamic> responseMap = Map<String, dynamic>.from(jsonDecode(response));
+    if (responseMap["error"]) {
+      return Future.error("Etwas ist schief gelaufen");
+    }
+    responseMap.remove("error");
+
+    List<Widget> toReturn = [];
+    bool even = true;
+    Color Tablecolor = Colors.grey[300];
+
+    responseMap..forEach((key, value) {
+      toReturn.add(AufzugListItem(
+        AfzIdx: value["AfzIdx"].toString(),
+        Ahnr: value["Ahnr"].toString(),
+        Anr: value["Anr"].toString(),
+        Astr: value["Astr"].toString(),
+        FK_zeit: value["FK_zeit"].toString(),
+        Ort: value["Ort"].toString(),
+        plz: value["plz"].toString(),
+        Zg_txt: value["Zg_txt"].toString(),
+        Tablecolor: Tablecolor,
+
+      ));
+
+      if (even) {
+        Tablecolor = Colors.white;
+      } else {
+        Tablecolor = Colors.grey[300];
+      }
+      even = !even;
+    });
+    return toReturn;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("Preferences.prefs == null: "+(Preferences.prefs == null).toString()+"\n!Preferences.prefs.containsKey(\"lastAFZs\")"+(!Preferences.prefs.containsKey("lastAFZs")).toString());
+    if  (Preferences.prefs == null || !Preferences.prefs.containsKey("lastAFZs")) {
+      return Text("Der Verlauf ist Leer oder es ist ein Fehler aufgetreten");
+    }
+    String listString = "";
+    Preferences.prefs.getStringList("lastAFZs").forEach((element) {
+      listString+= element +",";
+    });
+    if (listString.length > 0) {
+      listString = listString.substring(0, listString.length - 1);
+    }
+    print("listString: "+listString);
+    Future<List<Widget>> response = getResponse(listString);
+
+    return SingleChildScrollView(
+      child:
+         FutureBuilder<List<Widget>>(
+          future:response,
+          builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
+      List<Widget> children;
+      if (snapshot.hasData) {
+        children = snapshot.data;
+      } else if (snapshot.hasError) {
+        children = <Widget>[
+          const Icon(
+            Icons.error_outline,
+            color: Colors.red,
+            size: 60,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Text('Error: ${snapshot.error}'),
+          )
+        ];
+      } else {
+        children = const <Widget>[
+          SizedBox(
+            child: CircularProgressIndicator(),
+            width: 60,
+            height: 60,
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: Text('Läd einträge...'),
+          )
+        ];
+      }
+      return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: children,
+
+      );
+    },
+//          }
+
+
+
+      ),
+    );
+
+
+  }
+}
+
+class AufzugListItem extends StatefulWidget {
+  Color Tablecolor;
+  String Anr;
+  String Astr;
+  String Ahnr;
+  String plz;
+  String Ort;
+  String FK_zeit;
+  String Zg_txt;
+  String AfzIdx;
+  
+  AufzugListItem({Key key, this.Anr,this.Astr,this.Ahnr,this.plz,this.Ort,this.FK_zeit,this.Zg_txt,this.AfzIdx,this.Tablecolor}) : super(key: key);
+
+  @override
+  AufzugListItemState createState() => AufzugListItemState();
+}
+
+class AufzugListItemState extends State<AufzugListItem> {
+  void selectElevator(String AfzIdx, String nr, String str, String pLZ,
+      String ort, String fZ, String schluessel) async {
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+
+    String response = await webComunicater.sendRequest(<String, String>{
+      'AfzIdx': AfzIdx,
+      'auth': prefs.getString("key"),
+    });
+
+    String responseStr = response.replaceAll("\n", "");
+    Navigator.pushNamed(
+      context,
+      Aufzug.aufzugRoute,
+      arguments: AufzugsArgumente(
+          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    TextStyle tableRowTopStyle =
+        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+    TextStyle tableRowBottomStyle = TextStyle(
+      fontWeight: FontWeight.normal,
+    );
+    List<Widget> columnChildren = [
+      Row(children: [
+        Text(
+          widget.Anr + " ",
+          style: tableRowTopStyle,
+        ),
+        Text(widget.Astr + " " + widget.Ahnr, style: tableRowTopStyle),
+      ]),
+      Row(
+        children: [
+          Text(widget.plz + " ", style: tableRowBottomStyle),
+          Text(widget.Ort, style: tableRowBottomStyle),
+        ],
+      ),
+      Row(
+        children: [
+          Text("Anfahrt ", style: tableRowBottomStyle),
+          Text(widget.FK_zeit, style: tableRowBottomStyle),
+        ],
+      ),
+      //Divider(),
+    ];
+    if (widget.Zg_txt.length > 2) {
+      columnChildren.add(Row(
+        children: [
+          Text("Schlüssel ", style: tableRowBottomStyle),
+          Text(widget.Zg_txt, style: tableRowBottomStyle),
+        ],
+      ));
+    }
+
+    //print(value.toString());
+    //tmpTabelle.add(
+    return Container(
+      padding:
+          const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
+      //padding: const EdgeInsets.only(left: 10.0),
+      color: widget.Tablecolor,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: new InkWell(
+                  child: Column(
+                    children: columnChildren,
+                  ),
+                  onTap: () {
+                    selectElevator(
+                        widget.AfzIdx,
+                        widget.Anr,
+                        widget.Astr + " " + widget.Ahnr,
+                        widget.plz,
+                        widget.Ort,
+                        widget.FK_zeit,
+                        widget.Zg_txt);
+                  },
+                ),
+              ),
+              new InkWell(
+                child: Icon(
+                  Icons.map_outlined,
+                  size: 60,
+                  color: Colors.blue,
+                ),
+                onTap: () {
+                  launch("https://www.google.de/maps/search/?api=1&query=" +
+                      widget.Astr +
+                      "+" +
+                      widget.Ahnr +
+                      ",+" +
+                      widget.plz +
+                      "+" +
+                      widget.Ort);
+                },
+              ),
+            ],
+          ),
+          //Divider(thickness: 0.0),
+        ],
+      ),
+    );
+    //, //Container
   }
 }
 
@@ -667,16 +1144,25 @@ class MyHomePageState extends State<MyHomePage> {
   //String _ipToAsk = '192.168.168.148';
   String _ipToAsk = 'bombelczyk-aufzuege.de';
   bool _sortDirection = false;
+  bool _toDoSortDirection = false;
+  bool _toDoShowChecked = false;
+  bool _toDoShowUnchecked = true;
   Socket socket;
   int _counter = 0;
   Map<String, dynamic> _responseMap;
+  Map<String, dynamic> toDoresponseMap;
   bool _requestError = false;
   int _sort = 1;
+  int _toDoSort = 1;
   final _searchController = TextEditingController();
+  final _searchToDoController = TextEditingController();
+
   final _passwordController = TextEditingController();
   List<Widget> _tabelletop;
   List<Widget> _tabelle = [Text("")];
+  List<Widget> _ToDotabelle = [Text("")];
   List<Widget> _neaByWidgets = [Text("")];
+  List<Widget> _toDoWidgets = [Text("")];
 
   @override
   void initState() {
@@ -733,7 +1219,7 @@ class MyHomePageState extends State<MyHomePage> {
                 child: DropdownButton<Sorts>(
                   value: Sorts.values[_sort],
                   items:
-                  Sorts.values.map<DropdownMenuItem<Sorts>>((Sorts value) {
+                      Sorts.values.map<DropdownMenuItem<Sorts>>((Sorts value) {
                     return DropdownMenuItem<Sorts>(
                       value: value,
                       child: Text(value.toString().replaceAll("Sorts.", "")),
@@ -758,18 +1244,13 @@ class MyHomePageState extends State<MyHomePage> {
           ]),
           new Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-                child: SingleChildScrollView(
-                    child: Column(
-                      children: _tabelle,
-                    )),
-                /*GridView.count(
-                mainAxisSpacing: 10,
-              crossAxisCount: 6,
-              children: _tabelle //[Text("hallo"),Text("hallo2"),Text("hallo3"),Text("hallo4"),Text("hallo5"),Text("hallo6"),Text("hallo7"),Text("hallo8")]
-            ),*/
-              )),
+            padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+            //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+            child: SingleChildScrollView(
+                child: Column(
+              children: _tabelle,
+            )),
+          )),
         ],
       ),
       SingleChildScrollView(
@@ -778,6 +1259,130 @@ class MyHomePageState extends State<MyHomePage> {
           //'Hier Kommt so Batterei Zeug hin',
         ),
       ),
+
+      //To Dos Home
+      Column(
+        children: <Widget>[
+          Container(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+              //width:200.0,
+
+              child: TextField(
+                controller: _searchToDoController,
+                onChanged: (value) {
+                  refreshToDoTable(value);
+                },
+                style: TextStyle(
+                  //height: 1,
+                  //fontSize: 40.0,
+                  color: Colors.black,
+                  //backgroundColor: Colors.lightGreen,
+                ),
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none,
+                  hintText: 'Suche To-Dos',
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Row(children: <Widget>[
+            Container(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+                //width:200.0,
+
+                child: DropdownButton<ToDoSorts>(
+                  value: ToDoSorts.values[_toDoSort],
+                  items:
+                    ToDoSorts.values.map<DropdownMenuItem<ToDoSorts>>((ToDoSorts value) {
+                    return DropdownMenuItem<ToDoSorts>(
+                      value: value,
+                      child: Text(value.toString().replaceAll("ToDoSorts.", "")),
+                    );
+                  }).toList(),
+                  onChanged: (ToDoSorts newValue) {
+                    _toDoSort = newValue.index;
+                    refreshToDoTable(_searchToDoController.text);
+                  },
+                  //<sorts>[10, 20, 50]
+                ),
+              ),
+            ),
+
+            InkWell(
+              child: (_toDoSortDirection)
+                  ? Icon(Icons.arrow_downward)
+                  : Icon(Icons.arrow_upward),
+              onTap: () {
+                _toDoSortDirection = !_toDoSortDirection;
+                refreshToDoTable(_searchToDoController.text);
+              },
+            ),
+            Column(children: [
+              Row(
+                children: [
+                  Icon(Icons.check),
+                  Checkbox(
+                    value: _toDoShowChecked,
+                    onChanged: (bool val) {
+                      if (val||_toDoShowUnchecked) {
+                        _toDoShowChecked = !_toDoShowChecked;
+                        refreshToDoTable(_searchToDoController.text);
+                      }
+                    },
+                  )
+                ],),
+              Row(
+                children: [
+                  Icon(Icons.crop_square_sharp),
+                  Checkbox(
+                    value: _toDoShowUnchecked,
+                    onChanged: (bool val) {
+                      if (val||_toDoShowChecked) {
+                        _toDoShowUnchecked = !_toDoShowUnchecked;
+                        refreshToDoTable(_searchToDoController.text);
+                      }
+                    },
+                  )
+
+                ],),
+            ]),
+          ]),
+
+          new Expanded(
+              child: Padding(
+            padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+            //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+            child: SingleChildScrollView(
+              //  child: Column(
+              //children:
+              child:ToDoHome(toDoresponseMap: toDoresponseMap,),//_ToDotabelle,
+            //)
+            ),
+          )),
+        ],
+      ),
+      Column(children: <Widget>[
+        new Expanded(
+            child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+          //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+          child: SingleChildScrollView(
+            //  child: Column(
+            //children:
+            child: History(), //_ToDotabelle,
+            //)
+          ),
+        )),
+      ]),
       Text(
         'Vielleicht kommt hier noch irgendwas hin',
       ),
@@ -833,21 +1438,41 @@ class MyHomePageState extends State<MyHomePage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: 'Aufzugssuche',
+            label: 'Suche',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.location_pin),
-            label: 'In meiner Nähe',
+            label: 'In der Nähe',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.checklist_rounded),//color: Colors.red,),
+            label: 'To-Do',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.access_time),
+            label: 'Historie',
           ),
           /*BottomNavigationBarItem(
             icon: Icon(Icons.elevator_outlined),
             label: 'School',
           ),*/
         ],
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         currentIndex: _selectedIndex,
         //selectedItemColor: Colors.amber[800],
+        unselectedItemColor: Colors.blueGrey,
+        unselectedLabelStyle: TextStyle(
+          color: Colors.blueGrey,
+          //backgroundColor: Colors.green,
+        ),
+        //fixedColor: Colors.red,
+
+
         selectedItemColor: Colors.blue,
+
         onTap: _onItemTapped,
+
       ),
 
       // This trailing comma makes auto-formatting nicer for build methods.
@@ -860,6 +1485,9 @@ class MyHomePageState extends State<MyHomePage> {
     });
     if (_selectedIndex == 1) {
       getNearby(10);
+    }
+    else if (_selectedIndex == 2) {
+      refreshToDoTable(_searchToDoController.text);
     }
   }
 
@@ -945,7 +1573,7 @@ class MyHomePageState extends State<MyHomePage> {
       )
     ]);
   }
-
+  
   void getNearby(int menge) async {
     bool error = false;
     String errorMessage;
@@ -1024,7 +1652,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
     //int dropdownValue = 10;
     Map<String, dynamic> responseMap =
-    Map<String, dynamic>.from(jsonDecode(responseStr));
+        Map<String, dynamic>.from(jsonDecode(responseStr));
     responseMap.remove("error");
 
     List<Widget> tmpWidgets = [createDropDown(menge, true)];
@@ -1052,7 +1680,7 @@ class MyHomePageState extends State<MyHomePage> {
     Color Tablecolor = Colors.grey[300];
 
     TextStyle tableRowTopStyle =
-    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
@@ -1230,9 +1858,8 @@ class MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-
-    String response = await webComunicater.sendRequest(
-        <String, String>{ 'password': pass}, login: true);
+    String response = await webComunicater
+        .sendRequest(<String, String>{'password': pass}, login: true);
 
     /*http.Response response = await http.post(
       //Uri.https('silas.lan.home', 'BombelApp/index.php'),
@@ -1269,10 +1896,9 @@ class MyHomePageState extends State<MyHomePage> {
     }
 
     if (prefs.containsKey("key")) {
-      String response = await webComunicater.sendRequest(
-          <String, String>{
-            'auth': prefs.getString("key"),
-          });
+      String response = await webComunicater.sendRequest(<String, String>{
+        'auth': prefs.getString("key"),
+      });
 
       /*http.Response response = await http.post(
         //Uri.https('silas.lan.home', 'BombelApp/index.php'),
@@ -1284,7 +1910,6 @@ class MyHomePageState extends State<MyHomePage> {
           'auth': prefs.getString("key"),
         }),
       );*/
-
 
       //print(prefs.getString("key"));
       String respnse = response.replaceAll("\n", "");
@@ -1298,10 +1923,10 @@ class MyHomePageState extends State<MyHomePage> {
 
   void wrongKey() {
     //print("wrongKey:");
-    _displayTextInputDialog(context);
+    displayTextInputDialog(context);
   }
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
+  Future<void> displayTextInputDialog(BuildContext context) async {
     return showDialog(
         context: context,
         builder: (context) {
@@ -1338,93 +1963,66 @@ class MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  void refreshTable(String text) {
-    if (text.length > 2)
-      search(text);
-    else {
+  refreshToDoTable(String text) async {
+    //if (text.length > 2)
+    searchToDos(text);
+
+
+    /*else {
       setState(() {
-        _tabelle = [Text("Geben sie Mindestens 3 Zeichen ein")];
+        //_tabelle = [Text("Geben sie Mindestens 3 Zeichen ein")];
       });
-    }
+    }*/
   }
 
-  void search(String search) async {
+  void searchToDos(String search) async {
     SharedPreferences prefs;
     if (Preferences.prefs == null) {
       prefs = await Preferences.initPrefs();
     } else {
       prefs = Preferences.prefs;
     }
-    //print(prefs.getString("key"));
     if (!prefs.containsKey("key")) {
-      //print("Send Without Key");
       wrongKey();
       return;
     }
 
-
-    //Uri.https('silas.lan.home', 'BombelApp/index.php'),
-    //
     String response = await webComunicater.sendRequest(<String, String>{
-      'search': search,
+      'toDoSearchText': search,
       'auth': prefs.getString("key"),
-      //'auth':"12345678910",
-      "sort": _sort.toString(),
-      "sortDirection": _sortDirection.toString(),
+      "toDoSort": _toDoSort.toString(),
+      "sortDirection": _toDoSortDirection.toString(),
+      "showChecked": _toDoShowChecked.toString(),
+      "showUnchecked":_toDoShowUnchecked.toString(),
     });
-
-    /*http.Response response = await http.post(
-      Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'search': search,
-        'auth': prefs.getString("key"),
-        //'auth':"12345678910",
-        "sort": _sort.toString(),
-        "sortDirection": _sortDirection.toString(),
-      }),
-    );*/
-    //print(response.toString());
-    //print(response.body);
-
-    /*//print(jsonEncode(<String, String>{
-      'search': search,
-      'auth': prefs.getString("key"),
-      "sort": _sort.toString(),
-      "sortDirection": _sortDirection.toString(),
-    }));*/
+    print("showChecked: "+ _toDoShowChecked.toString()+
+    "\nshowUnchecked: "+_toDoShowUnchecked.toString());
 
     String responseStr = response.replaceAll("\n", "");
-    print(responseStr);
+    print("responseStr:");
+    print(response);
     if (responseStr == "false") {
       wrongKey();
       return;
     }
-
-    //print(jsonDecode(respnse)["10"]["Anr"]);
-
-    //print(jsonDecode(respnse).runtimeType);
-
-    //print("HALLLLOOO");
-    _responseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
-    //print("HALLLLOOO2");
-    //print(_responseMap);
-    //print("\n\n\n");
-    //print("\n\n\n");
-    //print("\n\n\n");
-    if (_responseMap["error"]) {
+    toDoresponseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
+    if (toDoresponseMap["error"]) {
       _requestError = true;
+      setState(() {
+        print("setState");
+      });
       return;
     }
     _requestError = false;
-    _responseMap.remove("error");
-    //print(_responseMap);
-    processData();
+    toDoresponseMap.remove("error");
+    //processToDos();
+    setState(() {
+      print("setState");
+    });
   }
 
-  void processData() {
+  /*void processToDos() {
+
     if (_requestError) return;
 
     bool even = true;
@@ -1438,8 +2036,10 @@ class MyHomePageState extends State<MyHomePage> {
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
+    //toDoresponseMap.
+    toDoresponseMap.forEach((key, value) {
 
-    _responseMap.forEach((key, value) {
+      value["todos"].remove("error");
       List<Widget> columnChildren = [
         Row(children: [
           Text(
@@ -1487,19 +2087,19 @@ class MyHomePageState extends State<MyHomePage> {
                       child: Column(
                         children: columnChildren,
                       ),
-                      //Text(value["Anr"].toString()+" "+value["Astr"].toString()+" "+value["Anr"].toString()+" "+value["Ahnr"].toString()+", "+value["plz"].toString()+" "+value["Ort"].toString()+" "),
 
                       onTap: () {
-                        selectElevator(
-                            value["AfzIdx"].toString(),
-                            value["Anr"].toString(),
-                            value["Astr"].toString() +
-                                " " +
-                                value["Ahnr"].toString(),
-                            value["plz"].toString(),
-                            value["Ort"].toString(),
-                            value["FK_zeit"].toString(),
-                            value["Zg_txt"].toString());
+                        print("onTap");
+
+                        if (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()]) {
+                          expandedToDos[value["AfzIdx"].toString()]=false;
+                          print("unshow");
+                        } else {
+                          expandedToDos[value["AfzIdx"].toString()]=true;
+                          print("show");
+
+                        }
+                        setState(() {});
                       },
                     ),
                   ),
@@ -1510,23 +2110,27 @@ class MyHomePageState extends State<MyHomePage> {
                       color: Colors.blue,
                     ),
                     onTap: () {
-                      launch("https://www.google.de/maps/search/?api=1&query=" +
+                      selectElevator(
+                          value["AfzIdx"].toString(),
+                          value["Anr"].toString(),
                           value["Astr"].toString() +
-                          "+" +
-                          value["Ahnr"].toString() +
-                          ",+" +
-                          value["plz"].toString() +
-                          "+" +
-                          value["Ort"].toString());
+                              " " +
+                              value["Ahnr"].toString(),
+                          value["plz"].toString(),
+                          value["Ort"].toString(),
+                          value["FK_zeit"].toString(),
+                          value["Zg_txt"].toString());
                     },
                   ),
                 ],
               ),
+              (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()])?AufzugToDo(AfzIdx: value["AfzIdx"].toString().toString(),toDoMap: value["todos"]):Text(""),
               //Divider(thickness: 0.0),
             ],
           ),
         ), //Container
       );
+      print("expandedToDos: "+expandedToDos.toString());
 
       if (even) {
         Tablecolor = Colors.white;
@@ -1534,56 +2138,108 @@ class MyHomePageState extends State<MyHomePage> {
         Tablecolor = Colors.grey[300];
       }
       even = !even;
-
-      /*
-      //print("value"+key+":");
-      //print(value);
-      //print(value.runtimeType);
-      map2Copy = Map<String, dynamic>.from(value);
-      map2 = Map<String, dynamic>.from(map2Copy);
-
-      map2Copy.forEach((key2, value2) {
-        if (key2=="Astr") {
-          map2["Astr"] += " "+map2["Ahnr"];
-          map2.remove("Ahnr");
-        }
-      });
-
-      map2.remove("AfzIdx");
-
-      map2.forEach((key2, value2) {
-        tmpTabelle.add(
-            //Text(value2.toString())
-          new InkWell(
-          child: Text(value2.toString()),
-            onTap: () {
-              selectElevator(value["AfzIdx"].toString(), value["Anr"].toString(), map2["Astr"].toString(), value["plz"].toString(), value["Ort"].toString(), value["FK_zeit"].toString());
-            },
-          )
-        );
-        //print(value2);
-      });
-      tmpTabelle.add(
-        new InkWell(
-          //child: Text("maps"),
-          child: Icon(Icons.map_outlined),
-          onTap: () {
-            launch("https://www.google.de/maps/search/?api=1&query="+value["Astr"].toString()+"+"+value["Ahnr"].toString()+",+"+value["plz"].toString()+"+"+value["Ort"].toString());
-          },
-        )
-      );
- */
     });
 
-    //tmpTabelle.insertAll(0, _tabelletop);
+    setState(() {
+      _ToDotabelle = tmpTabelle;
+    });
+
+  }*/
+
+
+  void refreshTable(String text) {
+    if (text.length > 2)
+      search(text);
+    else {
+      setState(() {
+        _tabelle = [Text("Geben sie Mindestens 3 Zeichen ein")];
+      });
+    }
+  }
+
+  void search(String search) async {
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+    //print(prefs.getString("key"));
+    if (!prefs.containsKey("key")) {
+      //print("Send Without Key");
+      wrongKey();
+      return;
+    }
+
+    //Uri.https('silas.lan.home', 'BombelApp/index.php'),
+    //
+    String response = await webComunicater.sendRequest(<String, String>{
+      'search': search,
+      'auth': prefs.getString("key"),
+      //'auth':"12345678910",
+      "sort": _sort.toString(),
+      "sortDirection": _sortDirection.toString(),
+    });
+
+
+    String responseStr = response.replaceAll("\n", "");
+    print(responseStr);
+    if (responseStr == "false") {
+      wrongKey();
+      return;
+    }
+
+
+    _responseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
+    if (_responseMap["error"]) {
+      _requestError = true;
+      return;
+    }
+    _requestError = false;
+    _responseMap.remove("error");
+    processData();
+  }
+
+  void processData() {
+    if (_requestError) return;
+
+    bool even = true;
+    Color Tablecolor = Colors.grey[300];
+
+    Map<String, dynamic> map2;
+    Map<String, dynamic> map2Copy;
+    List<Widget> tmpTabelle = [];
+    TextStyle tableRowTopStyle =
+        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+    TextStyle tableRowBottomStyle = TextStyle(
+      fontWeight: FontWeight.normal,
+    );
+
+    _responseMap.forEach((key, value) {
+      tmpTabelle.add(AufzugListItem(
+         AfzIdx: value["AfzIdx"].toString(),
+         Ahnr: value["Ahnr"].toString(),
+         Anr: value["Anr"].toString(),
+         Astr: value["Astr"].toString(),
+         FK_zeit: value["FK_zeit"].toString(),
+         Ort: value["Ort"].toString(),
+         plz: value["plz"].toString(),
+        Zg_txt: value["Zg_txt"].toString(),
+        Tablecolor: Tablecolor,
+
+      ));
+
+      if (even) {
+        Tablecolor = Colors.white;
+      } else {
+        Tablecolor = Colors.grey[300];
+      }
+      even = !even;
+    });
+
     setState(() {
       _tabelle = tmpTabelle;
     });
-
-    //return jsonDecode(respnse);
-
-    //print(response.headers);
-    //print(response.request);
   }
 
   void selectElevator(String AfzIdx, String nr, String str, String pLZ,
@@ -1594,41 +2250,18 @@ class MyHomePageState extends State<MyHomePage> {
     } else {
       prefs = Preferences.prefs;
     }
-    //print(nr);
 
     String response = await webComunicater.sendRequest(<String, String>{
       'AfzIdx': AfzIdx,
       'auth': prefs.getString("key"),
     });
-    /*http.Response response = await http.post(
-      //Uri.https('silas.lan.home', 'BombelApp/index.php'),
-      Uri.https(_ipToAsk, 'UpP0UH3nFKMsnJk/index.php'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'AfzIdx': AfzIdx,
-        'auth': prefs.getString("key"),
-      }),
-    );*/
+
     String responseStr = response.replaceAll("\n", "");
-    //print("responsStr:"+responseStr);
-    //print("test");
-    //print(responseStr);
-    //AufzugsArgumente(nr, responseStr);
     Navigator.pushNamed(
       context,
       Aufzug.aufzugRoute,
-      //MaterialPageRoute(builder: (context) => Aufzug()),
       arguments: AufzugsArgumente(
-          AfzIdx,
-          nr,
-          responseStr,
-          str,
-          pLZ,
-          ort,
-          fZ,
-          schluessel),
+          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
     );
   }
 }

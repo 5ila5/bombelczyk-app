@@ -1,27 +1,21 @@
-import 'dart:collection';
-//import 'dart:html';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'dart:typed_data';
+
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:http/io_client.dart';
+
 
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/material.dart';
+//import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
-import 'package:archive/archive.dart';
 
-import 'dart:developer' as developer;
 
-//import 'package:encrypt/encrypt.dart' as encrypt;
-//import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+//import 'dart:developer' as developer;
+
 import 'package:geolocator/geolocator.dart';
 
 enum Sorts {
@@ -76,7 +70,7 @@ class AuthKey {
 
       return;
     }
-    String response = await webComunicater
+    String response = await WebComunicater
         .sendRequest(<String, String>{'password': pass}, login: true);
     String respnse = response.replaceAll("\n", "");
     if (respnse == "false" || respnse.length != 32) {
@@ -127,7 +121,7 @@ class AuthKey {
   }
 }
 
-class webComunicater {
+class WebComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
   static final gzip = GZipCodec();
 
@@ -157,7 +151,7 @@ class Preferences {
 
 class AufzugsArgumente {
   final Future<String> json;
-  final String AfzIdx;
+  final String afzIdx;
   final String aNr;
   final String aStr;
   final String aPLZ;
@@ -165,12 +159,19 @@ class AufzugsArgumente {
   final String aFZ;
   final String schluessel;
 
-  AufzugsArgumente(this.AfzIdx, this.aNr, this.json, this.aStr, this.aPLZ,
+  AufzugsArgumente(this.afzIdx, this.aNr, this.json, this.aStr, this.aPLZ,
       this.aOrt, this.aFZ, this.schluessel);
+
+  void printArgs() async {
+    print("printArgs");
+    print(await this.json);
+    print("VERY IMPORTANT");
+    //print(this.json.);
+  }
 }
 
 class SelectElevator {
-  static void selectElevator(String AfzIdx, String nr, String str, String pLZ,
+  static void selectElevator(String afzIdx, String nr, String str, String pLZ,
       String ort, String fZ, String schluessel, BuildContext context) async {
     SharedPreferences prefs;
     if (Preferences.prefs == null) {
@@ -179,18 +180,19 @@ class SelectElevator {
       prefs = Preferences.prefs;
     }
 
-    Future<String> response = webComunicater.sendRequest(<String, String>{
-      'AfzIdx': AfzIdx,
+    Future<String> response = WebComunicater.sendRequest(<String, String>{
+      'AfzIdx': afzIdx,
       'auth': prefs.getString("key"),
     });
 
-    //Future<String> responseStr = response.replaceAll("\n", "");
 
+    //Future<String> responseStr = response.replaceAll("\n", "");
+    AufzugsArgumente args = AufzugsArgumente(afzIdx, nr, response, str, pLZ, ort, fZ, schluessel);
+    args.printArgs();
     Navigator.pushNamed(
       context,
       Aufzug.aufzugRoute,
-      arguments:
-          AufzugsArgumente(AfzIdx, nr, response, str, pLZ, ort, fZ, schluessel),
+      arguments: args,
     );
   }
 }
@@ -205,11 +207,12 @@ class Aufzug extends StatelessWidget {
   }
 }
 
+//ignore: must_be_immutable
 class AufzugToDo extends StatefulWidget {
   Map<String, dynamic> toDoMap;
-  String AfzIdx;
+  String afzIdx;
 
-  AufzugToDo({this.AfzIdx, this.toDoMap, Key key}) : super(key: key);
+  AufzugToDo({this.afzIdx, this.toDoMap, Key key}) : super(key: key);
 
   @override
   AufzugToDoState createState() => AufzugToDoState();
@@ -229,7 +232,7 @@ class AufzugToDoState extends State<AufzugToDo> {
   }
 
   void createNewToDo(String key, String aidx) async {
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'auth': Preferences.prefs.getString("key"),
       'toDoNewText': addedTodos[key]['text'],
       'AfzIdx': aidx,
@@ -338,10 +341,10 @@ class AufzugToDoState extends State<AufzugToDo> {
                   addedTodos[key]["checked"] = (newValue) ? formatted : "";
                   if (newValue) {
                     addedTodos[key]["text"] = textController[key].text;
-                    createNewToDo(key.toString(), widget.AfzIdx);
+                    createNewToDo(key.toString(), widget.afzIdx);
                   }
                 } else {
-                  webComunicater.sendRequest(<String, String>{
+                  WebComunicater.sendRequest(<String, String>{
                     'auth': Preferences.prefs.getString("key"),
                     'toDoSet': newValue.toString(),
                     'toDoIdx': value['idx'].toString(),
@@ -380,9 +383,9 @@ class AufzugToDoState extends State<AufzugToDo> {
                                 if (!value.containsKey("idx")) {
                                   addedTodos[key]["text"] =
                                       textController[key].text;
-                                  createNewToDo(key.toString(), widget.AfzIdx);
+                                  createNewToDo(key.toString(), widget.afzIdx);
                                 } else {
-                                  webComunicater.sendRequest(<String, String>{
+                                  WebComunicater.sendRequest(<String, String>{
                                     'auth': Preferences.prefs.getString("key"),
                                     'toDoNewText': textController[key].text,
                                     'toDoIdx': value['idx'].toString(),
@@ -414,7 +417,7 @@ class AufzugToDoState extends State<AufzugToDo> {
 
 class ToDoHome extends StatefulWidget {
   //Map <String,dynamic> toDoresponseMap;
-  //String AfzIdx;
+  //String afzIdx;
 
   ToDoHome({Key key}) : super(key: key);
 
@@ -450,7 +453,7 @@ class ToDoHomeState extends State<ToDoHome> {
       return {};
     }
 
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'toDoSearchText': search,
       'auth': prefs.getString("key"),
       "toDoSort": _toDoSort.toString(),
@@ -597,7 +600,6 @@ class ToDoHomeState extends State<ToDoHome> {
               future: toDoresponseMap,
               builder: (BuildContext context,
                   AsyncSnapshot<Map<String, dynamic>> snapshot) {
-                Widget child;
                 if (snapshot.hasData) {
                   return ToDoHomeList(
                     toDoresponseMap: snapshot.data,
@@ -640,9 +642,10 @@ class ToDoHomeState extends State<ToDoHome> {
   }
 }
 
+//ignore: must_be_immutable
 class ToDoHomeList extends StatefulWidget {
   Map<String, dynamic> toDoresponseMap;
-  String AfzIdx;
+  String afzIdx;
 
   ToDoHomeList({this.toDoresponseMap, Key key}) : super(key: key);
 
@@ -660,7 +663,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
             widget.toDoresponseMap.containsKey("error") == true))
       return Text("Für angegebene Parameter nichts Gefunden");
     bool even = true;
-    Color Tablecolor = Colors.grey[300];
+    Color tablecolor = Colors.grey[300];
 
     List<Widget> tmpTabelle = [];
     TextStyle tableRowTopStyle =
@@ -708,7 +711,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
           padding: const EdgeInsets.only(
               right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
           //padding: const EdgeInsets.only(left: 10.0),
-          color: Tablecolor,
+          color: tablecolor,
           child: Column(
             children: [
               Row(
@@ -722,12 +725,12 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                         print("onTap");
 
                         if (expandedToDos
-                                .containsKey(value["AfzIdx"].toString()) &&
-                            expandedToDos[value["AfzIdx"].toString()]) {
-                          expandedToDos[value["AfzIdx"].toString()] = false;
+                                .containsKey(value["afzIdx"].toString()) &&
+                            expandedToDos[value["afzIdx"].toString()]) {
+                          expandedToDos[value["afzIdx"].toString()] = false;
                           print("unshow");
                         } else {
-                          expandedToDos[value["AfzIdx"].toString()] = true;
+                          expandedToDos[value["afzIdx"].toString()] = true;
                           print("show");
                         }
                         setState(() {});
@@ -742,7 +745,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                     ),
                     onTap: () {
                       SelectElevator.selectElevator(
-                          value["AfzIdx"].toString(),
+                          value["afzIdx"].toString(),
                           value["Anr"].toString(),
                           value["Astr"].toString() +
                               " " +
@@ -756,10 +759,10 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                   ),
                 ],
               ),
-              (expandedToDos.containsKey(value["AfzIdx"].toString()) &&
-                      expandedToDos[value["AfzIdx"].toString()])
+              (expandedToDos.containsKey(value["afzIdx"].toString()) &&
+                      expandedToDos[value["afzIdx"].toString()])
                   ? AufzugToDo(
-                      AfzIdx: value["AfzIdx"].toString().toString(),
+                      afzIdx: value["afzIdx"].toString().toString(),
                       toDoMap: value["todos"])
                   : Text(""),
               //Divider(thickness: 0.0),
@@ -770,9 +773,9 @@ class ToDoHomeListState extends State<ToDoHomeList> {
       print("expandedToDos: " + expandedToDos.toString());
 
       if (even) {
-        Tablecolor = Colors.white;
+        tablecolor = Colors.white;
       } else {
-        Tablecolor = Colors.grey[300];
+        tablecolor = Colors.grey[300];
       }
       even = !even;
     });
@@ -784,9 +787,9 @@ class ToDoHomeListState extends State<ToDoHomeList> {
 }
 
 class ToDoAufzugList extends StatefulWidget {
-  ToDoAufzugList(this.response, this.AfzIdx, {Key key}) : super(key: key);
+  ToDoAufzugList(this.response, this.afzIdx, {Key key}) : super(key: key);
   final Future<String> response;
-  final String AfzIdx;
+  final String afzIdx;
 
   @override
   ToDoAufzugListState createState() => ToDoAufzugListState();
@@ -813,7 +816,7 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
           } else {
             toDoMap = {};
           }
-          return AufzugToDo(AfzIdx: widget.AfzIdx, toDoMap: toDoMap);
+          return AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
         } else if (snapshot.hasError) {
           children.addAll(
             [
@@ -996,6 +999,8 @@ class AkkuListState extends State<AkkuList> {
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         List<TableRow> children;
         if (snapshot.hasData) {
+          print("snapshot.data");
+          print(snapshot.data);
           //children = snapshot.data;
           Map<String, dynamic> responseMap =
               Map<String, dynamic>.from(jsonDecode(snapshot.data));
@@ -1147,28 +1152,22 @@ class AufzugPageState extends State<AufzugPage> {
     }
     if (Preferences.prefs.containsKey("lastAFZs")) {
       List<String> lastAFZs = Preferences.prefs.getStringList("lastAFZs");
-      if (lastAFZs.contains(args.AfzIdx.toString()))
-        lastAFZs.remove(args.AfzIdx.toString());
-      lastAFZs.insert(0, args.AfzIdx.toString());
+      if (lastAFZs.contains(args.afzIdx.toString()))
+        lastAFZs.remove(args.afzIdx.toString());
+      lastAFZs.insert(0, args.afzIdx.toString());
       if (lastAFZs.length > 10) {
         //print("removed: "+lastAFZs[10]);
         lastAFZs.removeAt(10);
       }
       Preferences.prefs.setStringList("lastAFZs", lastAFZs);
     } else {
-      Preferences.prefs.setStringList("lastAFZs", [args.AfzIdx.toString()]);
+      Preferences.prefs.setStringList("lastAFZs", [args.afzIdx.toString()]);
     }
   }
 
   void printFutureResponse(Future<http.Response> response) async {
     print("change get Back");
     print((await response).body);
-  }
-
-  void switchToDo_Arbeiten(bool arbeiten) {
-    this._showArbeiten = arbeiten;
-
-    this.setState(() {});
   }
 
   bool isNumeric(String s) {
@@ -1179,7 +1178,7 @@ class AufzugPageState extends State<AufzugPage> {
   }
 
   void createNewToDo(String key, String aidx) async {
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'auth': Preferences.prefs.getString("key"),
       'toDoNewText': addedTodos[key]['text'],
       'AfzIdx': aidx,
@@ -1292,11 +1291,10 @@ class AufzugPageState extends State<AufzugPage> {
         //height: 50,
         color: Colors.black));
 
-    IconData icon; //= Icons.check_box;
     if (this._showArbeiten) {
       workWidget.add(WorkList(args.json));
     } else if (!this._showArbeiten) {
-      workWidget.add(ToDoAufzugList(args.json, args.AfzIdx));
+      workWidget.add(ToDoAufzugList(args.json, args.afzIdx));
     } else {
       print(!this._showArbeiten);
       //print(toDoExists);
@@ -1333,7 +1331,7 @@ class HistoryState extends State<History> {
   Map<String, String> response;
 
   Future<List<Widget>> getResponse(String listString) async {
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'AfzIdxList': listString,
       'auth': Preferences.prefs.getString("key"),
     });
@@ -1348,26 +1346,26 @@ class HistoryState extends State<History> {
 
     List<Widget> toReturn = [];
     bool even = true;
-    Color Tablecolor = Colors.grey[300];
+    Color tablecolor = Colors.grey[300];
 
     responseMap
       ..forEach((key, value) {
         toReturn.add(AufzugListItem(
-          AfzIdx: value["AfzIdx"].toString(),
-          Ahnr: value["Ahnr"].toString(),
-          Anr: value["Anr"].toString(),
-          Astr: value["Astr"].toString(),
-          FK_zeit: value["FK_zeit"].toString(),
-          Ort: value["Ort"].toString(),
+          afzIdx: value["afzIdx"].toString(),
+          ahnr: value["Ahnr"].toString(),
+          anr: value["Anr"].toString(),
+          astr: value["Astr"].toString(),
+          fKZeit: value["FK_zeit"].toString(),
+          ort: value["Ort"].toString(),
           plz: value["plz"].toString(),
-          Zg_txt: value["Zg_txt"].toString(),
-          Tablecolor: Tablecolor,
+          zgTxt: value["Zg_txt"].toString(),
+          tablecolor: tablecolor,
         ));
 
         if (even) {
-          Tablecolor = Colors.white;
+          tablecolor = Colors.white;
         } else {
-          Tablecolor = Colors.grey[300];
+          tablecolor = Colors.grey[300];
         }
         even = !even;
       });
@@ -1438,28 +1436,29 @@ class HistoryState extends State<History> {
   }
 }
 
+//ignore: must_be_immutable
 class AufzugListItem extends StatefulWidget {
-  Color Tablecolor;
-  String Anr;
-  String Astr;
-  String Ahnr;
+  Color tablecolor;
+  String anr;
+  String astr;
+  String ahnr;
   String plz;
-  String Ort;
-  String FK_zeit;
-  String Zg_txt;
-  String AfzIdx;
+  String ort;
+  String fKZeit;
+  String zgTxt;
+  String afzIdx;
 
   AufzugListItem(
       {Key key,
-      this.Anr,
-      this.Astr,
-      this.Ahnr,
+      this.anr,
+      this.astr,
+      this.ahnr,
       this.plz,
-      this.Ort,
-      this.FK_zeit,
-      this.Zg_txt,
-      this.AfzIdx,
-      this.Tablecolor})
+      this.ort,
+      this.fKZeit,
+      this.zgTxt,
+      this.afzIdx,
+      this.tablecolor})
       : super(key: key);
 
   @override
@@ -1477,30 +1476,30 @@ class AufzugListItemState extends State<AufzugListItem> {
     List<Widget> columnChildren = [
       Row(children: [
         Text(
-          widget.Anr + " ",
+          widget.anr + " ",
           style: tableRowTopStyle,
         ),
-        Text(widget.Astr + " " + widget.Ahnr, style: tableRowTopStyle),
+        Text(widget.astr + " " + widget.ahnr, style: tableRowTopStyle),
       ]),
       Row(
         children: [
           Text(widget.plz + " ", style: tableRowBottomStyle),
-          Text(widget.Ort, style: tableRowBottomStyle),
+          Text(widget.ort, style: tableRowBottomStyle),
         ],
       ),
       Row(
         children: [
           Text("Anfahrt ", style: tableRowBottomStyle),
-          Text(widget.FK_zeit, style: tableRowBottomStyle),
+          Text(widget.fKZeit, style: tableRowBottomStyle),
         ],
       ),
       //Divider(),
     ];
-    if (widget.Zg_txt.length > 2) {
+    if (widget.zgTxt.length > 2) {
       columnChildren.add(Row(
         children: [
           Text("Schlüssel ", style: tableRowBottomStyle),
-          Text(widget.Zg_txt, style: tableRowBottomStyle),
+          Text(widget.zgTxt, style: tableRowBottomStyle),
         ],
       ));
     }
@@ -1509,7 +1508,7 @@ class AufzugListItemState extends State<AufzugListItem> {
       padding:
           const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
       //padding: const EdgeInsets.only(left: 10.0),
-      color: widget.Tablecolor,
+      color: widget.tablecolor,
       child: Column(
         children: [
           Row(
@@ -1521,13 +1520,13 @@ class AufzugListItemState extends State<AufzugListItem> {
                   ),
                   onTap: () {
                     SelectElevator.selectElevator(
-                        widget.AfzIdx,
-                        widget.Anr,
-                        widget.Astr + " " + widget.Ahnr,
+                        widget.afzIdx,
+                        widget.anr,
+                        widget.astr + " " + widget.ahnr,
                         widget.plz,
-                        widget.Ort,
-                        widget.FK_zeit,
-                        widget.Zg_txt,
+                        widget.ort,
+                        widget.fKZeit,
+                        widget.zgTxt,
                         context);
                   },
                 ),
@@ -1540,13 +1539,13 @@ class AufzugListItemState extends State<AufzugListItem> {
                 ),
                 onTap: () {
                   launch("https://www.google.de/maps/search/?api=1&query=" +
-                      widget.Astr +
+                      widget.astr +
                       "+" +
-                      widget.Ahnr +
+                      widget.ahnr +
                       ",+" +
                       widget.plz +
                       "+" +
-                      widget.Ort);
+                      widget.ort);
                 },
               ),
             ],
@@ -1592,12 +1591,12 @@ class MyHomePageState extends State<MyHomePage> {
   static List<Widget> _widgetOptions;
 
   //String _ipToAsk = '192.168.168.148';
-  String _ipToAsk = 'bombelczyk-aufzuege.de';
+  //String _ipToAsk = 'bombelczyk-aufzuege.de';
   bool _sortDirection = false;
   bool _toDoSortDirection = false;
   bool _toDoShowChecked = false;
   bool _toDoShowUnchecked = true;
-  Socket socket;
+  //Socket socket;
 
   Map<String, dynamic> _responseMap;
   Map<String, dynamic> toDoresponseMap;
@@ -1906,7 +1905,7 @@ class MyHomePageState extends State<MyHomePage> {
     //print(pos);
     double x = pos.latitude;
     double y = pos.longitude;
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'posX': x.toString(),
       'posY': y.toString(),
       'auth': prefs.getString("key"),
@@ -1967,7 +1966,7 @@ class MyHomePageState extends State<MyHomePage> {
     ];*/
     String entfernungsText = "";
     bool even = true;
-    Color Tablecolor = Colors.grey[300];
+    Color tablecolor = Colors.grey[300];
 
     TextStyle tableRowTopStyle =
         TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
@@ -2053,7 +2052,7 @@ class MyHomePageState extends State<MyHomePage> {
           padding: const EdgeInsets.only(
               right: 20.0, left: 10.0, bottom: 7.0, top: 7.0),
           //padding: const EdgeInsets.only(left: 10.0),
-          color: Tablecolor,
+          color: tablecolor,
           child: Column(
             children: [
               Row(
@@ -2066,7 +2065,7 @@ class MyHomePageState extends State<MyHomePage> {
                       //Text(value["Anr"].toString()+" "+value["Astr"].toString()+" "+value["Anr"].toString()+" "+value["Ahnr"].toString()+", "+value["plz"].toString()+" "+value["Ort"].toString()+" "),
                       onTap: () {
                         SelectElevator.selectElevator(
-                            value["AfzIdx"].toString(),
+                            value["afzIdx"].toString(),
                             value["Anr"].toString(),
                             value["Astr"].toString() +
                                 " " +
@@ -2105,9 +2104,9 @@ class MyHomePageState extends State<MyHomePage> {
       );
 
       if (even) {
-        Tablecolor = Colors.white;
+        tablecolor = Colors.white;
       } else {
-        Tablecolor = Colors.grey[300];
+        tablecolor = Colors.grey[300];
       }
       even = !even;
     });
@@ -2137,7 +2136,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
 
     if (prefs.containsKey("key")) {
-      String response = await webComunicater.sendRequest(<String, String>{
+      String response = await WebComunicater.sendRequest(<String, String>{
         'auth': prefs.getString("key"),
       });
 
@@ -2187,7 +2186,7 @@ class MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'toDoSearchText': search,
       'auth': prefs.getString("key"),
       "toDoSort": _toDoSort.toString(),
@@ -2251,7 +2250,7 @@ class MyHomePageState extends State<MyHomePage> {
 
     //Uri.https('silas.lan.home', 'BombelApp/index.php'),
     //
-    String response = await webComunicater.sendRequest(<String, String>{
+    String response = await WebComunicater.sendRequest(<String, String>{
       'search': search,
       'auth': prefs.getString("key"),
       //'auth':"12345678910",
@@ -2281,34 +2280,27 @@ class MyHomePageState extends State<MyHomePage> {
     if (_requestError) return;
 
     bool even = true;
-    Color Tablecolor = Colors.grey[300];
-
-    Map<String, dynamic> map2;
-    Map<String, dynamic> map2Copy;
+    Color tablecolor = Colors.grey[300];
     List<Widget> tmpTabelle = [];
-    TextStyle tableRowTopStyle =
-        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
-    TextStyle tableRowBottomStyle = TextStyle(
-      fontWeight: FontWeight.normal,
-    );
+
 
     _responseMap.forEach((key, value) {
       tmpTabelle.add(AufzugListItem(
-        AfzIdx: value["AfzIdx"].toString(),
-        Ahnr: value["Ahnr"].toString(),
-        Anr: value["Anr"].toString(),
-        Astr: value["Astr"].toString(),
-        FK_zeit: value["FK_zeit"].toString(),
-        Ort: value["Ort"].toString(),
+        afzIdx: value["afzIdx"].toString(),
+        ahnr: value["Ahnr"].toString(),
+        anr: value["Anr"].toString(),
+        astr: value["Astr"].toString(),
+        fKZeit: value["FK_zeit"].toString(),
+        ort: value["Ort"].toString(),
         plz: value["plz"].toString(),
-        Zg_txt: value["Zg_txt"].toString(),
-        Tablecolor: Tablecolor,
+        zgTxt: value["Zg_txt"].toString(),
+        tablecolor: tablecolor,
       ));
 
       if (even) {
-        Tablecolor = Colors.white;
+        tablecolor = Colors.white;
       } else {
-        Tablecolor = Colors.grey[300];
+        tablecolor = Colors.grey[300];
       }
       even = !even;
     });

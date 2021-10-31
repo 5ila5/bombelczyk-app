@@ -158,7 +158,7 @@ class Preferences {
 }
 
 class AufzugsArgumente {
-  final String json;
+  final Future<String> json;
   final String AfzIdx;
   final String aNr;
   final String aStr;
@@ -181,17 +181,18 @@ class SelectElevator {
       prefs = Preferences.prefs;
     }
 
-    String response = await webComunicater.sendRequest(<String, String>{
+    Future<String> response = webComunicater.sendRequest(<String, String>{
       'AfzIdx': AfzIdx,
       'auth': prefs.getString("key"),
     });
 
-    String responseStr = response.replaceAll("\n", "");
+    //Future<String> responseStr = response.replaceAll("\n", "");
+
     Navigator.pushNamed(
       context,
       Aufzug.aufzugRoute,
       arguments: AufzugsArgumente(
-          AfzIdx, nr, responseStr, str, pLZ, ort, fZ, schluessel),
+          AfzIdx, nr, response, str, pLZ, ort, fZ, schluessel),
     );
   }
 }
@@ -788,31 +789,345 @@ class ToDoHomeListState extends State<ToDoHomeList> {
       even = !even;
     });
 
-    //setState(() {
-     // _ToDotabelle = tmpTabelle;
-    //});
     return Column(
       children: tmpTabelle,
     );
   }
 }
 
-class TodoList extends StatefulWidget {
-  String AfzIdx;
-
-  TodoList(this.AfzIdx,{Key key}) : super(key: key  );
-
+class ToDoAufzugList extends StatefulWidget {
+  ToDoAufzugList(this.response,this.AfzIdx,{Key key}) : super(key: key);
+  final Future<String> response;
+  final String AfzIdx;
 
   @override
-  TodoListState createState() => TodoListState();
+  ToDoAufzugListState createState() => ToDoAufzugListState();
 }
 
-class TodoListState extends State<TodoList> {
+class ToDoAufzugListState extends State<ToDoAufzugList> {
   @override
-  Widget build(BuildContext) {
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: widget.response,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        List<Widget> children=[];
+        if (snapshot.hasData) {
+          Map<String, dynamic> responseMap =
+          Map<String, dynamic>.from(jsonDecode(snapshot.data));
 
+
+          if (!(responseMap["2"].runtimeType == String ||
+              responseMap["2"]["error"] == "true")) {
+            print('responseMap["2"]');
+            print(responseMap["2"]);
+            Map<String,dynamic> toDoMap = responseMap["2"];
+            toDoMap.remove("error");
+            return AufzugToDo(AfzIdx: widget.AfzIdx,toDoMap: responseMap["2"]);
+          } else {
+            return Container();
+          }
+        } else if (snapshot.hasError) {
+          children.addAll( [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 60,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text('Error: ${snapshot.error}'),
+            )
+          ],
+          );
+        } else {
+          children.addAll( [
+            SizedBox(
+              child: CircularProgressIndicator(),
+              width: 60,
+              height: 60,
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Text('Läd einträge...'),
+            )
+          ],
+          );
+        }
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+
+          //crossAxisCount: 6,
+          children: children,
+        );
+      },
+//          }
+    );
   }
+}
 
+class WorkList extends StatefulWidget {
+  WorkList(this.response,{Key key}) : super(key: key);
+  final Future<String> response;
+
+  @override
+  WorkListState createState() => WorkListState();
+}
+
+class WorkListState extends State<WorkList> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: widget.response,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        List<Widget> children=[];
+        if (snapshot.hasData) {
+          //children = snapshot.data;
+          Map<String, dynamic> responseMap =
+          Map<String, dynamic>.from(jsonDecode(snapshot.data));
+
+
+          if (!(responseMap["1"].runtimeType == String ||
+              responseMap["1"]["error"] == "true")) {
+            Map<String, dynamic> arbeitMap = responseMap["1"];
+            arbeitMap.remove("error");
+            print("arbeitMap".toString());
+            print(arbeitMap.toString());
+            arbeitMap.forEach((key, value) {
+              if (value["ArbDat"] == null) {
+                value["ArbDat"] = "";
+              }
+              if (value["MitarbeiterName"] == null) {
+                value["MitarbeiterName"] = "";
+              }
+              if (value["AusgfArbeit"] == null) {
+                value["AusgfArbeit"] = "";
+              }
+              if (value["Kurztext"] == null) {
+                value["Kurztext"] = "";
+              }
+
+              List<String> mitarbeiterList = value["MitarbeiterName"].split(",");
+              //print(mitarbeiterList.toString());
+              String mitarbeiter = "";
+              //print(mitarbeiter);
+              for (int i = 0; i < mitarbeiterList.length; i++) {
+                if (i == 0)
+                  mitarbeiter += mitarbeiterList[i];
+                else if (!mitarbeiter
+                    .replaceAll(" ", "")
+                    .contains(mitarbeiterList[i].replaceAll(" ", "")))
+                  mitarbeiter += "," + mitarbeiterList[i];
+              }
+
+              children.add(
+                Table(
+                  children: [
+                    TableRow(children: [
+                      SelectableText("Datum"),
+                      SelectableText(value["ArbDat"]),
+                    ]),
+                    TableRow(children: [
+                      SelectableText("Monteur(e)"),
+                      SelectableText(mitarbeiter),
+                      //Text(value["MitarbeiterName"]),
+                    ]),
+                    TableRow(children: [
+                      SelectableText("Arbeit"),
+                      SelectableText(value["AusgfArbeit"]),
+                    ]),
+                    TableRow(children: [
+                      SelectableText("Kurztext"),
+                      SelectableText(value["Kurztext"]),
+                    ]),
+
+                  ],
+                ),
+              );
+              children.add(Divider(thickness: 3, color: Colors.grey));
+            });
+          } else {
+            return Container();
+          }
+        } else if (snapshot.hasError) {
+            children.addAll( [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              )
+            ],
+          );
+        } else {
+            children.addAll( const <Widget>[
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Läd einträge...'),
+              )
+            ],
+          );
+        }
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+
+          //crossAxisCount: 6,
+          children: children,
+        );
+      },
+//          }
+    );
+  }
+}
+
+class AkkuList extends StatefulWidget {
+  AkkuList(this.response,{Key key}) : super(key: key);
+  final Future<String> response;
+
+  @override
+  AkkuListState createState() => AkkuListState();
+}
+
+class AkkuListState extends State<AkkuList> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: widget.response,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        List<TableRow> children;
+        if (snapshot.hasData) {
+          //children = snapshot.data;
+          Map<String, dynamic> responseMap =
+              Map<String, dynamic>.from(jsonDecode(snapshot.data));
+          if (!(responseMap["0"].runtimeType == String ||
+              responseMap["0"]["error"] == "true")) {
+            Map<String, dynamic> akkuMap = responseMap["0"];
+            akkuMap.remove("error");
+            akkuMap.forEach((key, value) {
+              Color rowColor = Colors.green;
+              try {
+                //print("try");
+                DateTime date = DateTime.parse(value["TauschTag"]);
+                DateTime now = DateTime.now();
+                value["TauschTag"] = date.day.toString() +
+                    "." +
+                    date.month.toString() +
+                    "." +
+                    date.year.toString();
+                int jZykl =
+                    int.parse(value["Zykl"].replaceAll(RegExp("[^\\d.]"), ""));
+                DateTime toDoTillYellow =
+                    new DateTime(date.year + jZykl, date.month - 3, date.day);
+                //print("date: "+date.toString());
+                //print("date Till Yellow"+toDoTillYellow.toString());
+                DateTime toDoTillRed =
+                    new DateTime(date.year + jZykl, date.month, date.day);
+                //print("date Till red "+toDoTillRed.toString());
+                if (toDoTillYellow.isBefore(now)) {
+                  rowColor = Colors.yellow;
+                  if (toDoTillRed.isBefore(now)) {
+                    rowColor = Colors.red;
+                  }
+                }
+
+                //print();
+              } on Exception {
+                //print("somithing went wrong");
+              }
+              children.addAll(
+                [
+                  TableRow(children: [
+                    Container(color: rowColor, child: Text("Menge")),
+                    Container(
+                        color: rowColor,
+                        child: Text(value["Menge"].toString())),
+                  ]),
+                  TableRow(children: [
+                    Container(color: rowColor, child: Text("Letzter Wchsel")),
+                    Container(
+                        color: rowColor,
+                        child: Text(value["TauschTag"].toString())),
+                  ]),
+                  TableRow(children: [
+                    Container(color: rowColor, child: Text("Spannung")),
+                    Container(
+                        color: rowColor, child: Text(value["Spg"].toString())),
+                  ]),
+                  TableRow(children: [
+                    Container(color: rowColor, child: Text("Ort")),
+                    Container(
+                        color: rowColor, child: Text(value["Ort"].toString())),
+                  ]),
+                  TableRow(children: [
+                    Container(color: rowColor, child: Text("Kap")),
+                    Container(
+                        color: rowColor, child: Text(value["Kap"].toString())),
+                  ]),
+                  TableRow(children: [
+                    Container(color: rowColor, child: Text("Zyklus")),
+                    Container(
+                        color: rowColor, child: Text(value["Zykl"].toString())),
+                  ]),
+                  TableRow(children: [
+                    Divider(),
+                    Divider(),
+                  ]),
+                ],
+              );
+            });
+          } else {
+            return Container();
+          }
+        } else if (snapshot.hasError) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              )
+            ],
+          );
+        } else {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: const <Widget>[
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Läd einträge...'),
+              )
+            ],
+          );
+        }
+        return Table(
+          //crossAxisCount: 6,
+          children: children,
+        );
+      },
+//          }
+    );
+  }
 }
 
 class AufzugPage extends StatefulWidget {
@@ -894,107 +1209,7 @@ class AufzugPageState extends State<AufzugPage> {
     final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
     if (!_lastInited)
       writeInLastAFZs(args);
-    //Map<String, dynamic> _responseMap = Map<String, dynamic>.from(jsonDecode(args.json));
     List<Widget> workWidget = [];
-    //developer.log("args.json:"+args.json);
-
-    Map<String, dynamic> responseMap =
-        Map<String, dynamic>.from(jsonDecode(args.json));
-    Map<String, dynamic> arbeitMap;
-    Map<String, dynamic> toDoMap;
-    bool workExists = false;
-    bool toDoExists = false;
-
-    //print('responseMap["1"]');
-    //print(responseMap["1"]);
-    if (responseMap["1"] != "false") {
-      arbeitMap = responseMap["1"];
-      workExists = true;
-    }
-    //print('responseMap["2"]');
-    //print(responseMap["2"]);
-    if (responseMap["2"] != "false") {
-      toDoMap = responseMap["2"];
-      toDoExists = true;
-    }
-    //print("arbeitMap");
-    //print(arbeitMap);
-
-    List<TableRow> akkuWiegetListRows = [];
-
-    if (responseMap["0"].runtimeType == String ||
-        responseMap["0"]["error"] == "true") {
-      //print("keine Akkus Für diesen Aufzug eingetragen");
-    } else {
-      Map<String, dynamic> akkuMap = responseMap["0"];
-      akkuMap.remove("error");
-      akkuMap.forEach((key, value) {
-        Color rowColor = Colors.green;
-        try {
-          //print("try");
-          DateTime date = DateTime.parse(value["TauschTag"]);
-          DateTime now = DateTime.now();
-          value["TauschTag"] = date.day.toString() +
-              "." +
-              date.month.toString() +
-              "." +
-              date.year.toString();
-          int jZykl =
-              int.parse(value["Zykl"].replaceAll(RegExp("[^\\d.]"), ""));
-          DateTime toDoTillYellow =
-              new DateTime(date.year + jZykl, date.month - 3, date.day);
-          //print("date: "+date.toString());
-          //print("date Till Yellow"+toDoTillYellow.toString());
-          DateTime toDoTillRed =
-              new DateTime(date.year + jZykl, date.month, date.day);
-          //print("date Till red "+toDoTillRed.toString());
-          if (toDoTillYellow.isBefore(now)) {
-            rowColor = Colors.yellow;
-            if (toDoTillRed.isBefore(now)) {
-              rowColor = Colors.red;
-            }
-          }
-
-          //print();
-        } on Exception {
-          //print("somithing went wrong");
-        }
-        akkuWiegetListRows.addAll(
-          [
-            TableRow(children: [
-              Container(color: rowColor, child: Text("Menge")),
-              Container(
-                  color: rowColor, child: Text(value["Menge"].toString())),
-            ]),
-            TableRow(children: [
-              Container(color: rowColor, child: Text("Letzter Wchsel")),
-              Container(
-                  color: rowColor, child: Text(value["TauschTag"].toString())),
-            ]),
-            TableRow(children: [
-              Container(color: rowColor, child: Text("Spannung")),
-              Container(color: rowColor, child: Text(value["Spg"].toString())),
-            ]),
-            TableRow(children: [
-              Container(color: rowColor, child: Text("Ort")),
-              Container(color: rowColor, child: Text(value["Ort"].toString())),
-            ]),
-            TableRow(children: [
-              Container(color: rowColor, child: Text("Kap")),
-              Container(color: rowColor, child: Text(value["Kap"].toString())),
-            ]),
-            TableRow(children: [
-              Container(color: rowColor, child: Text("Zyklus")),
-              Container(color: rowColor, child: Text(value["Zykl"].toString())),
-            ]),
-            TableRow(children: [
-              Divider(),
-              Divider(),
-            ]),
-          ],
-        );
-      });
-    }
 
     workWidget.add(
       DataTable(
@@ -1037,14 +1252,10 @@ class AufzugPageState extends State<AufzugPage> {
 
     workWidget.add(Divider());
 
-    if (akkuWiegetListRows.length > 0) {
-      workWidget.add(
-        Table(
-          //crossAxisCount: 6,
-          children: akkuWiegetListRows,
-        ),
-      );
-    }
+    workWidget.add(
+        AkkuList(args.json)
+    );
+
 
     workWidget.add(Divider(thickness: 3, height: 50, color: Colors.black));
     workWidget.addAll([
@@ -1082,78 +1293,14 @@ class AufzugPageState extends State<AufzugPage> {
         color: Colors.black));
 
     IconData icon; //= Icons.check_box;
-    if (this._showArbeiten && workExists) {
-      arbeitMap.remove("error");
-      arbeitMap.forEach((key, value) {
-        if (value["ArbDat"] == null) {
-          value["ArbDat"] = "";
-        }
-        if (value["MitarbeiterName"] == null) {
-          value["MitarbeiterName"] = "";
-        }
-        if (value["AusgfArbeit"] == null) {
-          value["AusgfArbeit"] = "";
-        }
-        if (value["Kurztext"] == null) {
-          value["Kurztext"] = "";
-        }
+    if (this._showArbeiten) {
+      workWidget.add(WorkList(args.json));
+    } else if (!this._showArbeiten) {
+      workWidget.add(ToDoAufzugList(args.json, args.AfzIdx));
 
-        List<String> mitarbeiterList = value["MitarbeiterName"].split(",");
-        //print(mitarbeiterList.toString());
-        String mitarbeiter = "";
-        //print(mitarbeiter);
-        for (int i = 0; i < mitarbeiterList.length; i++) {
-          if (i == 0)
-            mitarbeiter += mitarbeiterList[i];
-          else if (!mitarbeiter
-              .replaceAll(" ", "")
-              .contains(mitarbeiterList[i].replaceAll(" ", "")))
-            mitarbeiter += "," + mitarbeiterList[i];
-        }
-
-        workWidget.add(
-          Table(
-            //border: TableBorder.all(),
-            //headingRowHeight: 0,
-            children: [
-              TableRow(children: [
-                SelectableText("Datum"),
-                SelectableText(value["ArbDat"]),
-              ]),
-              TableRow(children: [
-                SelectableText("Monteur(e)"),
-                SelectableText(mitarbeiter),
-                //Text(value["MitarbeiterName"]),
-              ]),
-              TableRow(children: [
-                SelectableText("Arbeit"),
-                SelectableText(value["AusgfArbeit"]),
-              ]),
-              TableRow(children: [
-                SelectableText("Kurztext"),
-                SelectableText(value["Kurztext"]),
-              ]),
-              /*TableRow(
-                children: [
-                  Text("Akkutausch"),
-                  Icon(icon),
-
-                        //Text(value["dat"])),
-                  ],
-              ),*/
-            ],
-          ),
-        );
-        workWidget.add(Divider(thickness: 3, color: Colors.grey));
-      });
-    } else if (!this._showArbeiten && toDoExists) {
-      print("TO DOS");
-      toDoMap.remove("error");
-      print("toDoMap:"+toDoMap.toString());
-      workWidget.add(AufzugToDo(AfzIdx: args.AfzIdx,toDoMap: toDoMap));
     } else {
       print(!this._showArbeiten);
-      print(toDoExists);
+      //print(toDoExists);
       //print("keine Arbeit für diesen Aufzug eingetragen");
 
     }
@@ -1245,48 +1392,44 @@ class HistoryState extends State<History> {
 
     return SingleChildScrollView(
       child:
-         FutureBuilder<List<Widget>>(
-          future:response,
-          builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
-      List<Widget> children;
-      if (snapshot.hasData) {
-        children = snapshot.data;
-      } else if (snapshot.hasError) {
-        children = <Widget>[
-          const Icon(
-            Icons.error_outline,
-            color: Colors.red,
-            size: 60,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Text('Error: ${snapshot.error}'),
-          )
-        ];
-      } else {
-        children = const <Widget>[
-          SizedBox(
-            child: CircularProgressIndicator(),
-            width: 60,
-            height: 60,
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: Text('Läd einträge...'),
-          )
-        ];
-      }
-      return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: children,
-
-      );
-    },
+      FutureBuilder<List<Widget>>(
+        future: response,
+        builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
+          List<Widget> children;
+          if (snapshot.hasData) {
+            children = snapshot.data;
+          } else if (snapshot.hasError) {
+            children = <Widget>[
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              )
+            ];
+          } else {
+            children = const <Widget>[
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Läd einträge...'),
+              )
+            ];
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: children,
+          );
+        },
 //          }
-
-
-
       ),
     );
 

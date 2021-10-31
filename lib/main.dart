@@ -42,7 +42,6 @@ enum ToDoSorts {
   ToDoText,
 }
 
-
 /*class MyHttpOverrides extends HttpOverrides{
   @override
   HttpClient createHttpClient(SecurityContext context){
@@ -56,40 +55,39 @@ void main() {
 }
 
 class AuthKey {
-   static final _passwordController = TextEditingController();
-
+  static final _passwordController = TextEditingController();
 
   static void wrongKey(BuildContext context) {
-      displayTextInputDialog(context);
+    displayTextInputDialog(context);
+  }
+
+  static void setKey(BuildContext context) async {
+    //print("setKey");
+    SharedPreferences prefs;
+    if (Preferences.prefs == null) {
+      prefs = await Preferences.initPrefs();
+    } else {
+      prefs = Preferences.prefs;
+    }
+    String pass = _passwordController.text;
+    //print("pass:"+pass);
+    if (pass.length < 1) {
+      AuthKey.wrongKey(context);
+
+      return;
+    }
+    String response = await webComunicater
+        .sendRequest(<String, String>{'password': pass}, login: true);
+    String respnse = response.replaceAll("\n", "");
+    if (respnse == "false" || respnse.length != 32) {
+      //print("false:");
+      AuthKey.wrongKey(context);
+
+      return;
     }
 
-     static void setKey(BuildContext context) async {
-       //print("setKey");
-       SharedPreferences prefs;
-       if (Preferences.prefs == null) {
-         prefs = await Preferences.initPrefs();
-       } else {
-         prefs = Preferences.prefs;
-       }
-       String pass = _passwordController.text;
-       //print("pass:"+pass);
-       if (pass.length < 1) {
-         AuthKey.wrongKey(context);
-
-         return;
-       }
-       String response = await webComunicater
-           .sendRequest(<String, String>{'password': pass}, login: true);
-       String respnse = response.replaceAll("\n", "");
-       if (respnse == "false" || respnse.length != 32) {
-         //print("false:");
-         AuthKey.wrongKey(context);
-
-         return;
-       }
-
-       prefs.setString("key", respnse);
-     }
+    prefs.setString("key", respnse);
+  }
 
   static Future<void> displayTextInputDialog(BuildContext context) async {
     return showDialog(
@@ -117,9 +115,9 @@ class AuthKey {
                 child: Text('OK'),
                 onPressed: () {
                   //setState(() {
-                    //codeDialog = valueText;
-                    setKey(context);
-                    Navigator.pop(context);
+                  //codeDialog = valueText;
+                  setKey(context);
+                  Navigator.pop(context);
                   //});
                 },
               ),
@@ -173,7 +171,7 @@ class AufzugsArgumente {
 
 class SelectElevator {
   static void selectElevator(String AfzIdx, String nr, String str, String pLZ,
-      String ort, String fZ, String schluessel,BuildContext context) async {
+      String ort, String fZ, String schluessel, BuildContext context) async {
     SharedPreferences prefs;
     if (Preferences.prefs == null) {
       prefs = await Preferences.initPrefs();
@@ -191,8 +189,8 @@ class SelectElevator {
     Navigator.pushNamed(
       context,
       Aufzug.aufzugRoute,
-      arguments: AufzugsArgumente(
-          AfzIdx, nr, response, str, pLZ, ort, fZ, schluessel),
+      arguments:
+          AufzugsArgumente(AfzIdx, nr, response, str, pLZ, ort, fZ, schluessel),
     );
   }
 }
@@ -203,19 +201,15 @@ class Aufzug extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
-
-
     return AufzugPage(title: 'Aufzugs Übersicht');
   }
 }
 
 class AufzugToDo extends StatefulWidget {
-  Map <String,dynamic> toDoMap;
+  Map<String, dynamic> toDoMap;
   String AfzIdx;
 
-   AufzugToDo({this.AfzIdx,this.toDoMap,Key key}) : super(key: key);
-
+  AufzugToDo({this.AfzIdx, this.toDoMap, Key key}) : super(key: key);
 
   @override
   AufzugToDoState createState() => AufzugToDoState();
@@ -223,10 +217,9 @@ class AufzugToDo extends StatefulWidget {
 
 class AufzugToDoState extends State<AufzugToDo> {
   //Map <String,dynamic> toDoMap=Widget.;
-  Map<String,dynamic> addedTodos = {};
+  Map<String, dynamic> addedTodos = {};
   Map<String, String> checkboxStates = {};
   Map<String, String> savedText = {};
-
 
   bool isNumeric(String s) {
     if (s == null) {
@@ -415,7 +408,7 @@ class AufzugToDoState extends State<AufzugToDo> {
       );
       widgetList.add(Divider(thickness: 1, color: Colors.grey));
     });
-    return Column(children:widgetList);
+    return Column(children: widgetList);
   }
 }
 
@@ -423,8 +416,7 @@ class ToDoHome extends StatefulWidget {
   //Map <String,dynamic> toDoresponseMap;
   //String AfzIdx;
 
-  ToDoHome({Key key}) : super(key: key  );
-
+  ToDoHome({Key key}) : super(key: key);
 
   @override
   ToDoHomeState createState() => ToDoHomeState();
@@ -433,7 +425,7 @@ class ToDoHome extends StatefulWidget {
 class ToDoHomeState extends State<ToDoHome> {
   bool _toDoSortDirection = false;
   int _toDoSort = 1;
-  TextEditingController _searchToDoController= new TextEditingController();
+  TextEditingController _searchToDoController = new TextEditingController();
   bool _toDoShowChecked = false;
   bool _toDoShowUnchecked = true;
   Future<Map<String, dynamic>> toDoresponseMap;
@@ -442,7 +434,6 @@ class ToDoHomeState extends State<ToDoHome> {
   refreshToDoTable(String text) async {
     setState(() {
       toDoresponseMap = searchToDos(text);
-
     });
   }
 
@@ -465,10 +456,12 @@ class ToDoHomeState extends State<ToDoHome> {
       "toDoSort": _toDoSort.toString(),
       "sortDirection": _toDoSortDirection.toString(),
       "showChecked": _toDoShowChecked.toString(),
-      "showUnchecked":_toDoShowUnchecked.toString(),
+      "showUnchecked": _toDoShowUnchecked.toString(),
     });
-    print("showChecked: "+ _toDoShowChecked.toString()+
-        "\nshowUnchecked: "+_toDoShowUnchecked.toString());
+    print("showChecked: " +
+        _toDoShowChecked.toString() +
+        "\nshowUnchecked: " +
+        _toDoShowUnchecked.toString());
 
     String responseStr = response.replaceAll("\n", "");
     print("responseStr:");
@@ -491,7 +484,6 @@ class ToDoHomeState extends State<ToDoHome> {
     //processToDos();
     return tmpResponseMap;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -531,161 +523,153 @@ class ToDoHomeState extends State<ToDoHome> {
             ),
           ),
         ),
-    Row(children: <Widget>[
-      Container(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
-          //width:200.0,
+        Row(children: <Widget>[
+          Container(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+              //width:200.0,
 
-          child: DropdownButton<ToDoSorts>(
-            value: ToDoSorts.values[_toDoSort],
-            items:
-            ToDoSorts.values.map<DropdownMenuItem<ToDoSorts>>((ToDoSorts value) {
-              return DropdownMenuItem<ToDoSorts>(
-                value: value,
-                child: Text(value.toString().replaceAll("ToDoSorts.", "")),
-              );
-            }).toList(),
-            onChanged: (ToDoSorts newValue) {
-              _toDoSort = newValue.index;
+              child: DropdownButton<ToDoSorts>(
+                value: ToDoSorts.values[_toDoSort],
+                items: ToDoSorts.values
+                    .map<DropdownMenuItem<ToDoSorts>>((ToDoSorts value) {
+                  return DropdownMenuItem<ToDoSorts>(
+                    value: value,
+                    child: Text(value.toString().replaceAll("ToDoSorts.", "")),
+                  );
+                }).toList(),
+                onChanged: (ToDoSorts newValue) {
+                  _toDoSort = newValue.index;
+                  refreshToDoTable(_searchToDoController.text);
+                },
+                //<sorts>[10, 20, 50]
+              ),
+            ),
+          ),
+          InkWell(
+            child: (_toDoSortDirection)
+                ? Icon(Icons.arrow_downward)
+                : Icon(Icons.arrow_upward),
+            onTap: () {
+              _toDoSortDirection = !_toDoSortDirection;
               refreshToDoTable(_searchToDoController.text);
             },
-            //<sorts>[10, 20, 50]
           ),
-        ),
-      ),
-
-      InkWell(
-        child: (_toDoSortDirection)
-            ? Icon(Icons.arrow_downward)
-            : Icon(Icons.arrow_upward),
-        onTap: () {
-          _toDoSortDirection = !_toDoSortDirection;
-          refreshToDoTable(_searchToDoController.text);
-        },
-      ),
-      Column(children: [
-        Row(
-          children: [
-            Icon(Icons.check),
-            Checkbox(
-              value: _toDoShowChecked,
-              onChanged: (bool val) {
-                if (val||_toDoShowUnchecked) {
-                  _toDoShowChecked = !_toDoShowChecked;
-                  refreshToDoTable(_searchToDoController.text);
+          Column(children: [
+            Row(
+              children: [
+                Icon(Icons.check),
+                Checkbox(
+                  value: _toDoShowChecked,
+                  onChanged: (bool val) {
+                    if (val || _toDoShowUnchecked) {
+                      _toDoShowChecked = !_toDoShowChecked;
+                      refreshToDoTable(_searchToDoController.text);
+                    }
+                  },
+                )
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.crop_square_sharp),
+                Checkbox(
+                  value: _toDoShowUnchecked,
+                  onChanged: (bool val) {
+                    if (val || _toDoShowChecked) {
+                      _toDoShowUnchecked = !_toDoShowUnchecked;
+                      refreshToDoTable(_searchToDoController.text);
+                    }
+                  },
+                )
+              ],
+            ),
+          ]),
+        ]),
+        new Expanded(
+            child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+          //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+          child: SingleChildScrollView(
+            //  child: Column(
+            //children:
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: toDoresponseMap,
+              builder: (BuildContext context,
+                  AsyncSnapshot<Map<String, dynamic>> snapshot) {
+                Widget child;
+                if (snapshot.hasData) {
+                  return ToDoHomeList(
+                    toDoresponseMap: snapshot.data,
+                  );
+                } else if (snapshot.hasError) {
+                  return Column(children: <Widget>[
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 60,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text('Error: ${snapshot.error}'),
+                    )
+                  ]);
+                } else {
+                  return Column(children: const <Widget>[
+                    SizedBox(
+                      child: CircularProgressIndicator(),
+                      width: 60,
+                      height: 60,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Text('Läd einträge...'),
+                    )
+                  ]);
                 }
               },
-            )
-          ],),
-        Row(
-          children: [
-            Icon(Icons.crop_square_sharp),
-            Checkbox(
-              value: _toDoShowUnchecked,
-              onChanged: (bool val) {
-                if (val||_toDoShowChecked) {
-                  _toDoShowUnchecked = !_toDoShowUnchecked;
-                  refreshToDoTable(_searchToDoController.text);
-                }
-              },
-            )
-
-          ],),
-      ]),
-    ]),
-
-    new Expanded(
-    child: Padding(
-    padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-    //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-    child: SingleChildScrollView(
-    //  child: Column(
-    //children:
-    child: FutureBuilder<Map<String, dynamic>>(
-      future:toDoresponseMap,
-      builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
-        Widget child;
-        if (snapshot.hasData) {
-          return ToDoHomeList(toDoresponseMap: snapshot.data,);
-        } else if (snapshot.hasError) {
-          return Column(children: <Widget>[
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 60,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text('Error: ${snapshot.error}'),
-            )
-          ]);
-        } else {
-          return Column(children : const <Widget>[
-            SizedBox(
-              child: CircularProgressIndicator(),
-              width: 60,
-              height: 60,
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: Text('Läd einträge...'),
-            )
-          ]);
-        }
-
-
-
-      },
 //          }
+            ),
 
-
-
-    ),
-
-    //_ToDotabelle,
-    //)
-    ),
-    )),
-    ],
+            //_ToDotabelle,
+            //)
+          ),
+        )),
+      ],
     );
   }
-
 }
 
 class ToDoHomeList extends StatefulWidget {
-  Map <String,dynamic> toDoresponseMap;
+  Map<String, dynamic> toDoresponseMap;
   String AfzIdx;
 
-  ToDoHomeList({this.toDoresponseMap,Key key}) : super(key: key  );
-
+  ToDoHomeList({this.toDoresponseMap, Key key}) : super(key: key);
 
   @override
   ToDoHomeListState createState() => ToDoHomeListState();
 }
 
 class ToDoHomeListState extends State<ToDoHomeList> {
-  Map<String,bool> expandedToDos= {};
-
-
+  Map<String, bool> expandedToDos = {};
 
   @override
   Widget build(BuildContext context) {
-    if (widget.toDoresponseMap==null||(widget.toDoresponseMap.containsKey("error")&&widget.toDoresponseMap.containsKey("error")==true))
+    if (widget.toDoresponseMap == null ||
+        (widget.toDoresponseMap.containsKey("error") &&
+            widget.toDoresponseMap.containsKey("error") == true))
       return Text("Für angegebene Parameter nichts Gefunden");
     bool even = true;
     Color Tablecolor = Colors.grey[300];
 
-
     List<Widget> tmpTabelle = [];
     TextStyle tableRowTopStyle =
-    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
     //toDoresponseMap.
     widget.toDoresponseMap.forEach((key, value) {
-
       value["todos"].remove("error");
       List<Widget> columnChildren = [
         Row(children: [
@@ -734,17 +718,17 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                       child: Column(
                         children: columnChildren,
                       ),
-
                       onTap: () {
                         print("onTap");
 
-                        if (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()]) {
-                          expandedToDos[value["AfzIdx"].toString()]=false;
+                        if (expandedToDos
+                                .containsKey(value["AfzIdx"].toString()) &&
+                            expandedToDos[value["AfzIdx"].toString()]) {
+                          expandedToDos[value["AfzIdx"].toString()] = false;
                           print("unshow");
                         } else {
-                          expandedToDos[value["AfzIdx"].toString()]=true;
+                          expandedToDos[value["AfzIdx"].toString()] = true;
                           print("show");
-
                         }
                         setState(() {});
                       },
@@ -766,20 +750,24 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                           value["plz"].toString(),
                           value["Ort"].toString(),
                           value["FK_zeit"].toString(),
-                          value["Zg_txt"].toString(),context);
+                          value["Zg_txt"].toString(),
+                          context);
                     },
                   ),
                 ],
               ),
-              (expandedToDos.containsKey(value["AfzIdx"].toString())&&expandedToDos[value["AfzIdx"].toString()])
-                  ?AufzugToDo(AfzIdx: value["AfzIdx"].toString().toString(),toDoMap
-                  : value["todos"]):Text(""),
+              (expandedToDos.containsKey(value["AfzIdx"].toString()) &&
+                      expandedToDos[value["AfzIdx"].toString()])
+                  ? AufzugToDo(
+                      AfzIdx: value["AfzIdx"].toString().toString(),
+                      toDoMap: value["todos"])
+                  : Text(""),
               //Divider(thickness: 0.0),
             ],
           ),
         ), //Container
       );
-      print("expandedToDos: "+expandedToDos.toString());
+      print("expandedToDos: " + expandedToDos.toString());
 
       if (even) {
         Tablecolor = Colors.white;
@@ -796,7 +784,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
 }
 
 class ToDoAufzugList extends StatefulWidget {
-  ToDoAufzugList(this.response,this.AfzIdx,{Key key}) : super(key: key);
+  ToDoAufzugList(this.response, this.AfzIdx, {Key key}) : super(key: key);
   final Future<String> response;
   final String AfzIdx;
 
@@ -810,47 +798,49 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
     return FutureBuilder<String>(
       future: widget.response,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        List<Widget> children=[];
+        List<Widget> children = [];
         if (snapshot.hasData) {
           Map<String, dynamic> responseMap =
-          Map<String, dynamic>.from(jsonDecode(snapshot.data));
-
-
+              Map<String, dynamic>.from(jsonDecode(snapshot.data));
+          Map<String, dynamic> toDoMap;
           if (!(responseMap["2"].runtimeType == String ||
               responseMap["2"]["error"] == "true")) {
             print('responseMap["2"]');
             print(responseMap["2"]);
-            Map<String,dynamic> toDoMap = responseMap["2"];
+            toDoMap = responseMap["2"];
+
             toDoMap.remove("error");
-            return AufzugToDo(AfzIdx: widget.AfzIdx,toDoMap: responseMap["2"]);
           } else {
-            return Container();
+            toDoMap = {};
           }
+          return AufzugToDo(AfzIdx: widget.AfzIdx, toDoMap: toDoMap);
         } else if (snapshot.hasError) {
-          children.addAll( [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 60,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Text('Error: ${snapshot.error}'),
-            )
-          ],
+          children.addAll(
+            [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              )
+            ],
           );
         } else {
-          children.addAll( [
-            SizedBox(
-              child: CircularProgressIndicator(),
-              width: 60,
-              height: 60,
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: Text('Läd einträge...'),
-            )
-          ],
+          children.addAll(
+            [
+              SizedBox(
+                child: CircularProgressIndicator(),
+                width: 60,
+                height: 60,
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Läd einträge...'),
+              )
+            ],
           );
         }
         return Column(
@@ -867,7 +857,7 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
 }
 
 class WorkList extends StatefulWidget {
-  WorkList(this.response,{Key key}) : super(key: key);
+  WorkList(this.response, {Key key}) : super(key: key);
   final Future<String> response;
 
   @override
@@ -880,12 +870,11 @@ class WorkListState extends State<WorkList> {
     return FutureBuilder<String>(
       future: widget.response,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        List<Widget> children=[];
+        List<Widget> children = [];
         if (snapshot.hasData) {
           //children = snapshot.data;
           Map<String, dynamic> responseMap =
-          Map<String, dynamic>.from(jsonDecode(snapshot.data));
-
+              Map<String, dynamic>.from(jsonDecode(snapshot.data));
 
           if (!(responseMap["1"].runtimeType == String ||
               responseMap["1"]["error"] == "true")) {
@@ -907,7 +896,8 @@ class WorkListState extends State<WorkList> {
                 value["Kurztext"] = "";
               }
 
-              List<String> mitarbeiterList = value["MitarbeiterName"].split(",");
+              List<String> mitarbeiterList =
+                  value["MitarbeiterName"].split(",");
               //print(mitarbeiterList.toString());
               String mitarbeiter = "";
               //print(mitarbeiter);
@@ -940,7 +930,6 @@ class WorkListState extends State<WorkList> {
                       SelectableText("Kurztext"),
                       SelectableText(value["Kurztext"]),
                     ]),
-
                   ],
                 ),
               );
@@ -950,7 +939,8 @@ class WorkListState extends State<WorkList> {
             return Container();
           }
         } else if (snapshot.hasError) {
-            children.addAll( [
+          children.addAll(
+            [
               const Icon(
                 Icons.error_outline,
                 color: Colors.red,
@@ -963,7 +953,8 @@ class WorkListState extends State<WorkList> {
             ],
           );
         } else {
-            children.addAll( const <Widget>[
+          children.addAll(
+            const <Widget>[
               SizedBox(
                 child: CircularProgressIndicator(),
                 width: 60,
@@ -990,7 +981,7 @@ class WorkListState extends State<WorkList> {
 }
 
 class AkkuList extends StatefulWidget {
-  AkkuList(this.response,{Key key}) : super(key: key);
+  AkkuList(this.response, {Key key}) : super(key: key);
   final Future<String> response;
 
   @override
@@ -1146,10 +1137,10 @@ class AufzugPageState extends State<AufzugPage> {
   Map<String, String> savedText = {};
   Map<String, dynamic> addedTodos = {};
 
-  void writeInLastAFZs(AufzugsArgumente args) async{
+  void writeInLastAFZs(AufzugsArgumente args) async {
     _lastInited = true;
     print("writeInLastAFZs");
-    if (Preferences.prefs==null) {
+    if (Preferences.prefs == null) {
       print("prefs==null");
 
       await Preferences.initPrefs();
@@ -1158,8 +1149,8 @@ class AufzugPageState extends State<AufzugPage> {
       List<String> lastAFZs = Preferences.prefs.getStringList("lastAFZs");
       if (lastAFZs.contains(args.AfzIdx.toString()))
         lastAFZs.remove(args.AfzIdx.toString());
-      lastAFZs.insert(0,args.AfzIdx.toString());
-      if (lastAFZs.length>10) {
+      lastAFZs.insert(0, args.AfzIdx.toString());
+      if (lastAFZs.length > 10) {
         //print("removed: "+lastAFZs[10]);
         lastAFZs.removeAt(10);
       }
@@ -1168,7 +1159,6 @@ class AufzugPageState extends State<AufzugPage> {
       Preferences.prefs.setStringList("lastAFZs", [args.AfzIdx.toString()]);
     }
   }
-
 
   void printFutureResponse(Future<http.Response> response) async {
     print("change get Back");
@@ -1205,10 +1195,8 @@ class AufzugPageState extends State<AufzugPage> {
 
   @override
   Widget build(BuildContext context) {
-
     final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
-    if (!_lastInited)
-      writeInLastAFZs(args);
+    if (!_lastInited) writeInLastAFZs(args);
     List<Widget> workWidget = [];
 
     workWidget.add(
@@ -1252,19 +1240,25 @@ class AufzugPageState extends State<AufzugPage> {
 
     workWidget.add(Divider());
 
-    workWidget.add(
-        AkkuList(args.json)
-    );
+    workWidget.add(AkkuList(args.json));
 
-
-    workWidget.add(Divider(thickness: 3, height: 50, color: Colors.black));
+    workWidget.add(Divider(
+        thickness: 3,
+        //height: 50,
+        color: Colors.black));
     workWidget.addAll([
       Table(
         children: [
           TableRow(children: [
-            InkWell(
+            ElevatedButton(
               child: Text("Arbeiten"),
-              onTap: () {
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey[!(_showArbeiten) ? 700 : 500],
+                elevation: 20,
+                shape: const BeveledRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5))),
+              ),
+              onPressed: () {
                 if (!this._showArbeiten) {
                   this.setState(() {
                     _showArbeiten = true;
@@ -1272,9 +1266,15 @@ class AufzugPageState extends State<AufzugPage> {
                 }
               },
             ),
-            InkWell(
+            ElevatedButton(
               child: Text("To-Dos"),
-              onTap: () {
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey[_showArbeiten ? 700 : 500],
+                elevation: 10,
+                shape: const BeveledRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5))),
+              ),
+              onPressed: () {
                 if (this._showArbeiten) {
                   this.setState(() {
                     _showArbeiten = false;
@@ -1297,7 +1297,6 @@ class AufzugPageState extends State<AufzugPage> {
       workWidget.add(WorkList(args.json));
     } else if (!this._showArbeiten) {
       workWidget.add(ToDoAufzugList(args.json, args.AfzIdx));
-
     } else {
       print(!this._showArbeiten);
       //print(toDoExists);
@@ -1322,12 +1321,12 @@ class AufzugPageState extends State<AufzugPage> {
 }
 
 class History extends StatefulWidget {
-  History({Key key,}) : super(key: key);
-
+  History({
+    Key key,
+  }) : super(key: key);
 
   @override
   HistoryState createState() => HistoryState();
-
 }
 
 class HistoryState extends State<History> {
@@ -1335,12 +1334,13 @@ class HistoryState extends State<History> {
 
   Future<List<Widget>> getResponse(String listString) async {
     String response = await webComunicater.sendRequest(<String, String>{
-      'AfzIdxList':listString,
+      'AfzIdxList': listString,
       'auth': Preferences.prefs.getString("key"),
     });
-    print("response:"+response);
-    response=response.replaceAll("\n", "");
-    Map<String, dynamic> responseMap = Map<String, dynamic>.from(jsonDecode(response));
+    print("response:" + response);
+    response = response.replaceAll("\n", "");
+    Map<String, dynamic> responseMap =
+        Map<String, dynamic>.from(jsonDecode(response));
     if (responseMap["error"]) {
       return Future.error("Etwas ist schief gelaufen");
     }
@@ -1350,49 +1350,52 @@ class HistoryState extends State<History> {
     bool even = true;
     Color Tablecolor = Colors.grey[300];
 
-    responseMap..forEach((key, value) {
-      toReturn.add(AufzugListItem(
-        AfzIdx: value["AfzIdx"].toString(),
-        Ahnr: value["Ahnr"].toString(),
-        Anr: value["Anr"].toString(),
-        Astr: value["Astr"].toString(),
-        FK_zeit: value["FK_zeit"].toString(),
-        Ort: value["Ort"].toString(),
-        plz: value["plz"].toString(),
-        Zg_txt: value["Zg_txt"].toString(),
-        Tablecolor: Tablecolor,
+    responseMap
+      ..forEach((key, value) {
+        toReturn.add(AufzugListItem(
+          AfzIdx: value["AfzIdx"].toString(),
+          Ahnr: value["Ahnr"].toString(),
+          Anr: value["Anr"].toString(),
+          Astr: value["Astr"].toString(),
+          FK_zeit: value["FK_zeit"].toString(),
+          Ort: value["Ort"].toString(),
+          plz: value["plz"].toString(),
+          Zg_txt: value["Zg_txt"].toString(),
+          Tablecolor: Tablecolor,
+        ));
 
-      ));
-
-      if (even) {
-        Tablecolor = Colors.white;
-      } else {
-        Tablecolor = Colors.grey[300];
-      }
-      even = !even;
-    });
+        if (even) {
+          Tablecolor = Colors.white;
+        } else {
+          Tablecolor = Colors.grey[300];
+        }
+        even = !even;
+      });
     return toReturn;
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Preferences.prefs == null: "+(Preferences.prefs == null).toString()+"\n!Preferences.prefs.containsKey(\"lastAFZs\")"+(!Preferences.prefs.containsKey("lastAFZs")).toString());
-    if  (Preferences.prefs == null || !Preferences.prefs.containsKey("lastAFZs")) {
+    print("Preferences.prefs == null: " +
+        (Preferences.prefs == null).toString() +
+        "\n!Preferences.prefs.containsKey(\"lastAFZs\")" +
+        (!Preferences.prefs.containsKey("lastAFZs")).toString());
+    if (Preferences.prefs == null ||
+        !Preferences.prefs.containsKey("lastAFZs")) {
       return Text("Der Verlauf ist Leer oder es ist ein Fehler aufgetreten");
     }
     String listString = "";
     Preferences.prefs.getStringList("lastAFZs").forEach((element) {
-      listString+= element +",";
+      listString += element + ",";
     });
     if (listString.length > 0) {
       listString = listString.substring(0, listString.length - 1);
     }
-    print("listString: "+listString);
+    print("listString: " + listString);
     Future<List<Widget>> response = getResponse(listString);
 
     return SingleChildScrollView(
-      child:
-      FutureBuilder<List<Widget>>(
+      child: FutureBuilder<List<Widget>>(
         future: response,
         builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
           List<Widget> children;
@@ -1432,8 +1435,6 @@ class HistoryState extends State<History> {
 //          }
       ),
     );
-
-
   }
 }
 
@@ -1447,8 +1448,19 @@ class AufzugListItem extends StatefulWidget {
   String FK_zeit;
   String Zg_txt;
   String AfzIdx;
-  
-  AufzugListItem({Key key, this.Anr,this.Astr,this.Ahnr,this.plz,this.Ort,this.FK_zeit,this.Zg_txt,this.AfzIdx,this.Tablecolor}) : super(key: key);
+
+  AufzugListItem(
+      {Key key,
+      this.Anr,
+      this.Astr,
+      this.Ahnr,
+      this.plz,
+      this.Ort,
+      this.FK_zeit,
+      this.Zg_txt,
+      this.AfzIdx,
+      this.Tablecolor})
+      : super(key: key);
 
   @override
   AufzugListItemState createState() => AufzugListItemState();
@@ -1515,7 +1527,8 @@ class AufzugListItemState extends State<AufzugListItem> {
                         widget.plz,
                         widget.Ort,
                         widget.FK_zeit,
-                        widget.Zg_txt,context);
+                        widget.Zg_txt,
+                        context);
                   },
                 ),
               ),
@@ -1575,7 +1588,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-
   int _selectedIndex = 0;
   static List<Widget> _widgetOptions;
 
@@ -1690,7 +1702,7 @@ class MyHomePageState extends State<MyHomePage> {
       ),
 
       //To Dos Home
-          ToDoHome(),
+      ToDoHome(),
 
       Column(children: <Widget>[
         new Expanded(
@@ -1729,7 +1741,7 @@ class MyHomePageState extends State<MyHomePage> {
             label: 'In der Nähe',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.checklist_rounded),//color: Colors.red,),
+            icon: Icon(Icons.checklist_rounded), //color: Colors.red,),
             label: 'To-Do',
           ),
           BottomNavigationBarItem(
@@ -1748,11 +1760,9 @@ class MyHomePageState extends State<MyHomePage> {
         ),
         //fixedColor: Colors.red,
 
-
         selectedItemColor: Colors.blue,
 
         onTap: _onItemTapped,
-
       ),
     );
   }
@@ -1851,7 +1861,7 @@ class MyHomePageState extends State<MyHomePage> {
       )
     ]);
   }
-  
+
   void getNearby(int menge) async {
     bool error = false;
     String errorMessage;
@@ -2064,7 +2074,8 @@ class MyHomePageState extends State<MyHomePage> {
                             value["plz"].toString(),
                             value["Ort"].toString(),
                             value["FK_zeit"].toString(),
-                            value["Zg_txt"].toString(),context);
+                            value["Zg_txt"].toString(),
+                            context);
                       },
                     ),
                   ),
@@ -2099,8 +2110,6 @@ class MyHomePageState extends State<MyHomePage> {
         Tablecolor = Colors.grey[300];
       }
       even = !even;
-
-
     });
     setState(() {
       _neaByWidgets = tmpWidgets;
@@ -2117,8 +2126,6 @@ class MyHomePageState extends State<MyHomePage> {
     }
     refreshTable(_searchController.text);
   }
-
-
 
   Future<String> checkKey() async {
     //print("CheckKey:");
@@ -2156,14 +2163,9 @@ class MyHomePageState extends State<MyHomePage> {
     return "";
   }
 
-
-
-
-
   refreshToDoTable(String text) async {
     //if (text.length > 2)
     searchToDos(text);
-
 
     /*else {
       setState(() {
@@ -2191,17 +2193,18 @@ class MyHomePageState extends State<MyHomePage> {
       "toDoSort": _toDoSort.toString(),
       "sortDirection": _toDoSortDirection.toString(),
       "showChecked": _toDoShowChecked.toString(),
-      "showUnchecked":_toDoShowUnchecked.toString(),
+      "showUnchecked": _toDoShowUnchecked.toString(),
     });
-    print("showChecked: "+ _toDoShowChecked.toString()+
-    "\nshowUnchecked: "+_toDoShowUnchecked.toString());
+    print("showChecked: " +
+        _toDoShowChecked.toString() +
+        "\nshowUnchecked: " +
+        _toDoShowUnchecked.toString());
 
     String responseStr = response.replaceAll("\n", "");
     print("responseStr:");
     print(response);
     if (responseStr == "false") {
       AuthKey.wrongKey(context);
-
 
       return;
     }
@@ -2220,8 +2223,6 @@ class MyHomePageState extends State<MyHomePage> {
       print("setState");
     });
   }
-
-
 
   void refreshTable(String text) {
     if (text.length > 2)
@@ -2258,7 +2259,6 @@ class MyHomePageState extends State<MyHomePage> {
       "sortDirection": _sortDirection.toString(),
     });
 
-
     String responseStr = response.replaceAll("\n", "");
     print(responseStr);
     if (responseStr == "false") {
@@ -2266,7 +2266,6 @@ class MyHomePageState extends State<MyHomePage> {
 
       return;
     }
-
 
     _responseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
     if (_responseMap["error"]) {
@@ -2295,16 +2294,15 @@ class MyHomePageState extends State<MyHomePage> {
 
     _responseMap.forEach((key, value) {
       tmpTabelle.add(AufzugListItem(
-         AfzIdx: value["AfzIdx"].toString(),
-         Ahnr: value["Ahnr"].toString(),
-         Anr: value["Anr"].toString(),
-         Astr: value["Astr"].toString(),
-         FK_zeit: value["FK_zeit"].toString(),
-         Ort: value["Ort"].toString(),
-         plz: value["plz"].toString(),
+        AfzIdx: value["AfzIdx"].toString(),
+        Ahnr: value["Ahnr"].toString(),
+        Anr: value["Anr"].toString(),
+        Astr: value["Astr"].toString(),
+        FK_zeit: value["FK_zeit"].toString(),
+        Ort: value["Ort"].toString(),
+        plz: value["plz"].toString(),
         Zg_txt: value["Zg_txt"].toString(),
         Tablecolor: Tablecolor,
-
       ));
 
       if (even) {

@@ -498,7 +498,7 @@ class ToDoHomeState extends State<ToDoHome> {
       children: <Widget>[
         Container(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 3, 20, 0),
             //width:200.0,
 
             child: TextField(
@@ -526,10 +526,12 @@ class ToDoHomeState extends State<ToDoHome> {
             ),
           ),
         ),
+
+    //Flexible(child:
         Row(children: <Widget>[
           Container(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
               //width:200.0,
 
               child: DropdownButton<ToDoSorts>(
@@ -558,7 +560,11 @@ class ToDoHomeState extends State<ToDoHome> {
               refreshToDoTable(_searchToDoController.text);
             },
           ),
-          Column(children: [
+
+
+
+
+          (MediaQuery.of(context).orientation ==Orientation.portrait)?Column(children: [
             Row(
               children: [
                 Icon(Icons.check),
@@ -573,6 +579,7 @@ class ToDoHomeState extends State<ToDoHome> {
                 )
               ],
             ),
+
             Row(
               children: [
                 Icon(Icons.crop_square_sharp),
@@ -587,8 +594,32 @@ class ToDoHomeState extends State<ToDoHome> {
                 )
               ],
             ),
-          ]),
-        ]),
+          ]):Row(children: [
+
+                Icon(Icons.check),
+                Checkbox(
+                  value: _toDoShowChecked,
+                  onChanged: (bool val) {
+                    if (val || _toDoShowUnchecked) {
+                      _toDoShowChecked = !_toDoShowChecked;
+                      refreshToDoTable(_searchToDoController.text);
+                    }
+                  },
+                ),
+              Padding(padding: const EdgeInsets.fromLTRB(10, 0, 10, 0)),
+                Icon(Icons.crop_square_sharp),
+                Checkbox(
+                  value: _toDoShowUnchecked,
+                  onChanged: (bool val) {
+                    if (val || _toDoShowChecked) {
+                      _toDoShowUnchecked = !_toDoShowUnchecked;
+                      refreshToDoTable(_searchToDoController.text);
+                    }
+                  },
+                ),
+              ],
+            ),
+        ]),//),
         new Expanded(
             child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -1622,11 +1653,13 @@ class MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     _widgetOptions = <Widget>[
+
       Column(
         children: <Widget>[
+
           Container(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+              padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
               //width:200.0,
 
               child: TextField(
@@ -1651,10 +1684,13 @@ class MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+    //Flexible(child:
           Row(children: <Widget>[
             Container(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 5, 20, 20),
+              child:
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 5),
                 //width:200.0,
 
                 child: DropdownButton<Sorts>(
@@ -1691,6 +1727,7 @@ class MyHomePageState extends State<MyHomePage> {
               children: _tabelle,
             )),
           )),
+
         ],
       ),
       SingleChildScrollView(
@@ -2194,14 +2231,14 @@ class MyHomePageState extends State<MyHomePage> {
       "showChecked": _toDoShowChecked.toString(),
       "showUnchecked": _toDoShowUnchecked.toString(),
     });
-    print("showChecked: " +
+    /*print("showChecked: " +
         _toDoShowChecked.toString() +
         "\nshowUnchecked: " +
         _toDoShowUnchecked.toString());
-
+    */
     String responseStr = response.replaceAll("\n", "");
-    print("responseStr:");
-    print(response);
+    //print("responseStr:");
+    //print(response);
     if (responseStr == "false") {
       AuthKey.wrongKey(context);
 
@@ -2211,7 +2248,7 @@ class MyHomePageState extends State<MyHomePage> {
     if (toDoresponseMap["error"]) {
       _requestError = true;
       setState(() {
-        print("setState");
+        //print("setState");
       });
       return;
     }
@@ -2219,7 +2256,7 @@ class MyHomePageState extends State<MyHomePage> {
     toDoresponseMap.remove("error");
     //processToDos();
     setState(() {
-      print("setState");
+      //print("setState");
     });
   }
 
@@ -2259,7 +2296,7 @@ class MyHomePageState extends State<MyHomePage> {
     });
 
     String responseStr = response.replaceAll("\n", "");
-    print(responseStr);
+    //print(responseStr);
     if (responseStr == "false") {
       AuthKey.wrongKey(context);
 

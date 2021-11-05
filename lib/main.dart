@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'dart:convert';
 import 'dart:async';
@@ -223,13 +224,42 @@ class AufzugToDoState extends State<AufzugToDo> {
   Map<String, dynamic> addedTodos = {};
   Map<String, String> checkboxStates = {};
   Map<String, String> savedText = {};
-
+  //List<String> removedToDoIdxs = [];
+  DateFormat readableTimeFormat = DateFormat('dd.MM.yy HH:mm');
   bool isNumeric(String s) {
     if (s == null) {
       return false;
     }
     return double.tryParse(s) != null;
   }
+  String germanDateTime(String inputStr) {
+    DateTime parsedDate = DateTime.parse(inputStr);
+    return this.readableTimeFormat.format(parsedDate);
+
+  }
+
+  void deleteToDo(Future<String> alertResponse,String idx) async{
+    String response = await alertResponse;
+    if (response != "OK")
+      return;
+    WebComunicater.sendRequest(<String, String>{
+      'auth': Preferences.prefs.getString("key"),
+      'removeToDoIdx': idx,
+    });
+
+    this.savedText.remove(idx);
+    this.savedText.remove(idx);
+    this.savedText.remove(idx);
+    widget.toDoMap.removeWhere((key, value) =>value["idx"].toString()==idx);
+
+    print(widget.toDoMap);
+
+    print("set State");
+    setState(() {
+    });
+
+  }
+
 
   void createNewToDo(String key, String aidx) async {
     String response = await WebComunicater.sendRequest(<String, String>{
@@ -250,6 +280,10 @@ class AufzugToDoState extends State<AufzugToDo> {
   Widget build(BuildContext context) {
     Map<String, TextEditingController> textController = {};
 
+    DateTime now = DateTime.now();
+    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+
+
     List<Widget> widgetList = [
       InkWell(
         child: Icon(Icons.add, size: 40, color: Colors.blue),
@@ -258,8 +292,7 @@ class AufzugToDoState extends State<AufzugToDo> {
           while (widget.toDoMap.containsKey(newKey.toString())) {
             newKey++;
           }
-          DateTime now = DateTime.now();
-          DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+
           String formatted = formatter.format(now);
           addedTodos[newKey.toString()] = <String, String>{
             "created": formatted,
@@ -283,9 +316,9 @@ class AufzugToDoState extends State<AufzugToDo> {
     newMap.addAll(widget.toDoMap);
     widget.toDoMap = newMap;
     //toDoMap=addedTodos;
-    print("addedTodos" + addedTodos.toString());
-    print("newMap" + newMap.toString());
-    print("toDoMap" + widget.toDoMap.toString());
+    //print("addedTodos" + addedTodos.toString());
+    //print("newMap" + newMap.toString());
+    //print("toDoMap" + widget.toDoMap.toString());
 
     widget.toDoMap.forEach((key, value) {
       if (value["created"] == null) {
@@ -298,10 +331,10 @@ class AufzugToDoState extends State<AufzugToDo> {
         value["text"] = "";
       }
 
-      print("|" + value["text"] + "|");
-      print("|" + value["checked"] + "|");
-      print("|" + "toDoMap[" + key.toString() + "][\"checked\"]" + "|");
-      print("|" + widget.toDoMap[key]["checked"] + "|");
+      //print("|" + value["text"] + "|");
+      //print("|" + value["checked"] + "|");
+      //print("|" + "toDoMap[" + key.toString() + "][\"checked\"]" + "|");
+      //print("|" + widget.toDoMap[key]["checked"] + "|");
 
       //workWidget.add(Text("hier Kommen To-Dos hin"));
 
@@ -323,49 +356,89 @@ class AufzugToDoState extends State<AufzugToDo> {
         textController[key] = TextEditingController(text: value["text"]);
       }
 
+      Widget deleteButton=
+      InkWell(
+        child: Icon(Icons.delete_forever_outlined,color:Colors.red,size: 40,),
+        onTap: () {
+          deleteToDo(showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Löschen?'),
+            content: const Text('bist du Dir sicher, dass du diesen Eintrag Löschen möchtest?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'Cancel'),
+                child: const Text('Abbrechen'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('Ja, Löschen',style: TextStyle(color: Colors.red),),
+              ),
+            ],
+          ),),value["idx"].toString());}
+      );
       widgetList.add(
         Table(columnWidths: {
-          0: FlexColumnWidth(1),
+          0: FlexColumnWidth(1.19),
           1: FlexColumnWidth(6),
         }, children: [
           TableRow(children: [
-            Checkbox(
-              value: (checkBoxVal),
-              onChanged: (bool newValue) {
-                DateTime now = DateTime.now();
-                DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-                String formatted = formatter.format(now);
+            Column(children: [
+              Checkbox(
+                value: (checkBoxVal),
+                onChanged: (bool newValue) {
+                  DateTime now = DateTime.now();
+                  DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+                  String formatted = formatter.format(now);
 
-                //printFutureResponse(
-                if (!value.containsKey("idx")) {
-                  addedTodos[key]["checked"] = (newValue) ? formatted : "";
-                  if (newValue) {
-                    addedTodos[key]["text"] = textController[key].text;
-                    createNewToDo(key.toString(), widget.afzIdx);
-                  }
-                } else {
-                  WebComunicater.sendRequest(<String, String>{
-                    'auth': Preferences.prefs.getString("key"),
-                    'toDoSet': newValue.toString(),
-                    'toDoIdx': value['idx'].toString(),
-                  });
-                }
-                setState(() {
-                  if (checkBoxVal) {
-                    print("set " + key.toString() + " to False");
-                    checkboxStates[key] = "";
+                  //printFutureResponse(
+                  if (!value.containsKey("idx")) {
+                    addedTodos[key]["checked"] = (newValue) ? formatted : "";
+                    if (newValue) {
+                      addedTodos[key]["text"] = textController[key].text;
+                      createNewToDo(key.toString(), widget.afzIdx);
+                    }
                   } else {
-                    print("set " + key.toString() + " to " + formatted);
-                    checkboxStates[key] = formatted;
+                    WebComunicater.sendRequest(<String, String>{
+                      'auth': Preferences.prefs.getString("key"),
+                      'toDoSet': newValue.toString(),
+                      'toDoIdx': value['idx'].toString(),
+                    });
                   }
-                });
-              },
-            ),
+                  setState(() {
+                    if (checkBoxVal) {
+                      print("set " + key.toString() + " to False");
+                      checkboxStates[key] = "";
+                    } else {
+                      print("set " + key.toString() + " to " + formatted);
+                      checkboxStates[key] = formatted;
+                    }
+                  });
+                },
+              ),Text((checkBoxVal)?germanDateTime(value["checked"]):""),
+            ]),
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
+
                 (checkBoxVal)
-                    ? SelectableText(textController[key].text)
+                    ? Column(
+
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ConstrainedBox(
+                        constraints: new BoxConstraints(
+                          minHeight: 35.0,
+                          //maxHeight: 60.0,
+                        ),
+                        child:SelectableText(textController[key].text,),
+                      ),
+                        deleteButton,
+                      ])
                     : Column(children: [
+
                         TextField(
                           controller: textController[key],
                           keyboardType: TextInputType.multiline,
@@ -397,11 +470,12 @@ class AufzugToDoState extends State<AufzugToDo> {
                               }),
                           InkWell(
                             child:
-                                Icon(Icons.cancel, size: 40, color: Colors.red),
+                                Icon(Icons.cancel_outlined, size: 40, color: Colors.red),
                             onTap: () {
                               setState(() {});
                             },
-                          ),
+                          ),deleteButton,
+                          Text("erstellt:\n"+germanDateTime(value["created"].toString())),
                         ]),
                       ]),
               ],
@@ -433,6 +507,7 @@ class ToDoHomeState extends State<ToDoHome> {
   bool _toDoShowUnchecked = true;
   Future<Map<String, dynamic>> toDoresponseMap;
   bool firstBuild = true;
+  bool allExpanded = false;
 
   refreshToDoTable(String text) async {
     setState(() {
@@ -461,14 +536,14 @@ class ToDoHomeState extends State<ToDoHome> {
       "showChecked": _toDoShowChecked.toString(),
       "showUnchecked": _toDoShowUnchecked.toString(),
     });
-    print("showChecked: " +
+    /*print("showChecked: " +
         _toDoShowChecked.toString() +
         "\nshowUnchecked: " +
-        _toDoShowUnchecked.toString());
+        _toDoShowUnchecked.toString());*/
 
     String responseStr = response.replaceAll("\n", "");
-    print("responseStr:");
-    print(response);
+   //print("responseStr:");
+    //print(response);
     if (responseStr == "false") {
       AuthKey.wrongKey(context);
 
@@ -529,9 +604,23 @@ class ToDoHomeState extends State<ToDoHome> {
 
     //Flexible(child:
         Row(children: <Widget>[
+          InkWell(
+            child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+
+                child: Transform.rotate(
+                  child: Icon(Icons.double_arrow, color: Colors.blue),
+                  angle: ((this.allExpanded)?90:270 )* math.pi / 180,
+                )),
+            onTap: (){
+              setState(() {
+                this.allExpanded=!this.allExpanded;
+              });
+            },
+          ),
           Container(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              padding: const EdgeInsets.fromLTRB(5, 0, 20, 0),
               //width:200.0,
 
               child: DropdownButton<ToDoSorts>(
@@ -634,6 +723,7 @@ class ToDoHomeState extends State<ToDoHome> {
                 if (snapshot.hasData) {
                   return ToDoHomeList(
                     toDoresponseMap: snapshot.data,
+                    allExpanded: this.allExpanded,
                   );
                 } else if (snapshot.hasError) {
                   return Column(children: <Widget>[
@@ -677,8 +767,9 @@ class ToDoHomeState extends State<ToDoHome> {
 class ToDoHomeList extends StatefulWidget {
   Map<String, dynamic> toDoresponseMap;
   String afzIdx;
+  bool allExpanded;
 
-  ToDoHomeList({this.toDoresponseMap, Key key}) : super(key: key);
+  ToDoHomeList({this.toDoresponseMap, this.allExpanded=false, Key key}) : super(key: key);
 
   @override
   ToDoHomeListState createState() => ToDoHomeListState();
@@ -686,6 +777,7 @@ class ToDoHomeList extends StatefulWidget {
 
 class ToDoHomeListState extends State<ToDoHomeList> {
   Map<String, bool> expandedToDos = {};
+
 
   @override
   Widget build(BuildContext context) {
@@ -705,6 +797,10 @@ class ToDoHomeListState extends State<ToDoHomeList> {
     //toDoresponseMap.
     widget.toDoresponseMap.forEach((key, value) {
       value["todos"].remove("error");
+
+      bool expanded = (expandedToDos.containsKey(value["AfzIdx"].toString()) &&
+          expandedToDos[value["AfzIdx"].toString()])||widget.allExpanded;
+
       List<Widget> columnChildren = [
         Row(children: [
           Text(
@@ -736,11 +832,12 @@ class ToDoHomeListState extends State<ToDoHomeList> {
           ],
         ));
       }
+
       //print(value.toString());
       tmpTabelle.add(
         Container(
           padding: const EdgeInsets.only(
-              right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
+              right: 20.0, left: 2.0, bottom: 5.0, top: 5.0),
           //padding: const EdgeInsets.only(left: 10.0),
           color: tablecolor,
           child: Column(
@@ -749,19 +846,27 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                 children: [
                   Expanded(
                     child: new InkWell(
-                      child: Column(
-                        children: columnChildren,
+                      child: Row(
+
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(expanded?Icons.keyboard_arrow_down:Icons.keyboard_arrow_up, color:Colors.blue),
+                          Padding(padding: const EdgeInsets.only(
+                              right: 0, left: 5.0, bottom: 0, top: 0),),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: columnChildren,
+                          ),
+                        ],
                       ),
                       onTap: () {
                         print("onTap");
 
-                        if (expandedToDos
-                                .containsKey(value["afzIdx"].toString()) &&
-                            expandedToDos[value["afzIdx"].toString()]) {
-                          expandedToDos[value["afzIdx"].toString()] = false;
+                        if (expanded) {
+                          expandedToDos[value["AfzIdx"].toString()] = false;
                           print("unshow");
                         } else {
-                          expandedToDos[value["afzIdx"].toString()] = true;
+                          expandedToDos[value["AfzIdx"].toString()] = true;
                           print("show");
                         }
                         setState(() {});
@@ -776,7 +881,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                     ),
                     onTap: () {
                       SelectElevator.selectElevator(
-                          value["afzIdx"].toString(),
+                          value["AfzIdx"].toString(),
                           value["Anr"].toString(),
                           value["Astr"].toString() +
                               " " +
@@ -790,10 +895,9 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                   ),
                 ],
               ),
-              (expandedToDos.containsKey(value["afzIdx"].toString()) &&
-                      expandedToDos[value["afzIdx"].toString()])
+              (expanded)
                   ? AufzugToDo(
-                      afzIdx: value["afzIdx"].toString().toString(),
+                      afzIdx: value["AfzIdx"].toString().toString(),
                       toDoMap: value["todos"])
                   : Text(""),
               //Divider(thickness: 0.0),
@@ -801,7 +905,6 @@ class ToDoHomeListState extends State<ToDoHomeList> {
           ),
         ), //Container
       );
-      print("expandedToDos: " + expandedToDos.toString());
 
       if (even) {
         tablecolor = Colors.white;
@@ -839,8 +942,8 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
           Map<String, dynamic> toDoMap;
           if (!(responseMap["2"].runtimeType == String ||
               responseMap["2"]["error"] == "true")) {
-            print('responseMap["2"]');
-            print(responseMap["2"]);
+            //print('responseMap["2"]');
+            //print(responseMap["2"]);
             toDoMap = responseMap["2"];
 
             toDoMap.remove("error");
@@ -914,8 +1017,8 @@ class WorkListState extends State<WorkList> {
               responseMap["1"]["error"] == "true")) {
             Map<String, dynamic> arbeitMap = responseMap["1"];
             arbeitMap.remove("error");
-            print("arbeitMap".toString());
-            print(arbeitMap.toString());
+            //print("arbeitMap".toString());
+            //print(arbeitMap.toString());
             arbeitMap.forEach((key, value) {
               if (value["ArbDat"] == null) {
                 value["ArbDat"] = "";
@@ -1030,8 +1133,8 @@ class AkkuListState extends State<AkkuList> {
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         List<TableRow> children;
         if (snapshot.hasData) {
-          print("snapshot.data");
-          print(snapshot.data);
+          //print("snapshot.data");
+          //print(snapshot.data);
           //children = snapshot.data;
           Map<String, dynamic> responseMap =
               Map<String, dynamic>.from(jsonDecode(snapshot.data));
@@ -1366,7 +1469,7 @@ class HistoryState extends State<History> {
       'AfzIdxList': listString,
       'auth': Preferences.prefs.getString("key"),
     });
-    print("response:" + response);
+    //print("response:" + response);
     response = response.replaceAll("\n", "");
     Map<String, dynamic> responseMap =
         Map<String, dynamic>.from(jsonDecode(response));

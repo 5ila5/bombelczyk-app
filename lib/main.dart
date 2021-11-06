@@ -223,7 +223,7 @@ class AufzugToDoState extends State<AufzugToDo> {
   //Map <String,dynamic> toDoMap=Widget.;
   Map<String, dynamic> addedTodos = {};
   Map<String, String> checkboxStates = {};
-  Map<String, String> savedText = {};
+  //Map<String, String> savedText = {};
   //List<String> removedToDoIdxs = [];
   DateFormat readableTimeFormat = DateFormat('dd.MM.yy HH:mm');
   bool isNumeric(String s) {
@@ -247,9 +247,9 @@ class AufzugToDoState extends State<AufzugToDo> {
       'removeToDoIdx': idx,
     });
 
-    this.savedText.remove(idx);
-    this.savedText.remove(idx);
-    this.savedText.remove(idx);
+    //this.savedText.remove(idx);
+    this.checkboxStates.remove(idx);
+    this.addedTodos.remove(idx);
     widget.toDoMap.removeWhere((key, value) =>value["idx"].toString()==idx);
 
     print(widget.toDoMap);
@@ -273,12 +273,16 @@ class AufzugToDoState extends State<AufzugToDo> {
     if (isNumeric(response)) {
       addedTodos[key]["idx"] = int.parse(response).toString();
     }
+    widget.toDoMap.addAll({key:addedTodos[key]});
+    addedTodos.remove(key);
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     Map<String, TextEditingController> textController = {};
+    print(widget.toDoMap.toString());
+    print(widget.toDoMap.hashCode.toString());
 
     DateTime now = DateTime.now();
     DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -347,19 +351,20 @@ class AufzugToDoState extends State<AufzugToDo> {
             value["checked"] != "NULL";
       }
 
-      if (savedText.containsKey(key)) {
+      /*if (savedText.containsKey(key)) {
         print("savedController contains Key");
         textController[key] = TextEditingController(text: savedText[key]);
         print(savedText[key]);
         print(textController[key].text);
-      } else {
+      } else {*/
         textController[key] = TextEditingController(text: value["text"]);
-      }
+      //}
 
       Widget deleteButton=
       InkWell(
         child: Icon(Icons.delete_forever_outlined,color:Colors.red,size: 40,),
         onTap: () {
+          HapticFeedback.lightImpact();
           deleteToDo(showDialog<String>(
           context: context,
           builder: (BuildContext context) => AlertDialog(
@@ -465,13 +470,35 @@ class AufzugToDoState extends State<AufzugToDo> {
                                   });
                                 }
                                 setState(() {
-                                  savedText[key] = textController[key].text;
+                                  final snackBar = SnackBar(
+                                    content: Row(children:[Text('Gespeichert'),Icon(Icons.save_outlined,
+                                       color: Colors.green)]),
+                                    //padding: EdgeInsets.fromLTRB(10, 0, 10, 10),
+                                    margin: EdgeInsets.fromLTRB(20, 0, 20, 30),
+                                    duration: Duration(seconds: 1),
+                                    behavior: SnackBarBehavior.floating,
+                                    //animation: new Animation(),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18.0),
+                                        side: BorderSide(color: Colors.grey)
+                                    ),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  HapticFeedback.heavyImpact();
+                                  widget.toDoMap.updateAll((mapIdx, value) {
+                                    if (mapIdx == key) {
+                                      value["text"] = textController[key].text;
+                                    }
+                                    return value;
+                                  });
+                                  //savedText[key] = textController[key].text;
                                 });
                               }),
                           InkWell(
                             child:
                                 Icon(Icons.cancel_outlined, size: 40, color: Colors.red),
                             onTap: () {
+                              HapticFeedback.heavyImpact();
                               setState(() {});
                             },
                           ),deleteButton,
@@ -924,6 +951,7 @@ class ToDoAufzugList extends StatefulWidget {
   ToDoAufzugList(this.response, this.afzIdx, {Key key}) : super(key: key);
   final Future<String> response;
   final String afzIdx;
+  Widget aufzugToDo;
 
   @override
   ToDoAufzugListState createState() => ToDoAufzugListState();
@@ -932,6 +960,9 @@ class ToDoAufzugList extends StatefulWidget {
 class ToDoAufzugListState extends State<ToDoAufzugList> {
   @override
   Widget build(BuildContext context) {
+    if (widget.aufzugToDo!=null) {
+      return widget.aufzugToDo;
+    }
     return FutureBuilder<String>(
       future: widget.response,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -942,15 +973,15 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
           Map<String, dynamic> toDoMap;
           if (!(responseMap["2"].runtimeType == String ||
               responseMap["2"]["error"] == "true")) {
-            //print('responseMap["2"]');
-            //print(responseMap["2"]);
             toDoMap = responseMap["2"];
-
             toDoMap.remove("error");
           } else {
             toDoMap = {};
           }
-          return AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
+           this.widget.aufzugToDo=AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
+          print("set AufzugToDo");
+          print(widget.hashCode);
+          return this.widget.aufzugToDo;
         } else if (snapshot.hasError) {
           children.addAll(
             [
@@ -993,25 +1024,132 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
   }
 }
 
-class WorkList extends StatefulWidget {
+class Arbeiten extends StatelessWidget {
+  final Map<String,dynamic> arbeitsMap;
+  Arbeiten(this.arbeitsMap,{Key key}): super(key:key);
+   @override
+  Widget build(BuildContext context) {
+
+     List<Widget> children=[];
+     this.arbeitsMap.forEach((key, value) {
+       if (value["ArbDat"] == null) {
+         value["ArbDat"] = "";
+       }
+       if (value["MitarbeiterName"] == null) {
+         value["MitarbeiterName"] = "";
+       }
+       if (value["AusgfArbeit"] == null) {
+         value["AusgfArbeit"] = "";
+       }
+       if (value["Kurztext"] == null) {
+         value["Kurztext"] = "";
+       }
+
+       List<String> mitarbeiterList =
+       value["MitarbeiterName"].split(",");
+       //print(mitarbeiterList.toString());
+       String mitarbeiter = "";
+       //print(mitarbeiter);
+       for (int i = 0; i < mitarbeiterList.length; i++) {
+         if (i == 0)
+           mitarbeiter += mitarbeiterList[i];
+         else if (!mitarbeiter
+             .replaceAll(" ", "")
+             .contains(mitarbeiterList[i].replaceAll(" ", "")))
+           mitarbeiter += "," + mitarbeiterList[i];
+       }
+
+       children.add(
+         Table(
+           children: [
+             TableRow(children: [
+               SelectableText("Datum"),
+               SelectableText(value["ArbDat"]),
+             ]),
+             TableRow(children: [
+               SelectableText("Monteur(e)"),
+               SelectableText(mitarbeiter),
+               //Text(value["MitarbeiterName"]),
+             ]),
+             TableRow(children: [
+               SelectableText("Arbeit"),
+               SelectableText(value["AusgfArbeit"]),
+             ]),
+             TableRow(children: [
+               SelectableText("Kurztext"),
+               SelectableText(value["Kurztext"]),
+             ]),
+           ],
+         ),
+       );
+       children.add(Divider(thickness: 3, color: Colors.grey));
+     });
+     /*return Column(
+       mainAxisAlignment: MainAxisAlignment.center,
+       crossAxisAlignment: CrossAxisAlignment.center,
+
+       //crossAxisCount: 6,
+       children: children,
+     );*/
+     return ListView.builder(
+         itemCount: children.length,
+         itemBuilder:(context,index) => children[index],
+          physics: ClampingScrollPhysics(),
+         shrinkWrap: true,
+       cacheExtent: children.length*200.0,
+     );
+   }
+}
+class KeepAliveFutureBuilder extends StatefulWidget {
+
+  final Future future;
+  final AsyncWidgetBuilder builder;
+
+  KeepAliveFutureBuilder({
+    this.future,
+    this.builder
+  });
+
+  @override
+  _KeepAliveFutureBuilderState createState() => _KeepAliveFutureBuilderState();
+}
+
+class _KeepAliveFutureBuilderState extends State<KeepAliveFutureBuilder> with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: widget.future,
+      builder: widget.builder,
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+}
+
+class WorkList extends StatefulWidget{
   WorkList(this.response, {Key key}) : super(key: key);
   final Future<String> response;
+  Widget arbeit;
 
   @override
   WorkListState createState() => WorkListState();
 }
 
-class WorkListState extends State<WorkList> {
+class WorkListState extends State<WorkList>  {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
+    if (widget.arbeit != null) {
+      return widget.arbeit;
+    }
+    return KeepAliveFutureBuilder(
       future: widget.response,
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         List<Widget> children = [];
         if (snapshot.hasData) {
           //children = snapshot.data;
           Map<String, dynamic> responseMap =
-              Map<String, dynamic>.from(jsonDecode(snapshot.data));
+          Map<String, dynamic>.from(jsonDecode(snapshot.data));
 
           if (!(responseMap["1"].runtimeType == String ||
               responseMap["1"]["error"] == "true")) {
@@ -1019,61 +1157,15 @@ class WorkListState extends State<WorkList> {
             arbeitMap.remove("error");
             //print("arbeitMap".toString());
             //print(arbeitMap.toString());
-            arbeitMap.forEach((key, value) {
-              if (value["ArbDat"] == null) {
-                value["ArbDat"] = "";
-              }
-              if (value["MitarbeiterName"] == null) {
-                value["MitarbeiterName"] = "";
-              }
-              if (value["AusgfArbeit"] == null) {
-                value["AusgfArbeit"] = "";
-              }
-              if (value["Kurztext"] == null) {
-                value["Kurztext"] = "";
-              }
-
-              List<String> mitarbeiterList =
-                  value["MitarbeiterName"].split(",");
-              //print(mitarbeiterList.toString());
-              String mitarbeiter = "";
-              //print(mitarbeiter);
-              for (int i = 0; i < mitarbeiterList.length; i++) {
-                if (i == 0)
-                  mitarbeiter += mitarbeiterList[i];
-                else if (!mitarbeiter
-                    .replaceAll(" ", "")
-                    .contains(mitarbeiterList[i].replaceAll(" ", "")))
-                  mitarbeiter += "," + mitarbeiterList[i];
-              }
-
-              children.add(
-                Table(
-                  children: [
-                    TableRow(children: [
-                      SelectableText("Datum"),
-                      SelectableText(value["ArbDat"]),
-                    ]),
-                    TableRow(children: [
-                      SelectableText("Monteur(e)"),
-                      SelectableText(mitarbeiter),
-                      //Text(value["MitarbeiterName"]),
-                    ]),
-                    TableRow(children: [
-                      SelectableText("Arbeit"),
-                      SelectableText(value["AusgfArbeit"]),
-                    ]),
-                    TableRow(children: [
-                      SelectableText("Kurztext"),
-                      SelectableText(value["Kurztext"]),
-                    ]),
-                  ],
-                ),
-              );
-              children.add(Divider(thickness: 3, color: Colors.grey));
-            });
+            widget.arbeit = Arbeiten(arbeitMap);
+            return widget.arbeit;
           } else {
-            return Container();
+            return ListView.builder(
+              itemCount: 0,
+              itemBuilder:(context,index) => children[index],
+              physics: ClampingScrollPhysics(),
+              shrinkWrap: true,
+            );
           }
         } else if (snapshot.hasError) {
           children.addAll(
@@ -1104,6 +1196,12 @@ class WorkListState extends State<WorkList> {
             ],
           );
         }
+        return ListView.builder(
+          itemCount: children.length,
+          itemBuilder:(context,index) => children[index],
+          physics: ClampingScrollPhysics(),
+          shrinkWrap: true,
+        );
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1273,8 +1371,10 @@ class AufzugPageState extends State<AufzugPage> {
   bool _lastInited = false;
   bool _showArbeiten = false;
   Map<String, String> checkboxStates = {};
-  Map<String, String> savedText = {};
+  //Map<String, String> savedText = {};
   Map<String, dynamic> addedTodos = {};
+  Widget toDoList;
+  Widget arbeitsList;
 
   void writeInLastAFZs(AufzugsArgumente args) async {
     _lastInited = true;
@@ -1329,6 +1429,12 @@ class AufzugPageState extends State<AufzugPage> {
   @override
   Widget build(BuildContext context) {
     final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
+    if (this.toDoList==null) {
+      this.toDoList= ToDoAufzugList(args.json, args.afzIdx);
+    }
+    if (this.arbeitsList==null) {
+      this.arbeitsList= WorkList(args.json);
+    }
     if (!_lastInited) writeInLastAFZs(args);
     List<Widget> workWidget = [];
 
@@ -1426,9 +1532,9 @@ class AufzugPageState extends State<AufzugPage> {
         color: Colors.black));
 
     if (this._showArbeiten) {
-      workWidget.add(WorkList(args.json));
+      workWidget.addAll([this.arbeitsList]);
     } else if (!this._showArbeiten) {
-      workWidget.add(ToDoAufzugList(args.json, args.afzIdx));
+      workWidget.add(this.toDoList);
     } else {
       print(!this._showArbeiten);
       //print(toDoExists);
@@ -1443,10 +1549,21 @@ class AufzugPageState extends State<AufzugPage> {
         title: Text(args.aNr + ", " + args.aStr),
       ),
       body: Center(
-        child: ListView(
+        child:
+        ListView
+          .builder(
+          cacheExtent: workWidget.length*200.0,
+          physics: ClampingScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: workWidget.length,
+          itemBuilder: (context, index){
+            //final count = index + 1;
+            return workWidget[index];
+          },
+          //children: workWidget,
           //crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: workWidget,
-        ),
+          //children: workWidget,
+       ),
       ),
     );
   }

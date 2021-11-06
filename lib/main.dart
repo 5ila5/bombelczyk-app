@@ -128,6 +128,7 @@ class WebComunicater {
 
   static Future<String> sendRequest(Map<String, String> body,
       {bool login = false}) async {
+    print(base64.encode(gzip.encode(utf8.encode(jsonEncode(body)))));
     http.Response response = await http.post(
       Uri.https(_ipToAsk,
           'UpP0UH3nFKMsnJk2/' + ((login) ? 'login.php' : 'index.php')),
@@ -135,7 +136,7 @@ class WebComunicater {
         'Content-Type': 'application/json; charset=UTF-8',
         "Content-Encoding": "gzip",
       },
-      body: gzip.encode(jsonEncode(body).codeUnits),
+      body: gzip.encode(utf8.encode(jsonEncode(body))),//.codeUnits),
     );
     return response.body;
   }

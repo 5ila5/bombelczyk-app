@@ -1485,7 +1485,7 @@ class HistoryState extends State<History> {
     responseMap
       ..forEach((key, value) {
         toReturn.add(AufzugListItem(
-          afzIdx: value["afzIdx"].toString(),
+          afzIdx: value["AfzIdx"].toString(),
           ahnr: value["Ahnr"].toString(),
           anr: value["Anr"].toString(),
           astr: value["Astr"].toString(),
@@ -2205,7 +2205,7 @@ class MyHomePageState extends State<MyHomePage> {
                       //Text(value["Anr"].toString()+" "+value["Astr"].toString()+" "+value["Anr"].toString()+" "+value["Ahnr"].toString()+", "+value["plz"].toString()+" "+value["Ort"].toString()+" "),
                       onTap: () {
                         SelectElevator.selectElevator(
-                            value["afzIdx"].toString(),
+                            value["AfzIdx"].toString(),
                             value["Anr"].toString(),
                             value["Astr"].toString() +
                                 " " +
@@ -2426,7 +2426,7 @@ class MyHomePageState extends State<MyHomePage> {
 
     _responseMap.forEach((key, value) {
       tmpTabelle.add(AufzugListItem(
-        afzIdx: value["afzIdx"].toString(),
+        afzIdx: value["AfzIdx"].toString(),
         ahnr: value["Ahnr"].toString(),
         anr: value["Anr"].toString(),
         astr: value["Astr"].toString(),

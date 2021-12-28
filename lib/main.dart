@@ -18,6 +18,7 @@ import 'helper.dart';
 import 'to_do_home.dart';
 import 'history.dart';
 import 'auto_key.dart';
+import 'tour.dart';
 import 'web_comunicater.dart';
 import 'aufzug_list_item.dart';
 
@@ -193,9 +194,7 @@ class MyHomePageState extends State<MyHomePage> {
           ),
         )),
       ]),
-      Text(
-        'Vielleicht kommt hier noch irgendwas hin',
-      ),
+        Tour(),
     ];
     //refreshTable("");
 
@@ -223,6 +222,9 @@ class MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.access_time),
             label: 'Historie',
+          ),          BottomNavigationBarItem(
+            icon: Icon(Icons.tour_rounded),
+            label: 'Touren',
           ),
         ],
         showSelectedLabels: true,

@@ -19,15 +19,32 @@ class NearBy extends StatefulWidget {
 
 class NearByState extends State<NearBy> {
   List<Widget> _neaByWidgets = [Text("")];
+  int _menge = 10;
 
+  @override
+  void initState() {
+    super.initState();
+    getNearby();
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+        onRefresh: getNearby,
+        child: Center(child:SingleChildScrollView(
+      physics: AlwaysScrollableScrollPhysics(),
+      child: Column(
+        children: _neaByWidgets,
+      ),
+    )));
+  }
 
-  void getNearby(int menge) async {
+  Future<void> getNearby() async {
     bool error = false;
     String errorMessage;
 
     if (_neaByWidgets.length < 2) {
-      createDropDown(menge, true);
+      createDropDown( true);
     }
 
     print("position Start");
@@ -57,7 +74,7 @@ class NearByState extends State<NearBy> {
     String response = await WebComunicater.sendRequest(<String, String>{
       'posX': x.toString(),
       'posY': y.toString(),
-      'anz': menge.toString(),
+      'anz': _menge.toString(),
       //'auth':"12345678910",
       //"sort": _sort.toString(),
       //"sortDirection": _sortDirection.toString(),
@@ -80,7 +97,7 @@ class NearByState extends State<NearBy> {
     Map<String, dynamic>.from(jsonDecode(responseStr));
     responseMap.remove("error");
 
-    List<Widget> tmpWidgets = [createDropDown(menge, true)];
+    List<Widget> tmpWidgets = [createDropDown(true)];
     String entfernungsText = "";
     bool even = true;
     Color tablecolor = Colors.grey[300];
@@ -215,7 +232,7 @@ class NearByState extends State<NearBy> {
     //print("Hallo");
   }
 
-  Widget createDropDown(int menge, bool working) {
+  Widget createDropDown(bool working) {
     if (working) {
       _neaByWidgets.add(CircularProgressIndicator());
     }
@@ -224,29 +241,30 @@ class NearByState extends State<NearBy> {
     if (_neaByWidgets.length == 1) {
       setState(() {
         _neaByWidgets
-            .addAll([createDropDown(menge, true), CircularProgressIndicator()]);
+            .addAll([createDropDown(true), CircularProgressIndicator()]);
       });
     }
 
     return Row(children: [
       Text("Menge: "),
       DropdownButton<int>(
-        value: menge,
+        value: _menge,
         onChanged: (int newValue) {
+          _menge = newValue;
           //print("set State");
           if (working) {
             //print("working");
             setState(() {
-              _neaByWidgets[0] = createDropDown(newValue, true);
+              _neaByWidgets[0] = createDropDown(true);
               //print("working...");
             });
           } else {
             //print("not working");
             setState(() {
-              _neaByWidgets[0] = createDropDown(newValue, true);
+              _neaByWidgets[0] = createDropDown(true);
             });
           }
-          getNearby(newValue);
+          getNearby();
         },
         items: <int>[10, 20, 50].map<DropdownMenuItem<int>>((int value) {
           return DropdownMenuItem<int>(
@@ -298,13 +316,5 @@ class NearByState extends State<NearBy> {
     return await Geolocator.getCurrentPosition();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return         SingleChildScrollView(
-      child: Column(
-        children: _neaByWidgets,
-        //'Hier Kommt so Batterei Zeug hin',
-      ),
-    );
-  }
+
 }

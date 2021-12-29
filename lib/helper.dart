@@ -3,14 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'aufzug_page.dart';
+import 'aufzug_list_item.dart';
 
-enum Sorts {
-  Aufzugsnummer,
-  Strasse,
-  Postleitzahl,
-  Ort,
-  Anfahrtszeit,
-}
+
 enum ToDoSorts {
   Aufzugsnummer,
   Strasse,
@@ -20,6 +15,51 @@ enum ToDoSorts {
   Erledigt_Datum,
   Erstelldatum,
   ToDoText,
+}
+
+
+
+class Event {
+  final List<dynamic> afz;
+  final DateTime date;
+  final String text;
+  final int id;
+
+  const Event(this.id, this.date, this.text, this.afz);
+
+  List<AufzugListItem> getAfzWidgets() {
+    bool even = false;
+    Color tablecolor;
+
+
+    print("zeug" + afz.toString());
+    List<AufzugListItem> toReturn = [];
+    this.afz.forEach((e) {
+      if (even) {
+        tablecolor = Colors.white;
+      } else {
+        tablecolor = Colors.grey[300];
+      }
+      even = !even;
+      print(e.toString());
+      toReturn.add(AufzugListItem(
+        zgTxt: e["Zg_txt"].toString(),
+        plz: e["plz"].toString(),
+        ort: e["Ort"].toString(),
+        fKZeit: e["FK_zeit"].toString(),
+        astr: e["Astr"].toString(),
+        anr: e["Anr"].toString(),
+        ahnr: e["Ahnr"].toString(),
+        afzIdx: e["AfzIdx"].toString(),
+        tablecolor: tablecolor,
+      ));
+    });
+    return toReturn;
+  }
+
+  @override
+  String toString() =>
+      "" + id.toString() + ", " + date.toString() + ", " + afz.toString();
 }
 
 /*class MyHttpOverrides extends HttpOverrides{
@@ -78,7 +118,15 @@ class SelectElevator {
 
     //Future<String> responseStr = response.replaceAll("\n", "");
     AufzugsArgumente args =
-        AufzugsArgumente(afzIdx, nr, response, str, pLZ, ort, fZ, schluessel);
+    AufzugsArgumente(
+        afzIdx,
+        nr,
+        response,
+        str,
+        pLZ,
+        ort,
+        fZ,
+        schluessel);
     args.printArgs();
     Navigator.pushNamed(
       context,

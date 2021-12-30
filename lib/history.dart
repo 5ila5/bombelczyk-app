@@ -4,6 +4,7 @@ import 'web_comunicater.dart';
 import 'helper.dart';
 import 'dart:convert';
 import 'aufzug_list_item.dart';
+
 class History extends StatefulWidget {
   History({
     Key key,
@@ -78,7 +79,8 @@ class HistoryState extends State<History> {
     print("listString: " + listString);
     Future<List<Widget>> response = getResponse(listString);
 
-    return SingleChildScrollView(
+    return Center(
+        child: SingleChildScrollView(
       child: FutureBuilder<List<Widget>>(
         future: response,
         builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
@@ -118,6 +120,6 @@ class HistoryState extends State<History> {
         },
 //          }
       ),
-    );
+    ));
   }
 }

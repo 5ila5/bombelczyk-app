@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'web_comunicater.dart';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -37,25 +36,18 @@ class ToDoHomeState extends State<ToDoHome> {
 
   Future<Map<String, dynamic>> searchToDos(String search) async {
     Map<String, dynamic> tmpResponseMap = {};
-    SharedPreferences prefs;
-    if (Preferences.prefs == null) {
-      prefs = await Preferences.initPrefs();
-    } else {
-      prefs = Preferences.prefs;
-    }
-    if (!prefs.containsKey("key")) {
-      AuthKey.wrongKey(context);
-      return {};
-    }
 
     String response = await WebComunicater.sendRequest(<String, String>{
       'toDoSearchText': search,
-      'auth': prefs.getString("key"),
       "toDoSort": _toDoSort.toString(),
       "sortDirection": _toDoSortDirection.toString(),
       "showChecked": _toDoShowChecked.toString(),
       "showUnchecked": _toDoShowUnchecked.toString(),
     });
+    if (response == null) {
+      AuthKey.wrongKey(context);
+      return {};
+    }
     /*print("showChecked: " +
         _toDoShowChecked.toString() +
         "\nshowUnchecked: " +

@@ -1,16 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:collapsible/collapsible.dart';
-import 'helper.dart';
+import 'events.dart';
 
 class Tour extends StatefulWidget {
   Event event;
   bool collapsed = false;
+  Map<String, dynamic> afzToAdd;
 
   Tour({
     Key key,
     this.collapsed,
     this.event,
+    addable = false,
+    this.afzToAdd,
   }) : super(key: key);
 
   @override
@@ -41,7 +44,8 @@ class TourState extends State<Tour> {
                     child: Material(
                         elevation: 20,
                         child: Container(
-                          color: Colors.grey,
+                          color: Colors.blue,
+                          padding: EdgeInsets.only(bottom: 5, top: 5),
                           child: InkWell(
                             onTap: () {
                               setState(() {
@@ -50,13 +54,17 @@ class TourState extends State<Tour> {
                             },
                             child: Row(
                               children: [
-                                Icon((_collapsed) ?Icons.keyboard_arrow_up_rounded: Icons.keyboard_arrow_down_rounded),
+                                Icon(
+                                    (_collapsed)
+                                        ? Icons.keyboard_arrow_up_rounded
+                                        : Icons.keyboard_arrow_down_rounded,
+                                    color: Colors.white),
                                 Text(
                                   widget.event.text,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 30,
-                                    color: Colors.blueGrey[900],
+                                    fontSize: 20,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ],

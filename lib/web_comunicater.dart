@@ -4,8 +4,6 @@ import 'package:http/http.dart' as http;
 import 'helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
 class WebComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
   static final gzip = GZipCodec();
@@ -13,7 +11,6 @@ class WebComunicater {
 
   static Future<String> sendRequest(Map<String, String> body,
       {bool login = false}) async {
-
     if (Preferences.prefs == null) {
       prefs = await Preferences.initPrefs();
     } else {

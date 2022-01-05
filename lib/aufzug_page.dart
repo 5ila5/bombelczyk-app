@@ -7,6 +7,7 @@ import 'web_comunicater.dart';
 import 'to_do_aufzugs_list.dart';
 import 'work_list.dart';
 import 'akku_list.dart';
+import 'add_to_tour_dialog.dart';
 
 class Aufzug extends StatelessWidget {
   static const aufzugRoute = '/aufzugRoute';
@@ -207,7 +208,13 @@ class AufzugPageState extends State<AufzugPage> {
     //print("build AufzugPageState");
     return Scaffold(
       appBar: AppBar(
-        title: Text(args.aNr + ", " + args.aStr),
+        title: Row(children: [
+          Text(args.aNr + ", " + args.aStr),
+          InkWell(
+            child: Icon(Icons.add_location_alt_sharp),
+            onTap: () {showDialog(context: context, builder: (BuildContext) {return AddToTourDialog(args.toMap());});},
+          )
+        ]),
       ),
       body: Center(
         child: ListView.builder(

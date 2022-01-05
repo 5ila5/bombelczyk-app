@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'helper.dart';
+import 'events.dart';
 
 import 'package:url_launcher/url_launcher.dart';
+
 //ignore: must_be_immutable
 class AufzugListItem extends StatefulWidget {
   Color tablecolor;
@@ -15,18 +17,30 @@ class AufzugListItem extends StatefulWidget {
   String zgTxt;
   String afzIdx;
 
-  AufzugListItem(
-      {Key key,
-      this.anr,
-      this.astr,
-      this.ahnr,
-      this.plz,
-      this.ort,
-      this.fKZeit,
-      this.zgTxt,
-      this.afzIdx,
-      this.tablecolor})
-      : super(key: key);
+  AufzugListItem({
+    Key key,
+    this.anr,
+    this.astr,
+    this.ahnr,
+    this.plz,
+    this.ort,
+    this.fKZeit,
+    this.zgTxt,
+    this.afzIdx,
+    this.tablecolor,
+    Aufzug aufzug,
+  }) {
+    if (aufzug != null) {
+      this.anr = aufzug.getAnr();
+      this.astr = aufzug.getAstr();
+      this.ahnr = aufzug.getAhnr();
+      this.plz = aufzug.getplz().toString();
+      this.ort = aufzug.getOrt();
+      this.fKZeit = aufzug.getFK_zeit();
+      this.zgTxt = aufzug.getZg_txt();
+      this.afzIdx = aufzug.getAfzIdx().toString();
+    }
+  }
 
   @override
   AufzugListItemState createState() => AufzugListItemState();
@@ -101,7 +115,7 @@ class AufzugListItemState extends State<AufzugListItem> {
               new InkWell(
                 child: Icon(
                   Icons.map_outlined,
-                  size: 60,
+                  size: 50,
                   color: Colors.blue,
                 ),
                 onTap: () {

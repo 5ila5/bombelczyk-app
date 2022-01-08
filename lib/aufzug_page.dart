@@ -209,11 +209,27 @@ class AufzugPageState extends State<AufzugPage> {
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [
-          Text(args.aNr + ", " + args.aStr),
-          InkWell(
-            child: Icon(Icons.add_location_alt_sharp),
-            onTap: () {showDialog(context: context, builder: (BuildContext) {return AddToTourDialog(args.toMap());});},
-          )
+          Flexible(
+            child: Container(
+              //padding: EdgeInsets.only(right: 5),
+              child: Text(
+                args.aNr + ", " + args.aStr,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          Container(
+            child: InkWell(
+              child: Icon(Icons.add_location_alt_sharp),
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AddToTourDialog(args.toMap());
+                    });
+              },
+            ),
+          ),
         ]),
       ),
       body: Center(

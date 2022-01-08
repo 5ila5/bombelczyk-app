@@ -6,6 +6,9 @@ import 'tour_single.dart';
 import 'package:intl/intl.dart';
 import 'events.dart';
 import 'add_event_form.dart';
+import 'dart:developer';
+
+import 'helper.dart';
 
 class Tours extends StatefulWidget {
   /*Tours({
@@ -48,13 +51,24 @@ class ToursState<T extends Tours> extends State<T> {
     return _eventList;
   }
 
+  void refresh() async {
+    //log("refresh From child");
+    //checkPrefs();
+    await _eventList.load();
+    //checkPrefs();
+    //log("refresh from child: _eventList:" + _eventList.toJson());
+    //setState(() {});
+    _onDaySelected(_selectedDay, _focusedDay);
+  }
+
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!allowPastSelect &&
         (selectedDay.isBefore(now) && !isSameDay(selectedDay, now))) {
       return;
     }
-    print("select");
-    print(_tours.toString());
+
+    //print("select");
+    //print(_tours.toString());
     bool _first = true;
     _selectedDay = selectedDay;
     _focusedDay = focusedDay;
@@ -63,7 +77,7 @@ class ToursState<T extends Tours> extends State<T> {
       if (isSameDay(element.date, selectedDay)) {
         // update `_focusedDay` here as well
         _tours.add(loadTour(element, _first));
-        print(_tours.toString());
+        //print(_tours.toString());
         _first = false;
       }
     });
@@ -71,16 +85,24 @@ class ToursState<T extends Tours> extends State<T> {
   }
 
   Widget loadTour(Event e, bool first) {
-    return Tour(event: e, collapsed: !first);
+    return Tour(refresh, event: e, collapsed: !first);
   }
 
-  Future<void> getEvents({bool respectCashe}) async {
-    if (respectCashe == null ||
-        respectCashe == false ||
-        _eventList.lastWebCall().inMinutes < 5) {
+  void checkPrefs() async {
+    /* log("prefEvents");
+    log((await Preferences.getPrefs()).getString('events'));
+    log("Events:");  */
+  }
+
+  Future<void> getEvents({bool respectCashe = false}) async {
+    checkPrefs();
+    if (respectCashe == false || _eventList.lastWebCall().inMinutes < 5) {
       getWebEvents();
     }
     await _eventList.load();
+/*     print("_eventList.toJson()");
+ */
+    print(_eventList.toJson());
     initEvents();
 
     setState(() {});
@@ -104,6 +126,7 @@ class ToursState<T extends Tours> extends State<T> {
   }
 
   Future<void> getWebEvents() async {
+    print("in Get From WEB");
     await _eventList.loadFromWeb();
     if (_eventList == null) {
       _eventList.clear();
@@ -183,6 +206,16 @@ class ToursState<T extends Tours> extends State<T> {
             physics: AlwaysScrollableScrollPhysics(),
             child: Column(
               children: [
+                /* FloatingActionButton.extended(
+                    label: Text("refresh"),
+                    onPressed: () {
+                      setState(() {});
+                    }),
+                FloatingActionButton.extended(
+                    label: Text("check Prefs"),
+                    onPressed: () {
+                      checkPrefs();
+                    }), */
                 Container(
                   margin: EdgeInsets.only(right: 5, top: 5),
                   alignment: Alignment.topRight,
@@ -191,7 +224,7 @@ class ToursState<T extends Tours> extends State<T> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0)),
                     onPressed: addEvent,
-                    label: Text("hinzufügen"),
+                    label: Text("Neue Tour Anlegen"),
                     icon: Icon(
                       Icons.add_circle,
                       color: Colors.black,
@@ -210,6 +243,7 @@ class ToursState<T extends Tours> extends State<T> {
                     CalendarFormat.twoWeeks: "M",
                     CalendarFormat.week: "S"
                   },
+                  availableGestures: AvailableGestures.horizontalSwipe,
                   headerStyle: HeaderStyle(),
                   calendarStyle: CalendarStyle(
                     outsideDaysVisible: true,

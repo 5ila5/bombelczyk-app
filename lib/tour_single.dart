@@ -1,18 +1,20 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:collapsible/collapsible.dart';
 import 'events.dart';
+import "web_comunicater.dart";
 
 class Tour extends StatefulWidget {
   Event event;
   bool collapsed = false;
-  Map<String, dynamic> afzToAdd;
-
-  Tour({
+  Aufzug afzToAdd;
+  final Function() refreshParent;
+  bool addable;
+  Tour(
+    this.refreshParent, {
     Key key,
     this.collapsed,
     this.event,
-    addable = false,
+    this.addable = false,
     this.afzToAdd,
   }) : super(key: key);
 
@@ -25,14 +27,92 @@ class TourState extends State<Tour> {
 
   @override
   void initState() {
-    print("init");
+    // print("init");
     super.initState();
     _collapsed = widget.collapsed;
   }
 
+  void delete() {
+    EventList eventList = EventList.getInstance();
+    WebComunicater.sendRequest(<String, String>{
+      "DeleteTour": "true",
+      "tourIdx": widget.event.id.toString(),
+    }).then((r) => print("Tour Delete Response: " + r));
+
+    eventList.events.remove(widget.event);
+    eventList.save();
+    widget.refreshParent();
+  }
+
+  _deleteConfirmDialog(BuildContext context) {
+    // set up the buttons
+    Widget remindButton = TextButton(
+      child: Text("Ja"),
+      onPressed: () {
+        delete();
+        Navigator.pop(context);
+      },
+    );
+    Widget cancelButton = TextButton(
+      child: Text("Abbrechen"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("Notice"),
+      content: Text("Bist du sicher, dass du diese Tour entfernen möchtest?"),
+      actions: [
+        remindButton,
+        cancelButton,
+      ],
+    ); // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  void addAfz() {
+    EventList eventList = EventList.getInstance();
+    widget.event.afz.add(widget.afzToAdd);
+    eventList.save();
+    WebComunicater.sendRequest(<String, String>{
+      "addAfzToTour": "true",
+      "tourIdx": widget.event.id.toString(),
+      "afzIdx": widget.afzToAdd.getAfzIdx().toString(),
+    }).then((value) => print(value));
+    widget.refreshParent();
+  }
+
+  Widget buttons() {
+    List<Widget> toReturn = [];
+
+    if (widget.addable && !widget.event.containsAfz(widget.afzToAdd)) {
+      widget.event.afz.forEach((Aufzug element) {
+        // print(element.getAfzIdx().toString());
+      });
+
+      toReturn.add(
+        InkWell(
+            onTap: () => addAfz(),
+            child: Icon(Icons.add, color: Colors.lightGreen, size: 30)),
+      );
+    }
+
+    toReturn.add(
+      InkWell(
+          onTap: () => _deleteConfirmDialog(context),
+          child: Icon(Icons.delete, color: Colors.red, size: 30)),
+    );
+    return Row(children: toReturn);
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("build");
+    // print("build");
 
     return Column(
       children: [
@@ -46,36 +126,44 @@ class TourState extends State<Tour> {
                         child: Container(
                           color: Colors.blue,
                           padding: EdgeInsets.only(bottom: 5, top: 5),
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _collapsed = !_collapsed;
-                              });
-                            },
-                            child: Row(
-                              children: [
-                                Icon(
-                                    (_collapsed)
-                                        ? Icons.keyboard_arrow_up_rounded
-                                        : Icons.keyboard_arrow_down_rounded,
-                                    color: Colors.white),
-                                Text(
-                                  widget.event.text,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                    color: Colors.white,
+                          child: Row(children: [
+                            Expanded(
+                                child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _collapsed = !_collapsed;
+                                });
+                              },
+                              child: Row(
+                                children: [
+                                  Icon(
+                                      (_collapsed)
+                                          ? Icons.keyboard_arrow_up_rounded
+                                          : Icons.keyboard_arrow_down_rounded,
+                                      color: Colors.white),
+                                  Text(
+                                    widget.event.text,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            )),
+                            Container(
+                              margin: EdgeInsets.only(right: 20),
+                              child: buttons(),
                             ),
-                          ),
+                          ]),
                         ))))
           ],
         ),
         Collapsible(
             child: Column(
-              children: widget.event.getAfzWidgets(),
+              children: widget.event.getAfzWidgets(
+                  refresh: widget.refreshParent, toAdd: widget.afzToAdd),
             ),
             collapsed: _collapsed,
             axis: CollapsibleAxis.both),

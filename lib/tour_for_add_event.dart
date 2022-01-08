@@ -30,10 +30,11 @@ class TourForAddToEventState extends ToursState<TourForAddToEvent> {
     List<Widget> _widgets = [];
 
     return Tour(
+      refresh,
       collapsed: !first,
       event: e,
       addable: true,
-      afzToAdd: widget.afz,
+      afzToAdd: Aufzug(widget.afz),
     );
     /*e.afz.forEach((Aufzug a) {
       containsAfz = a.hasIdx(widget.afz["afzIdx"]);

@@ -4,6 +4,21 @@ import 'package:flutter/material.dart';
 import 'helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'web_comunicater.dart';
+import 'dart:developer';
+
+import 'package:intl/intl.dart';
+
+/* class EventListDebug {
+  static show(String prefix) {
+    List<Event> evenets = EventList.getInstance().events;
+    /*log(prefix +
+        "\n EventsLength:" +
+        evenets.length.toString() +
+        "\nEvents:" +
+        evenets.toString());
+  */
+  }
+} */
 
 class Buttons extends StatelessWidget {
   bool first;
@@ -12,47 +27,112 @@ class Buttons extends StatelessWidget {
   Color deleteColor = Colors.red;
   Color tablecolor;
   double buttonSize = 30;
+  EventList eventList = EventList.getInstance();
+  Event event;
+  int afzIdx;
+  int sort;
 
-  Buttons(
+  Function() refresh;
+
+  Buttons(this.event, this.sort, this.afzIdx,
       {Key key,
+      this.refresh,
       this.first = false,
       this.last = false,
       this.tablecolor = Colors.white})
       : super(key: key);
 
-  void move(bool up) {
-    //TODO Implement Move
-    throw UnimplementedError();
+  Future<void> move(bool up) async {
+/*     print("move");
+    EventListDebug.show("Move Start"); */
+    await this.event.afzMove(up, sort, afzIdx);
+    // EventListDebug.show("Move after afzMove");
+    this.refresh();
+    // EventListDebug.show("Move after refresh");
   }
 
-  void delete() {
-    //TODO Implement Move
-    throw UnimplementedError();
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget remindButton = TextButton(
+      child: Text("Ja"),
+      onPressed: () {
+        this.event.afzDelete(sort, afzIdx);
+        refresh();
+        Navigator.pop(context);
+      },
+    );
+    Widget cancelButton = TextButton(
+      child: Text("Abbrechen"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("Notice"),
+      content: Text(
+          "Bist du sicher, dass du den Aufzug aus dieser Liste entfernen möchtest?"),
+      actions: [
+        remindButton,
+        cancelButton,
+      ],
+    ); // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  void delete(BuildContext context) {
+    // print("delete");
+    showAlertDialog(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
+        padding: EdgeInsets.only(left: 15),
+        alignment: Alignment.topLeft,
         color: tablecolor,
-        child: Row(children: [
-          InkWell(
-            onTap: () {
-              move(true);
-            },
-            child: Icon(Icons.arrow_upward_outlined,
-                color: arrowColor, size: buttonSize),
-          ),
-          InkWell(
-            onTap: () {
-              move(false);
-            },
-            child: Icon(Icons.arrow_downward_outlined,
-                color: arrowColor, size: buttonSize),
-          ),
-          InkWell(
-            child: Icon(Icons.delete, color: deleteColor, size: buttonSize),
-          ),
-        ]));
+        child: Container(
+            width: buttonSize * 3,
+            child: Row(children: [
+              Expanded(
+                flex: 1,
+                child: (!first)
+                    ? InkWell(
+                        onTap: () {
+                          move(true);
+                        },
+                        child: Icon(Icons.arrow_upward_outlined,
+                            color: arrowColor, size: buttonSize),
+                      )
+                    : Text(""),
+              ),
+              Expanded(
+                flex: 1,
+                child: (!last)
+                    ? InkWell(
+                        onTap: () {
+                          move(false);
+                        },
+                        child: Icon(Icons.arrow_downward_outlined,
+                            color: arrowColor, size: buttonSize),
+                      )
+                    : Text(""),
+              ),
+              Expanded(
+                flex: 1,
+                child: InkWell(
+                  onTap: () {
+                    delete(context);
+                  },
+                  child:
+                      Icon(Icons.delete, color: deleteColor, size: buttonSize),
+                ),
+              ),
+            ])));
   }
 }
 
@@ -65,7 +145,8 @@ class EventList {
 
   static EventList getInstance() {
     if (_instance == null) {
-      return new EventList._();
+      // print("create new Instance of EventList");
+      _instance = new EventList._();
     }
     return _instance;
   }
@@ -84,10 +165,6 @@ class EventList {
     else
       events = [];
   }*/
-  EventList setEventsWithJson(String json) {
-    _initWithJson(json);
-    return this;
-  }
 
   EventList setEvents(List<Event> e) {
     this.events = e;
@@ -95,23 +172,30 @@ class EventList {
   }
 
   save() async {
+    // print("start save");
     SharedPreferences prefs = await Preferences.getPrefs();
     if (prefs != null) {
       prefs.setString("events", this.toJson());
+      // print(this.toJson());
+    } else {
+      // print("erro no Prefs");
     }
+    // print("end Save");
   }
 
   void _initWithJson(String json) {
+    // print("in _initWithJson");
     List<dynamic> tmpList = jsonDecode(json);
-    List<Event> toReturn = [];
+    events = [];
     tmpList.forEach((element) {
-      toReturn.add(Event(element["id"], DateTime.parse(element["date"]),
+      // print("in For Each");
+      events.add(Event(element["id"], DateTime.parse(element["date"]),
           element["text"], element["afz"]));
     });
-    events = toReturn;
   }
 
   EventList clear() {
+    // log("Clear events");
     this.events = [];
     return this;
   }
@@ -122,40 +206,58 @@ class EventList {
       "get_events": "1",
     });
     if (response == null) {
-      return null;
+      return this;
     }
+
+    // log("response is There:" + response);
     response = response.replaceAll("\n", "");
     List<dynamic> tmp = List<dynamic>.from(jsonDecode(response));
-    EventList eventList = EventList.getInstance();
-    eventList.clear();
+    // EventListDebug.show("Load From Web before clear");
+
+    clear();
+    // EventListDebug.show("Load From Web after clear");
+    // log("tmp:" + tmp.toString());
 
     tmp.forEach((element) {
+      // log("tmp.forEach element:" + element.toString());
       DateTime eventTime = DateTime.parse(element["Datum"]);
 
-      eventList.add(
+      events.add(
           Event(element["id"], eventTime, element["comment"], element["afz"]));
+      // log(events.toString());
+      // EventListDebug.show("in forEach");
     });
+    // EventListDebug.show("Load From Web before Save");
     //print(eventList.toString());
-    eventList.save();
-    return eventList;
+    save();
+    // EventListDebug.show("Load From Web after Save");
+
+    return this;
   }
 
   Future<EventList> load() async {
     SharedPreferences prefs = await Preferences.getPrefs();
-    EventList instance = getInstance();
     if (prefs != null && prefs.containsKey("events")) {
-      instance.setEventsWithJson(prefs.get("events"));
+/*       print(
+          "_initWithJson(" + jsonDecode(prefs.get("events")).toString() + ")"); */
+      _initWithJson(prefs.get("events"));
+    } else {
+      // print("PrefsError in eveents.dart L 210");
     }
-    return instance;
+    return this;
   }
 
   String toJson() {
+/*     print("start To JSON");
+    print(events.length);
+    print(events.toString()); */
     String toReturn = "[";
     events.forEach((element) {
       toReturn += element.toJson() + ", ";
     });
-    toReturn = toReturn.substring(0, toReturn.length - 2) + "]\n";
-    return toReturn;
+    if (toReturn.length > 2)
+      toReturn = toReturn.substring(0, toReturn.length - 2);
+    return toReturn + "]\n";
   }
 
   void forEach(void action(Event element)) {
@@ -186,6 +288,12 @@ class Aufzug {
   String _Zg_txt;
 
   Aufzug(Map<String, dynamic> afzMap) {
+    if (afzMap["AfzIdx"] is String) {
+      afzMap["AfzIdx"] = int.parse(afzMap["AfzIdx"]);
+    }
+    if (afzMap["plz"] is String) {
+      afzMap["plz"] = int.parse(afzMap["plz"]);
+    }
     _AfzIdx = afzMap["AfzIdx"];
     _Anr = afzMap["Anr"];
     _Astr = afzMap["Astr"];
@@ -266,23 +374,75 @@ class Event {
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
     afz.forEach((element) {
-      this.afz.add(Aufzug(element));
+      if (element is String) {
+        this.afz.add(Aufzug(jsonDecode(element)));
+      } else if (element is Map<String, dynamic>) {
+        this.afz.add(Aufzug(element));
+      } else {
+        print("error");
+      }
     });
+  }
+
+  bool isSameDay(DateTime a, DateTime b) {
+    if (a == null || b == null) {
+      return false;
+    }
+
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  bool afzDelete(int indx, int afzIdx) {
+    if (indx >= afz.length) {
+      return false;
+    }
+
+    afz.removeAt(indx);
+    EventList.getInstance().save();
+    WebComunicater.sendRequest(<String, String>{
+      "tourAfzDelete": "true",
+      "afzIdx": afzIdx.toString(),
+      "id": this.id.toString(),
+    }).then((r) => print("Delete Response: " + r));
+    return true;
+  }
+
+  Future<bool> afzMove(bool up, int indx, int afzIdx) async {
+    if ((up && indx == 0) ||
+        (!up && indx == afz.length - 1) ||
+        indx >= afz.length) {
+      return false;
+    }
+    Aufzug tmp = afz[indx];
+    afz[indx] = afz[indx + ((up) ? -1 : 1)];
+    afz[indx + ((up) ? -1 : 1)] = tmp;
+    WebComunicater.sendRequest(<String, String>{
+      "tourAfzMove": "true",
+      "afzIdx": afzIdx.toString(),
+      "up": up.toString(),
+      "id": this.id.toString(),
+    }).then((r) => print(r));
+    // print("event Length" + EventList.getInstance().events.length.toString());
+    // EventListDebug.show("afzMove before Save");
+    await EventList.getInstance().save();
+    // EventListDebug.show("afzMove after Save");
+
+    return true;
   }
 
   bool containsAfz(Aufzug aufzug) {
-    print(afz.toString());
     int idx = aufzug.getAfzIdx();
+    bool toReturn = false;
     afz.forEach((element) {
       if (element.hasIdx(idx)) {
-        return true;
+        toReturn = true;
       }
     });
-    return false;
+    return toReturn;
   }
 
   bool containsAfzWithIdx(int idx) {
-    print(afz.toString());
+    // print(afz.toString());
     afz.forEach((element) {
       if (element.hasIdx(idx)) {
         return true;
@@ -303,11 +463,11 @@ class Event {
         "}";
   }
 
-  List<Widget> getAfzWidgets() {
+  List<Widget> getAfzWidgets({Function() refresh, Aufzug toAdd}) {
     bool even = false;
     Color tablecolor;
 
-    print("zeug" + afz.toString());
+    //print("zeug" + afz.toString());
     List<Widget> toReturn = [];
     bool first = true;
     int count = 0;
@@ -318,25 +478,33 @@ class Event {
       } else {
         tablecolor = Colors.grey[300];
       }
+      if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
+        tablecolor = Colors.lightGreen;
+      }
       even = !even;
-      print(e.toString());
+      //print(e.toString());
       toReturn.add(AufzugListItem(
         zgTxt: e.getZg_txt(),
         plz: e.getplz().toString(),
         ort: e.getOrt(),
         fKZeit: e.getFK_zeit(),
         astr: e.getAstr(),
-        anr: e.getAfzIdx().toString(),
+        anr: e.getAnr().toString(),
         ahnr: e.getAhnr(),
         afzIdx: e.getAfzIdx().toString(),
         tablecolor: tablecolor,
       ));
-      toReturn.add(Buttons(
-          first: first,
-          last: (this.afz.length <= count),
-          tablecolor: tablecolor));
-      first = false;
+      if (this.date.isAfter(DateTime.now()) ||
+          isSameDay(DateTime.now(), this.date)) {
+        toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
+            refresh: refresh,
+            first: first,
+            last: (this.afz.length <= count),
+            tablecolor: tablecolor));
+        first = false;
+      }
     });
+
     return toReturn;
   }
 

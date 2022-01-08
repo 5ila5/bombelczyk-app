@@ -16,11 +16,12 @@ class WebComunicater {
     } else {
       prefs = Preferences.prefs;
     }
-    if (!prefs.containsKey("key")) {
+    if (!prefs.containsKey("key") && !login) {
       return null;
     }
-
-    body.addAll({'auth': prefs.getString("key")});
+    if (!login) {
+      body.addAll({'auth': prefs.getString("key")});
+    }
     print(base64.encode(gzip.encode(utf8.encode(jsonEncode(body)))));
     http.Response response = await http.post(
       Uri.https(_ipToAsk,

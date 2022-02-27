@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 //import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
@@ -16,7 +14,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'key_checker.dart';
 import 'suche.dart';
 import 'near_by.dart';
-
+import 'dateien.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(MyApp()));
@@ -41,7 +39,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -81,17 +78,18 @@ class MyHomePageState extends State<MyHomePage> {
         Column(children: <Widget>[
           new Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-                child: SingleChildScrollView(
-                  //  child: Column(
-                  //children:
-                  child: History(), //_ToDotabelle,
-                  //)
-                ),
-              )),
+            padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+            //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+            child: SingleChildScrollView(
+              //  child: Column(
+              //children:
+              child: History(), //_ToDotabelle,
+              //)
+            ),
+          )),
         ]),
         Tours(),
+        Dateien(),
       ];
     }
     //refreshTable("");
@@ -101,8 +99,8 @@ class MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: //Center(
-      //child:
-      _widgetOptions.elementAt(_selectedIndex),
+          //child:
+          _widgetOptions.elementAt(_selectedIndex),
       //),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -121,9 +119,14 @@ class MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.access_time),
             label: 'Historie',
-          ), BottomNavigationBarItem(
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.tour_rounded),
             label: 'Touren',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.folder_rounded),
+            label: 'Dateien',
           ),
         ],
         showSelectedLabels: true,

@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'aufzug_page.dart';
-import 'aufzug_list_item.dart';
 
 
 enum ToDoSorts {
@@ -18,49 +17,6 @@ enum ToDoSorts {
 }
 
 
-
-class Event {
-  final List<dynamic> afz;
-  final DateTime date;
-  final String text;
-  final int id;
-
-  const Event(this.id, this.date, this.text, this.afz);
-
-  List<AufzugListItem> getAfzWidgets() {
-    bool even = false;
-    Color tablecolor;
-
-
-    print("zeug" + afz.toString());
-    List<AufzugListItem> toReturn = [];
-    this.afz.forEach((e) {
-      if (even) {
-        tablecolor = Colors.white;
-      } else {
-        tablecolor = Colors.grey[300];
-      }
-      even = !even;
-      print(e.toString());
-      toReturn.add(AufzugListItem(
-        zgTxt: e["Zg_txt"].toString(),
-        plz: e["plz"].toString(),
-        ort: e["Ort"].toString(),
-        fKZeit: e["FK_zeit"].toString(),
-        astr: e["Astr"].toString(),
-        anr: e["Anr"].toString(),
-        ahnr: e["Ahnr"].toString(),
-        afzIdx: e["AfzIdx"].toString(),
-        tablecolor: tablecolor,
-      ));
-    });
-    return toReturn;
-  }
-
-  @override
-  String toString() =>
-      "" + id.toString() + ", " + date.toString() + ", " + afz.toString();
-}
 
 /*class MyHttpOverrides extends HttpOverrides{
   @override
@@ -77,6 +33,14 @@ class Preferences {
   static Future<SharedPreferences> initPrefs() async {
     prefs = await SharedPreferences.getInstance();
     return prefs;
+  }
+  static  Future<SharedPreferences> getPrefs() async {
+    if (prefs != null) {
+      return prefs;
+    }
+    return await initPrefs();
+
+
   }
 }
 
@@ -98,6 +62,19 @@ class AufzugsArgumente {
     print(await this.json);
     print("VERY IMPORTANT");
     //print(this.json.);
+  }
+  Map<String,dynamic> toMap() {
+    return {
+      "AfzIdx":this.afzIdx,
+      "Anr":this.aNr,
+      //"json":this.json,
+      "Astr":this.aStr,
+      "plz":this.aPLZ,
+      "Ahnr" : "",
+      "Ort":this.aOrt,
+      "FK_zeit":this.aFZ,
+      "Zg_txt":this.schluessel
+    };
   }
 }
 

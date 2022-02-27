@@ -96,7 +96,7 @@ class ToursState<T extends Tours> extends State<T> {
 
   Future<void> getEvents({bool respectCashe = false}) async {
     checkPrefs();
-    if (respectCashe == false || _eventList.lastWebCall().inMinutes < 5) {
+    if (respectCashe == false || _eventList.lastWebCall().inMinutes > 5) {
       getWebEvents();
     }
     await _eventList.load();

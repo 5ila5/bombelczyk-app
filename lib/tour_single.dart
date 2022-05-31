@@ -5,17 +5,21 @@ import "web_comunicater.dart";
 
 class Tour extends StatefulWidget {
   Event event;
-  bool collapsed = false;
+  bool collapsed ;
   Aufzug afzToAdd;
   final Function() refreshParent;
   bool addable;
+  bool editMode;
+  Function edit;
   Tour(
     this.refreshParent, {
     Key key,
-    this.collapsed,
+    this.collapsed= false,
     this.event,
     this.addable = false,
     this.afzToAdd,
+    this.editMode = false,
+    this.edit,
   }) : super(key: key);
 
   @override
@@ -101,7 +105,14 @@ class TourState extends State<Tour> {
             child: Icon(Icons.add, color: Colors.lightGreen, size: 30)),
       );
     }
-
+    print("EDIT FUCTION!!");
+    print(widget.edit);
+    toReturn.add(
+      InkWell(
+          onTap: widget.edit,
+          child: Icon(Icons.edit, color: Colors.green, size: 30)),
+    );
+    
     toReturn.add(
       InkWell(
           onTap: () => _deleteConfirmDialog(context),
@@ -113,6 +124,8 @@ class TourState extends State<Tour> {
   @override
   Widget build(BuildContext context) {
     // print("build");
+    print("widget.event.toString()");
+    print(widget.event.toString());
 
     return Column(
       children: [
@@ -152,7 +165,7 @@ class TourState extends State<Tour> {
                                 ],
                               ),
                             )),
-                            Container(
+                            if (!widget.editMode) Container(
                               margin: EdgeInsets.only(right: 20),
                               child: buttons(),
                             ),
@@ -163,7 +176,7 @@ class TourState extends State<Tour> {
         Collapsible(
             child: Column(
               children: widget.event.getAfzWidgets(
-                  refresh: widget.refreshParent, toAdd: widget.afzToAdd),
+                  refresh: widget.refreshParent, toAdd: widget.afzToAdd, editMode: widget.editMode),
             ),
             collapsed: _collapsed,
             axis: CollapsibleAxis.both),

@@ -304,8 +304,36 @@ class Aufzug {
     _Zg_txt = afzMap["Zg_txt"];
   }
 
+  Aufzug.fromArgs(this._AfzIdx, this._Anr, this._Astr, this._Ahnr, this._plz, this._Ort, this._FK_zeit, this._Zg_txt) {
+    if(this._AfzIdx==null) {
+      this._AfzIdx = -1;
+    }
+    if(this._Anr==null) {
+      this._Anr = "";
+    }
+    if(this._Astr==null) {
+      this._Astr = "";
+    }
+    if(this._Ahnr==null) {
+      this._Ahnr = "";
+    }
+    if(this._plz==null) {
+      this._plz = 00000;
+    }
+    if(this._Ort==null) {
+      this._Ort = "";
+    }
+    if(this._FK_zeit==null) {
+      this._FK_zeit = "";
+    }
+    if(this._Zg_txt==null) {
+      this._Zg_txt = "";
+    }
+
+  }
+
   String toJson() {
-    return '{"AfzIdx":' +
+    String toReturn=  '{"AfzIdx":' +
         _AfzIdx.toString() +
         ',"Anr":"' +
         _Anr +
@@ -316,12 +344,15 @@ class Aufzug {
         '","plz":' +
         _plz.toString() +
         ',"Ort":"' +
-        _Ort +
-        '","FK_zeit":"' +
-        _FK_zeit +
-        '","Zg_txt":"' +
-        _Zg_txt +
-        '"}';
+        _Ort+'"';
+        if (_FK_zeit!= null) {
+          toReturn+=',"FK_zeit":"' + _FK_zeit+'"';
+        }
+        if (_Zg_txt!= null) {
+          toReturn+=',"Zg_txt":"' + _Zg_txt+'"';
+        }
+        toReturn+='}';
+      return toReturn;
   }
 
   @override
@@ -368,9 +399,9 @@ class Aufzug {
 
 class Event {
   final List<Aufzug> afz = [];
-  final DateTime date;
-  final String text;
-  final int id;
+  DateTime date;
+  String text;
+  int id;
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
     afz.forEach((element) {
@@ -378,11 +409,18 @@ class Event {
         this.afz.add(Aufzug(jsonDecode(element)));
       } else if (element is Map<String, dynamic>) {
         this.afz.add(Aufzug(element));
+      } else if (element is Aufzug) {
+        this.afz.add(element);
       } else {
         print("error");
       }
     });
   }
+
+  void addAfz(Aufzug aufzug) {
+    afz.add(aufzug);
+  }
+  
 
   bool isSameDay(DateTime a, DateTime b) {
     if (a == null || b == null) {
@@ -452,6 +490,7 @@ class Event {
   }
 
   String toJson() {
+    print(afz.toString());
     return "{ \"afz\": " +
         jsonEncode(afz) +
         ", \"date\": \"" +
@@ -463,7 +502,7 @@ class Event {
         "}";
   }
 
-  List<Widget> getAfzWidgets({Function() refresh, Aufzug toAdd}) {
+  List<Widget> getAfzWidgets({Function() refresh, Aufzug toAdd, bool editMode=false}) {
     bool even = false;
     Color tablecolor;
 
@@ -496,12 +535,16 @@ class Event {
       ));
       if (this.date.isAfter(DateTime.now()) ||
           isSameDay(DateTime.now(), this.date)) {
-        toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
+        if (editMode){
+          toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
             refresh: refresh,
             first: first,
             last: (this.afz.length <= count),
             tablecolor: tablecolor));
+        
+        }
         first = false;
+        
       }
     });
 
@@ -510,4 +553,12 @@ class Event {
 
   @override
   String toString() => toJson();
+
+  List<int> getAfzIdxList() {
+    List<int> toReturn = [];
+    afz.forEach((element) {
+      toReturn.add(element.getAfzIdx());
+    });
+    return toReturn;
+  }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'helper.dart';
 import 'events.dart';
 
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 //ignore: must_be_immutable
 class AufzugListItem extends StatefulWidget {
@@ -119,14 +119,15 @@ class AufzugListItemState extends State<AufzugListItem> {
                   color: Colors.blue,
                 ),
                 onTap: () {
-                  launch("https://www.google.de/maps/search/?api=1&query=" +
-                      widget.astr +
-                      "+" +
-                      widget.ahnr +
-                      ",+" +
-                      widget.plz +
-                      "+" +
-                      widget.ort);
+                  launchUrlString(
+                      "https://www.google.de/maps/search/?api=1&query=" +
+                          widget.astr +
+                          "+" +
+                          widget.ahnr +
+                          ",+" +
+                          widget.plz +
+                          "+" +
+                          widget.ort);
                 },
               ),
             ],

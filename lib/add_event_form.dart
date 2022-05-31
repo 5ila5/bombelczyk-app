@@ -5,15 +5,29 @@ import 'package:table_calendar/table_calendar.dart';
 import 'events.dart';
 import 'package:intl/intl.dart';
 import 'web_comunicater.dart';
+import 'suche.dart';
+import 'tour_single.dart';
 
 class AddEventForm extends StatefulWidget {
   DateTime defaultDate;
   EventList eventList = EventList.getInstance();
+  int id;
+  Event event;
+  bool createNew = true;
+
   AddEventForm({
     Key key,
     this.defaultDate,
     this.eventList,
+    this.id = -1,
+
   }) : super(key: key);
+
+  AddEventForm.fromEvent(this.event) {
+    this.defaultDate = event.date;
+    this.id = event.id;
+    this.createNew=false;
+  }
 
   @override
   AddEventFormState createState() => AddEventFormState();
@@ -24,12 +38,23 @@ class AddEventFormState extends State<AddEventForm> {
   final DateFormat formatter = DateFormat('dd.MM.yyyy', 'de_DE');
   final DateFormat sendFormatter = DateFormat('yyyy-MM-dd');
 
+  //List<Aufzug> aufzuege = [];
+  
+
   TextEditingController titleController = new TextEditingController();
+
+
 
   @override
   void initState() {
     super.initState();
     if (widget.defaultDate != null) this._selectedDay = widget.defaultDate;
+    if (widget.event==null) {
+      widget.event = Event(widget.id,DateTime.now(), titleController.text, []);//this.aufzuege);
+    }
+    print(widget.event.toString());
+    titleController.text=widget.event.text;
+
   }
 
   List<Event> _getEvent(DateTime day) {
@@ -54,13 +79,26 @@ class AddEventFormState extends State<AddEventForm> {
     print("hash in add");
     print(widget.eventList.hashCode);
     String text = titleController.value.text;
+    print(widget.event.getAfzIdxList().toString());
     Future<String> response = WebComunicater.sendRequest(
-        {"tour_text": text, "tour_date": sendFormatter.format(_selectedDay)});
+        {
+          "tour_text": text,
+          "tour_date": sendFormatter.format(_selectedDay),
+          "aufzuege": widget.event.getAfzIdxList().toString(),
+          if (widget.id!=-1) "tour_id": widget.id.toString(),
+        });
     response.then((String responseStr) {
       log(responseStr);
+      print("save!!");
+      print(widget.event.toString());
       if (isInt(responseStr)) {
-        widget.eventList
-            .add(Event(int.parse(responseStr), _selectedDay, text, []));
+        widget.event.id=int.parse(responseStr);
+        widget.event.date=_selectedDay;
+        if (widget.createNew) {
+          widget.eventList
+              .add(widget.event);//Event(int.parse(responseStr), _selectedDay, text, []));
+        }
+
         Navigator.pop(context);
       }
     });
@@ -68,8 +106,20 @@ class AddEventFormState extends State<AddEventForm> {
 
   @override
   Widget build(BuildContext context) {
+    /*List<Widget> afzList = [];
+    this.aufzuege.forEach((Aufzug afz) => {
+      afzList.add(Text(afz.toJson()))
+    });
+    */
+
+    Tour tour = Tour(()=>setState(() {print("refreshParent");}),event:this.widget.event, editMode: true);
+    widget.event.text = titleController.text;
+    
+
+    
     return Center(
-      child: Column(
+      child: SingleChildScrollView(child:
+       Column(
         children: [
           Row(
             children: [
@@ -160,6 +210,7 @@ class AddEventFormState extends State<AddEventForm> {
                         child: TextField(
                           autocorrect: true,
                           controller: titleController,
+                          onChanged: (String t) => setState(() {}),
                           style: TextStyle(
                             color: Colors.black,
                             //backgroundColor: ,
@@ -175,6 +226,17 @@ class AddEventFormState extends State<AddEventForm> {
               ],
             ),
           ),
+          //Tour(()=>setState(() {print("refreshParent");}),event:Event(widget.id,DateTime.now(), titleController.text, this.aufzuege) ),
+          tour,
+          Container(
+            width: 800,
+            height: 400,
+            child:Suche(showMapIcon:false, customOnclick: (Aufzug afz) => {
+              print(tour.event.toJson()),
+              setState(() {
+                this.widget.event.addAfz(afz);
+              })
+              }),),
           Row(
             children: [
               Expanded(
@@ -202,7 +264,7 @@ class AddEventFormState extends State<AddEventForm> {
             ],
           )
         ],
-      ),
+      ),),
     );
   }
 }

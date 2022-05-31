@@ -16,6 +16,8 @@ class AufzugListItem extends StatefulWidget {
   String fKZeit;
   String zgTxt;
   String afzIdx;
+  bool showMapIcon;
+  Function customOnclick;
 
   AufzugListItem({
     Key key,
@@ -23,13 +25,18 @@ class AufzugListItem extends StatefulWidget {
     this.astr,
     this.ahnr,
     this.plz,
-    this.ort,
-    this.fKZeit,
+    this.ort="",
+    this.fKZeit="",
     this.zgTxt,
     this.afzIdx,
     this.tablecolor,
     Aufzug aufzug,
+    this.showMapIcon = true,
+    this.customOnclick,
   }) {
+    if (fKZeit==null) {
+      fKZeit = "NULL";
+    }
     if (aufzug != null) {
       this.anr = aufzug.getAnr();
       this.astr = aufzug.getAstr();
@@ -56,22 +63,18 @@ class AufzugListItemState extends State<AufzugListItem> {
     );
     List<Widget> columnChildren = [
       Row(children: [
-        Text(
-          widget.anr + " ",
-          style: tableRowTopStyle,
-        ),
-        Text(widget.astr + " " + widget.ahnr, style: tableRowTopStyle),
+        Flexible(child:
+        Text(widget.anr+"  "+widget.astr + " " + widget.ahnr, style: tableRowTopStyle,overflow: TextOverflow.fade,)),
       ]),
       Row(
         children: [
-          Text(widget.plz + " ", style: tableRowBottomStyle),
-          Text(widget.ort, style: tableRowBottomStyle),
+          //Text(widget.plz + " ", style: tableRowBottomStyle,overflow: TextOverflow.fade,),
+          Flexible(child:Text(widget.plz + " "+widget.ort, style: tableRowBottomStyle,overflow: TextOverflow.fade,),),
         ],
       ),
       Row(
         children: [
-          Text("Anfahrt ", style: tableRowBottomStyle),
-          Text(widget.fKZeit, style: tableRowBottomStyle),
+          Flexible(child:Text("Anfahrt "+widget.fKZeit, style: tableRowBottomStyle,overflow: TextOverflow.fade,),),
         ],
       ),
       //Divider(),
@@ -79,8 +82,7 @@ class AufzugListItemState extends State<AufzugListItem> {
     if (widget.zgTxt.length > 2) {
       columnChildren.add(Row(
         children: [
-          Text("Schlüssel ", style: tableRowBottomStyle),
-          Text(widget.zgTxt, style: tableRowBottomStyle),
+          Flexible(child:Text("Schlüssel "+widget.zgTxt, style: tableRowBottomStyle,overflow: TextOverflow.fade,),),
         ],
       ));
     }
@@ -100,35 +102,53 @@ class AufzugListItemState extends State<AufzugListItem> {
                     children: columnChildren,
                   ),
                   onTap: () {
-                    SelectElevator.selectElevator(
-                        widget.afzIdx,
-                        widget.anr,
-                        widget.astr + " " + widget.ahnr,
-                        widget.plz,
-                        widget.ort,
-                        widget.fKZeit,
-                        widget.zgTxt,
-                        context);
+                    print("widget.customOnclick");
+                    print(widget.customOnclick);
+
+                    if (widget.customOnclick == null) {
+                      print("selectElevator");
+                      SelectElevator.selectElevator(
+                          widget.afzIdx,
+                          widget.anr,
+                          widget.astr + " " + widget.ahnr,
+                          widget.plz,
+                          widget.ort,
+                          widget.fKZeit,
+                          widget.zgTxt,
+                          context);
+                    } else {
+                      print("customOnclick(Aufzug.fromArgs");
+                      widget.customOnclick(Aufzug.fromArgs(
+                          int.parse(widget.afzIdx),
+                          widget.anr,
+                          widget.astr,
+                          widget.ahnr,
+                          int.parse(widget.plz),
+                          widget.ort,
+                          widget.fKZeit,
+                          widget.zgTxt));
+                    }
                   },
                 ),
               ),
-              new InkWell(
-                child: Icon(
-                  Icons.map_outlined,
-                  size: 50,
-                  color: Colors.blue,
+              if (widget.showMapIcon)
+                new InkWell(
+                  child: Icon(
+                    Icons.map_outlined,
+                    size: 50,
+                    color: Colors.blue,
+                  ),
+                  onTap: () {
+                    launch("https://www.google.de/maps/search/?api=1&query=" +
+                        widget.astr +
+                        "+" +
+                        widget.ahnr +
+                        ",+" +
+                        widget.plz +
+                        "+" +
+                        widget.ort);
+                  },
                 ),
-                onTap: () {
-                  launch("https://www.google.de/maps/search/?api=1&query=" +
-                      widget.astr +
-                      "+" +
-                      widget.ahnr +
-                      ",+" +
-                      widget.plz +
-                      "+" +
-                      widget.ort);
-                },
-              ),
             ],
           ),
           //Divider(thickness: 0.0),

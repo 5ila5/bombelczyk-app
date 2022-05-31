@@ -16,8 +16,12 @@ enum Sorts {
 }
 
 class Suche extends StatefulWidget {
+  bool showMapIcon = true;
+  Function customOnclick;
   Suche({
     Key key,
+    this.showMapIcon=true,
+    this.customOnclick,
   }) : super(key: key);
 
   @override
@@ -83,6 +87,8 @@ class SucheState extends State<Suche> {
         plz: value["plz"].toString(),
         zgTxt: value["Zg_txt"].toString(),
         tablecolor: tablecolor,
+        showMapIcon: widget.showMapIcon,
+        customOnclick: widget.customOnclick,
       ));
 
       if (even) {

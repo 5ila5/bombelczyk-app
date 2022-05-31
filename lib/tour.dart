@@ -85,7 +85,21 @@ class ToursState<T extends Tours> extends State<T> {
   }
 
   Widget loadTour(Event e, bool first) {
-    return Tour(refresh, event: e, collapsed: !first);
+    print("EDIT IN LOAD TOUR");
+    print(()=> {
+        print("edit Pressed"),
+        addEvent(event:e)
+        });
+    return Tour(
+      refresh,
+      event: e,
+      collapsed: !first,
+      edit: ()=> {
+        print("edit Pressed"),
+        addEvent(event:e)
+        }
+      );
+
   }
 
   void checkPrefs() async {
@@ -143,7 +157,7 @@ class ToursState<T extends Tours> extends State<T> {
     getEvents(respectCashe: true);
   }
 
-  void addEvent() {
+  void addEvent({Event event}) {
     print("hallo");
     print(_eventList.length);
     showDialog(
@@ -151,13 +165,13 @@ class ToursState<T extends Tours> extends State<T> {
         builder: (BuildContext context) {
           return Dialog(
               child: Container(
-            margin: EdgeInsets.all(30),
+            margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(5)),
               color: Colors.white,
             ),
             child:
-                AddEventForm(eventList: _eventList, defaultDate: _selectedDay),
+                (event==null)?AddEventForm(eventList: _eventList, defaultDate: _selectedDay):AddEventForm.fromEvent(event),
           ));
         }).then((value) {
       setState(() {

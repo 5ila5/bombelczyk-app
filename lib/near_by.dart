@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'web_comunicater.dart';
 import 'auto_key.dart';
 import 'dart:convert';
 import 'helper.dart';
-
 
 class NearBy extends StatefulWidget {
   NearBy({
@@ -31,12 +30,13 @@ class NearByState extends State<NearBy> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
         onRefresh: getNearby,
-        child: Center(child:SingleChildScrollView(
-      physics: AlwaysScrollableScrollPhysics(),
-      child: Column(
-        children: _neaByWidgets,
-      ),
-    )));
+        child: Center(
+            child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: _neaByWidgets,
+          ),
+        )));
   }
 
   Future<void> getNearby() async {
@@ -44,7 +44,7 @@ class NearByState extends State<NearBy> {
     String errorMessage;
 
     if (_neaByWidgets.length < 2) {
-      createDropDown( true);
+      createDropDown(true);
     }
 
     print("position Start");
@@ -84,7 +84,6 @@ class NearByState extends State<NearBy> {
       return;
     }
 
-
     String responseStr = response.replaceAll("\n", "");
     //print(responseStr);
     if (responseStr == "false") {
@@ -94,7 +93,7 @@ class NearByState extends State<NearBy> {
     }
     //int dropdownValue = 10;
     Map<String, dynamic> responseMap =
-    Map<String, dynamic>.from(jsonDecode(responseStr));
+        Map<String, dynamic>.from(jsonDecode(responseStr));
     responseMap.remove("error");
 
     List<Widget> tmpWidgets = [createDropDown(true)];
@@ -103,7 +102,7 @@ class NearByState extends State<NearBy> {
     Color tablecolor = Colors.grey[300];
 
     TextStyle tableRowTopStyle =
-    TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
@@ -126,7 +125,6 @@ class NearByState extends State<NearBy> {
         //print("converting Went wrong");
         entfernungsText = value["distantz"].toString() + " km";
       }
-
 
       List<Widget> columnChildren = [
         Row(children: [
@@ -200,14 +198,15 @@ class NearByState extends State<NearBy> {
                       color: Colors.blue,
                     ),
                     onTap: () {
-                      launch("https://www.google.de/maps/search/?api=1&query=" +
-                          value["Astr"].toString() +
-                          "+" +
-                          value["Ahnr"].toString() +
-                          ",+" +
-                          value["plz"].toString() +
-                          "+" +
-                          value["Ort"].toString());
+                      launchUrlString(
+                          "https://www.google.de/maps/search/?api=1&query=" +
+                              value["Astr"].toString() +
+                              "+" +
+                              value["Ahnr"].toString() +
+                              ",+" +
+                              value["plz"].toString() +
+                              "+" +
+                              value["Ort"].toString());
                     },
                   ),
                 ],
@@ -315,6 +314,4 @@ class NearByState extends State<NearBy> {
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
   }
-
-
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'helper.dart';
 import 'events.dart';
 
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 //ignore: must_be_immutable
 class AufzugListItem extends StatefulWidget {
@@ -25,8 +25,8 @@ class AufzugListItem extends StatefulWidget {
     this.astr,
     this.ahnr,
     this.plz,
-    this.ort="",
-    this.fKZeit="",
+    this.ort = "",
+    this.fKZeit = "",
     this.zgTxt,
     this.afzIdx,
     this.tablecolor,
@@ -34,7 +34,7 @@ class AufzugListItem extends StatefulWidget {
     this.showMapIcon = true,
     this.customOnclick,
   }) {
-    if (fKZeit==null) {
+    if (fKZeit == null) {
       fKZeit = "NULL";
     }
     if (aufzug != null) {
@@ -63,18 +63,34 @@ class AufzugListItemState extends State<AufzugListItem> {
     );
     List<Widget> columnChildren = [
       Row(children: [
-        Flexible(child:
-        Text(widget.anr+"  "+widget.astr + " " + widget.ahnr, style: tableRowTopStyle,overflow: TextOverflow.fade,)),
+        Flexible(
+            child: Text(
+          widget.anr + "  " + widget.astr + " " + widget.ahnr,
+          style: tableRowTopStyle,
+          overflow: TextOverflow.fade,
+        )),
       ]),
       Row(
         children: [
           //Text(widget.plz + " ", style: tableRowBottomStyle,overflow: TextOverflow.fade,),
-          Flexible(child:Text(widget.plz + " "+widget.ort, style: tableRowBottomStyle,overflow: TextOverflow.fade,),),
+          Flexible(
+            child: Text(
+              widget.plz + " " + widget.ort,
+              style: tableRowBottomStyle,
+              overflow: TextOverflow.fade,
+            ),
+          ),
         ],
       ),
       Row(
         children: [
-          Flexible(child:Text("Anfahrt "+widget.fKZeit, style: tableRowBottomStyle,overflow: TextOverflow.fade,),),
+          Flexible(
+            child: Text(
+              "Anfahrt " + widget.fKZeit,
+              style: tableRowBottomStyle,
+              overflow: TextOverflow.fade,
+            ),
+          ),
         ],
       ),
       //Divider(),
@@ -82,7 +98,13 @@ class AufzugListItemState extends State<AufzugListItem> {
     if (widget.zgTxt.length > 2) {
       columnChildren.add(Row(
         children: [
-          Flexible(child:Text("Schlüssel "+widget.zgTxt, style: tableRowBottomStyle,overflow: TextOverflow.fade,),),
+          Flexible(
+            child: Text(
+              "Schlüssel " + widget.zgTxt,
+              style: tableRowBottomStyle,
+              overflow: TextOverflow.fade,
+            ),
+          ),
         ],
       ));
     }
@@ -139,14 +161,15 @@ class AufzugListItemState extends State<AufzugListItem> {
                     color: Colors.blue,
                   ),
                   onTap: () {
-                    launch("https://www.google.de/maps/search/?api=1&query=" +
-                        widget.astr +
-                        "+" +
-                        widget.ahnr +
-                        ",+" +
-                        widget.plz +
-                        "+" +
-                        widget.ort);
+                    launchUrlString(
+                        "https://www.google.de/maps/search/?api=1&query=" +
+                            widget.astr +
+                            "+" +
+                            widget.ahnr +
+                            ",+" +
+                            widget.plz +
+                            "+" +
+                            widget.ort);
                   },
                 ),
             ],

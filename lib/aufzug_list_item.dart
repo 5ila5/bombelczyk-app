@@ -18,6 +18,8 @@ class AufzugListItem extends StatefulWidget {
   String afzIdx;
   bool showMapIcon;
   Function customOnclick;
+  String arbeit;
+  Function customWorkWidget;
 
   AufzugListItem({
     Key key,
@@ -33,6 +35,8 @@ class AufzugListItem extends StatefulWidget {
     Aufzug aufzug,
     this.showMapIcon = true,
     this.customOnclick,
+    this.arbeit,
+    this.customWorkWidget,
   }) {
     if (fKZeit == null) {
       fKZeit = "NULL";
@@ -56,12 +60,28 @@ class AufzugListItem extends StatefulWidget {
 class AufzugListItemState extends State<AufzugListItem> {
   @override
   Widget build(BuildContext context) {
-    TextStyle tableRowTopStyle =
-        TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
+    TextStyle tableRowTopStyle = TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Colors.blueGrey[900],
+        fontSize: DefaultTextStyle.of(context).style.fontSize);
+
     TextStyle tableRowBottomStyle = TextStyle(
       fontWeight: FontWeight.normal,
     );
     List<Widget> columnChildren = [
+      if (widget.customWorkWidget != null)
+        Row(children: [
+          Flexible(child: widget.customWorkWidget(int.parse(widget.afzIdx))),
+        ]),
+      if (widget.customWorkWidget == null && widget.arbeit != null)
+        Row(children: [
+          Flexible(
+              child: Text(
+            widget.arbeit,
+            style: tableRowTopStyle.apply(fontSizeFactor: 1.5),
+            overflow: TextOverflow.fade,
+          ))
+        ]),
       Row(children: [
         Flexible(
             child: Text(
@@ -124,9 +144,6 @@ class AufzugListItemState extends State<AufzugListItem> {
                     children: columnChildren,
                   ),
                   onTap: () {
-                    print("widget.customOnclick");
-                    print(widget.customOnclick);
-
                     if (widget.customOnclick == null) {
                       print("selectElevator");
                       SelectElevator.selectElevator(
@@ -139,7 +156,6 @@ class AufzugListItemState extends State<AufzugListItem> {
                           widget.zgTxt,
                           context);
                     } else {
-                      print("customOnclick(Aufzug.fromArgs");
                       widget.customOnclick(Aufzug.fromArgs(
                           int.parse(widget.afzIdx),
                           widget.anr,

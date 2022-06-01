@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'auto_key.dart';
-
+import 'tour_get_general.dart';
 import 'tour_single.dart';
 import 'package:intl/intl.dart';
 import 'events.dart';
@@ -11,10 +11,9 @@ import 'dart:developer';
 import 'helper.dart';
 
 class Tours extends StatefulWidget {
-  /*Tours({
+  Tours({
     Key key,
   }) : super(key: key);
-*/
 
   @override
   ToursState createState() => ToursState();
@@ -23,7 +22,7 @@ class Tours extends StatefulWidget {
 class ToursState<T extends Tours> extends State<T> {
   final DateTime now = DateTime.now();
   final DateFormat formatter = DateFormat('MMMM yyyy', 'de_DE');
-
+  TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
   bool allowPastSelect = true;
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
@@ -85,21 +84,10 @@ class ToursState<T extends Tours> extends State<T> {
   }
 
   Widget loadTour(Event e, bool first) {
-    print("EDIT IN LOAD TOUR");
-    print(()=> {
-        print("edit Pressed"),
-        addEvent(event:e)
-        });
-    return Tour(
-      refresh,
-      event: e,
-      collapsed: !first,
-      edit: ()=> {
-        print("edit Pressed"),
-        addEvent(event:e)
-        }
-      );
-
+    return Tour(refresh,
+        event: e,
+        collapsed: !first,
+        edit: () => {print("edit Pressed"), addEvent(event: e)});
   }
 
   void checkPrefs() async {
@@ -114,9 +102,7 @@ class ToursState<T extends Tours> extends State<T> {
       getWebEvents();
     }
     await _eventList.load();
-/*     print("_eventList.toJson()");
- */
-    print(_eventList.toJson());
+
     initEvents();
 
     setState(() {});
@@ -158,8 +144,6 @@ class ToursState<T extends Tours> extends State<T> {
   }
 
   void addEvent({Event event}) {
-    print("hallo");
-    print(_eventList.length);
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -170,8 +154,9 @@ class ToursState<T extends Tours> extends State<T> {
               borderRadius: BorderRadius.all(Radius.circular(5)),
               color: Colors.white,
             ),
-            child:
-                (event==null)?AddEventForm(eventList: _eventList, defaultDate: _selectedDay):AddEventForm.fromEvent(event),
+            child: (event == null)
+                ? AddEventForm(eventList: _eventList, defaultDate: _selectedDay)
+                : AddEventForm.fromEvent(event),
           ));
         }).then((value) {
       setState(() {

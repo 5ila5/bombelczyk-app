@@ -22,7 +22,6 @@ class WebComunicater {
     if (!login) {
       body.addAll({'auth': prefs.getString("key")});
     }
-    print(base64.encode(gzip.encode(utf8.encode(jsonEncode(body)))));
     http.Response response = await http.post(
       Uri.https(_ipToAsk,
           'UpP0UH3nFKMsnJk2/' + ((login) ? 'login.php' : 'index.php')),

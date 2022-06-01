@@ -36,8 +36,6 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
           }
           this.widget.aufzugToDo =
               AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
-          print("set AufzugToDo");
-          print(widget.hashCode);
           return this.widget.aufzugToDo;
         } else if (snapshot.hasError) {
           children.addAll(

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'aufzug_to_do.dart';
 import 'helper.dart';
+
 class ToDoHomeList extends StatefulWidget {
   Map<String, dynamic> toDoresponseMap;
   String afzIdx;
@@ -111,14 +112,10 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                         ],
                       ),
                       onTap: () {
-                        print("onTap");
-
                         if (expanded) {
                           expandedToDos[value["AfzIdx"].toString()] = false;
-                          print("unshow");
                         } else {
                           expandedToDos[value["AfzIdx"].toString()] = true;
-                          print("show");
                         }
                         setState(() {});
                       },

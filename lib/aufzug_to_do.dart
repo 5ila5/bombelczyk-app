@@ -49,9 +49,6 @@ class AufzugToDoState extends State<AufzugToDo> {
     this.addedTodos.remove(idx);
     widget.toDoMap.removeWhere((key, value) => value["idx"].toString() == idx);
 
-    print(widget.toDoMap);
-
-    print("set State");
     setState(() {});
   }
 
@@ -62,8 +59,7 @@ class AufzugToDoState extends State<AufzugToDo> {
       'AfzIdx': aidx,
       'toDoSet': (addedTodos[key]["checked"] != "").toString(),
     });
-    print("create new ToDo" + key);
-    print("response: " + response);
+
     if (isNumeric(response)) {
       addedTodos[key]["idx"] = int.parse(response).toString();
     }
@@ -75,8 +71,6 @@ class AufzugToDoState extends State<AufzugToDo> {
   @override
   Widget build(BuildContext context) {
     Map<String, TextEditingController> textController = {};
-    print(widget.toDoMap.toString());
-    print(widget.toDoMap.hashCode.toString());
 
     DateTime now = DateTime.now();
     DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -97,10 +91,6 @@ class AufzugToDoState extends State<AufzugToDo> {
             "text": "",
             //"new": "new",
           };
-          print("added " +
-              newKey.toString() +
-              " addedTodo:" +
-              addedTodos.toString());
 
           setState(() {});
         },
@@ -129,11 +119,6 @@ class AufzugToDoState extends State<AufzugToDo> {
       }
 
       //print("|" + value["text"] + "|");
-      //print("|" + value["checked"] + "|");
-      //print("|" + "toDoMap[" + key.toString() + "][\"checked\"]" + "|");
-      //print("|" + widget.toDoMap[key]["checked"] + "|");
-
-      //workWidget.add(Text("hier Kommen To-Dos hin"));
 
       bool checkBoxVal;
       if (checkboxStates.containsKey(key)) {
@@ -144,12 +129,6 @@ class AufzugToDoState extends State<AufzugToDo> {
             value["checked"] != "NULL";
       }
 
-      /*if (savedText.containsKey(key)) {
-        print("savedController contains Key");
-        textController[key] = TextEditingController(text: savedText[key]);
-        print(savedText[key]);
-        print(textController[key].text);
-      } else {*/
       textController[key] = TextEditingController(text: value["text"]);
       //}
 
@@ -218,7 +197,6 @@ class AufzugToDoState extends State<AufzugToDo> {
                       print("set " + key.toString() + " to False");
                       checkboxStates[key] = "";
                     } else {
-                      print("set " + key.toString() + " to " + formatted);
                       checkboxStates[key] = formatted;
                     }
                   });

@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'aufzug_page.dart';
 
-
 enum ToDoSorts {
   Aufzugsnummer,
   Strasse,
@@ -16,8 +15,6 @@ enum ToDoSorts {
   ToDoText,
 }
 
-
-
 /*class MyHttpOverrides extends HttpOverrides{
   @override
   HttpClient createHttpClient(SecurityContext context){
@@ -26,7 +23,6 @@ enum ToDoSorts {
   }
 }*/
 
-
 class Preferences {
   static SharedPreferences prefs;
 
@@ -34,13 +30,12 @@ class Preferences {
     prefs = await SharedPreferences.getInstance();
     return prefs;
   }
-  static  Future<SharedPreferences> getPrefs() async {
+
+  static Future<SharedPreferences> getPrefs() async {
     if (prefs != null) {
       return prefs;
     }
     return await initPrefs();
-
-
   }
 }
 
@@ -58,22 +53,19 @@ class AufzugsArgumente {
       this.aOrt, this.aFZ, this.schluessel);
 
   void printArgs() async {
-    print("printArgs");
-    print(await this.json);
-    print("VERY IMPORTANT");
     //print(this.json.);
   }
-  Map<String,dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
-      "AfzIdx":this.afzIdx,
-      "Anr":this.aNr,
+      "AfzIdx": this.afzIdx,
+      "Anr": this.aNr,
       //"json":this.json,
-      "Astr":this.aStr,
-      "plz":this.aPLZ,
-      "Ahnr" : "",
-      "Ort":this.aOrt,
-      "FK_zeit":this.aFZ,
-      "Zg_txt":this.schluessel
+      "Astr": this.aStr,
+      "plz": this.aPLZ,
+      "Ahnr": "",
+      "Ort": this.aOrt,
+      "FK_zeit": this.aFZ,
+      "Zg_txt": this.schluessel
     };
   }
 }
@@ -95,15 +87,7 @@ class SelectElevator {
 
     //Future<String> responseStr = response.replaceAll("\n", "");
     AufzugsArgumente args =
-    AufzugsArgumente(
-        afzIdx,
-        nr,
-        response,
-        str,
-        pLZ,
-        ort,
-        fZ,
-        schluessel);
+        AufzugsArgumente(afzIdx, nr, response, str, pLZ, ort, fZ, schluessel);
     args.printArgs();
     Navigator.pushNamed(
       context,

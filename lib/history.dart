@@ -76,7 +76,7 @@ class HistoryState extends State<History> {
     if (listString.length > 0) {
       listString = listString.substring(0, listString.length - 1);
     }
-    print("listString: " + listString);
+
     Future<List<Widget>> response = getResponse(listString);
 
     return Center(

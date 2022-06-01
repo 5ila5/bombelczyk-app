@@ -64,9 +64,7 @@ class ToDoHomeState extends State<ToDoHome> {
     tmpResponseMap = Map<String, dynamic>.from(jsonDecode(responseStr));
     if (tmpResponseMap["error"]) {
       //_requestError = true;
-      setState(() {
-        print("setState");
-      });
+      setState(() {});
       return {};
     }
     //_requestError = false;

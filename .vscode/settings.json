@@ -1,4 +1,7 @@
 {
     "editor.defaultFormatter": "Dart-Code.dart-code",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "[xml]": {
+        "editor.defaultFormatter": "DotJoshJohnson.xml"
+    }
 }

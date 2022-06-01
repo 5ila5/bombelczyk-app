@@ -40,7 +40,7 @@ class AufzugPageState extends State<AufzugPage> {
 
   void writeInLastAFZs(AufzugsArgumente args) async {
     _lastInited = true;
-    print("writeInLastAFZs");
+
     if (Preferences.prefs == null) {
       print("prefs==null");
 
@@ -61,10 +61,7 @@ class AufzugPageState extends State<AufzugPage> {
     }
   }
 
-  void printFutureResponse(Future<http.Response> response) async {
-    print("change get Back");
-    print((await response).body);
-  }
+  void printFutureResponse(Future<http.Response> response) async {}
 
   bool isNumeric(String s) {
     if (s == null) {
@@ -80,8 +77,6 @@ class AufzugPageState extends State<AufzugPage> {
       'AfzIdx': aidx,
       'toDoSet': (addedTodos[key]["checked"] != "").toString(),
     });
-    print("create new ToDo" + key);
-    print("response: " + response);
     if (isNumeric(response)) {
       addedTodos[key]["idx"] = int.parse(response).toString();
     }
@@ -198,7 +193,6 @@ class AufzugPageState extends State<AufzugPage> {
     } else if (!this._showArbeiten) {
       workWidget.add(this.toDoList);
     } else {
-      print(!this._showArbeiten);
       //print(toDoExists);
       //print("keine Arbeit für diesen Aufzug eingetragen");
 

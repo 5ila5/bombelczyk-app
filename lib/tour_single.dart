@@ -5,22 +5,23 @@ import "web_comunicater.dart";
 
 class Tour extends StatefulWidget {
   Event event;
-  bool collapsed ;
+  bool collapsed;
   Aufzug afzToAdd;
   final Function() refreshParent;
   bool addable;
   bool editMode;
   Function edit;
-  Tour(
-    this.refreshParent, {
-    Key key,
-    this.collapsed= false,
-    this.event,
-    this.addable = false,
-    this.afzToAdd,
-    this.editMode = false,
-    this.edit,
-  }) : super(key: key);
+  Function customWorkWidget;
+  Tour(this.refreshParent,
+      {Key key,
+      this.collapsed = false,
+      this.event,
+      this.addable = false,
+      this.afzToAdd,
+      this.editMode = false,
+      this.edit,
+      this.customWorkWidget})
+      : super(key: key);
 
   @override
   TourState createState() => TourState();
@@ -105,14 +106,12 @@ class TourState extends State<Tour> {
             child: Icon(Icons.add, color: Colors.lightGreen, size: 30)),
       );
     }
-    print("EDIT FUCTION!!");
-    print(widget.edit);
     toReturn.add(
       InkWell(
           onTap: widget.edit,
           child: Icon(Icons.edit, color: Colors.green, size: 30)),
     );
-    
+
     toReturn.add(
       InkWell(
           onTap: () => _deleteConfirmDialog(context),
@@ -124,8 +123,6 @@ class TourState extends State<Tour> {
   @override
   Widget build(BuildContext context) {
     // print("build");
-    print("widget.event.toString()");
-    print(widget.event.toString());
 
     return Column(
       children: [
@@ -165,10 +162,11 @@ class TourState extends State<Tour> {
                                 ],
                               ),
                             )),
-                            if (!widget.editMode) Container(
-                              margin: EdgeInsets.only(right: 20),
-                              child: buttons(),
-                            ),
+                            if (!widget.editMode)
+                              Container(
+                                margin: EdgeInsets.only(right: 20),
+                                child: buttons(),
+                              ),
                           ]),
                         ))))
           ],
@@ -176,7 +174,11 @@ class TourState extends State<Tour> {
         Collapsible(
             child: Column(
               children: widget.event.getAfzWidgets(
-                  refresh: widget.refreshParent, toAdd: widget.afzToAdd, editMode: widget.editMode),
+                refresh: widget.refreshParent,
+                toAdd: widget.afzToAdd,
+                editMode: widget.editMode,
+                customWorkWidget: widget.customWorkWidget,
+              ),
             ),
             collapsed: _collapsed,
             axis: CollapsibleAxis.both),

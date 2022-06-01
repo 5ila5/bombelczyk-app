@@ -5,6 +5,7 @@ import 'helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'web_comunicater.dart';
 import 'dart:developer';
+import 'tour_get_general.dart';
 
 import 'package:intl/intl.dart';
 
@@ -43,12 +44,9 @@ class Buttons extends StatelessWidget {
       : super(key: key);
 
   Future<void> move(bool up) async {
-/*     print("move");
-    EventListDebug.show("Move Start"); */
     await this.event.afzMove(up, sort, afzIdx);
-    // EventListDebug.show("Move after afzMove");
+
     this.refresh();
-    // EventListDebug.show("Move after refresh");
   }
 
   showAlertDialog(BuildContext context) {
@@ -238,19 +236,12 @@ class EventList {
   Future<EventList> load() async {
     SharedPreferences prefs = await Preferences.getPrefs();
     if (prefs != null && prefs.containsKey("events")) {
-/*       print(
-          "_initWithJson(" + jsonDecode(prefs.get("events")).toString() + ")"); */
       _initWithJson(prefs.get("events"));
-    } else {
-      // print("PrefsError in eveents.dart L 210");
-    }
+    } else {}
     return this;
   }
 
   String toJson() {
-/*     print("start To JSON");
-    print(events.length);
-    print(events.toString()); */
     String toReturn = "[";
     events.forEach((element) {
       toReturn += element.toJson() + ", ";
@@ -286,6 +277,7 @@ class Aufzug {
   String _Ort;
   String _FK_zeit;
   String _Zg_txt;
+  String _arbeit;
 
   Aufzug(Map<String, dynamic> afzMap) {
     if (afzMap["AfzIdx"] is String) {
@@ -302,38 +294,45 @@ class Aufzug {
     _Ort = afzMap["Ort"];
     _FK_zeit = afzMap["FK_zeit"];
     _Zg_txt = afzMap["Zg_txt"];
+    if (afzMap.containsKey("art")) {
+      _arbeit = afzMap["art"];
+    }
   }
 
-  Aufzug.fromArgs(this._AfzIdx, this._Anr, this._Astr, this._Ahnr, this._plz, this._Ort, this._FK_zeit, this._Zg_txt) {
-    if(this._AfzIdx==null) {
+  Aufzug.fromArgs(this._AfzIdx, this._Anr, this._Astr, this._Ahnr, this._plz,
+      this._Ort, this._FK_zeit, this._Zg_txt,
+      {String arbeit}) {
+    if (this._AfzIdx == null) {
       this._AfzIdx = -1;
     }
-    if(this._Anr==null) {
+    if (this._Anr == null) {
       this._Anr = "";
     }
-    if(this._Astr==null) {
+    if (this._Astr == null) {
       this._Astr = "";
     }
-    if(this._Ahnr==null) {
+    if (this._Ahnr == null) {
       this._Ahnr = "";
     }
-    if(this._plz==null) {
+    if (this._plz == null) {
       this._plz = 00000;
     }
-    if(this._Ort==null) {
+    if (this._Ort == null) {
       this._Ort = "";
     }
-    if(this._FK_zeit==null) {
+    if (this._FK_zeit == null) {
       this._FK_zeit = "";
     }
-    if(this._Zg_txt==null) {
+    if (this._Zg_txt == null) {
       this._Zg_txt = "";
     }
-
+    if (arbeit != null) {
+      this._arbeit = arbeit;
+    }
   }
 
   String toJson() {
-    String toReturn=  '{"AfzIdx":' +
+    String toReturn = '{"AfzIdx":' +
         _AfzIdx.toString() +
         ',"Anr":"' +
         _Anr +
@@ -344,15 +343,19 @@ class Aufzug {
         '","plz":' +
         _plz.toString() +
         ',"Ort":"' +
-        _Ort+'"';
-        if (_FK_zeit!= null) {
-          toReturn+=',"FK_zeit":"' + _FK_zeit+'"';
-        }
-        if (_Zg_txt!= null) {
-          toReturn+=',"Zg_txt":"' + _Zg_txt+'"';
-        }
-        toReturn+='}';
-      return toReturn;
+        _Ort +
+        '"';
+    if (_FK_zeit != null) {
+      toReturn += ',"FK_zeit":"' + _FK_zeit + '"';
+    }
+    if (_Zg_txt != null) {
+      toReturn += ',"Zg_txt":"' + _Zg_txt + '"';
+    }
+    if (_arbeit != null) {
+      toReturn += ',"arbeit":"' + _arbeit + '"';
+    }
+    toReturn += '}';
+    return toReturn;
   }
 
   @override
@@ -395,6 +398,14 @@ class Aufzug {
   String getZg_txt() {
     return this._Zg_txt;
   }
+
+  String getArbeit() {
+    return this._arbeit;
+  }
+
+  String setArbeit(String arbeit) {
+    this._arbeit = arbeit;
+  }
 }
 
 class Event {
@@ -402,6 +413,7 @@ class Event {
   DateTime date;
   String text;
   int id;
+  TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
     afz.forEach((element) {
@@ -420,7 +432,6 @@ class Event {
   void addAfz(Aufzug aufzug) {
     afz.add(aufzug);
   }
-  
 
   bool isSameDay(DateTime a, DateTime b) {
     if (a == null || b == null) {
@@ -489,6 +500,16 @@ class Event {
     return false;
   }
 
+  Aufzug getAfzWithIdx(int idx) {
+    for (var element in afz) {
+      if (element.getAfzIdx() == idx) {
+        print("return: " + element.toString());
+        return element;
+      }
+    }
+    return null;
+  }
+
   String toJson() {
     print(afz.toString());
     return "{ \"afz\": " +
@@ -502,7 +523,11 @@ class Event {
         "}";
   }
 
-  List<Widget> getAfzWidgets({Function() refresh, Aufzug toAdd, bool editMode=false}) {
+  List<Widget> getAfzWidgets(
+      {Function() refresh,
+      Aufzug toAdd,
+      bool editMode = false,
+      Function customWorkWidget}) {
     bool even = false;
     Color tablecolor;
 
@@ -531,23 +556,31 @@ class Event {
         anr: e.getAnr().toString(),
         ahnr: e.getAhnr(),
         afzIdx: e.getAfzIdx().toString(),
+        arbeit: e.getArbeit().toString(),
         tablecolor: tablecolor,
+        customWorkWidget: customWorkWidget,
       ));
       if (this.date.isAfter(DateTime.now()) ||
           isSameDay(DateTime.now(), this.date)) {
-        if (editMode){
+        if (editMode) {
           toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
-            refresh: refresh,
-            first: first,
-            last: (this.afz.length <= count),
-            tablecolor: tablecolor));
-        
+              refresh: refresh,
+              first: first,
+              last: (this.afz.length <= count),
+              tablecolor: tablecolor));
         }
         first = false;
-        
       }
     });
 
+    return toReturn;
+  }
+
+  List<int> getAfzArbeit() {
+    List<int> toReturn = [];
+    this.afz.forEach((element) {
+      toReturn.add(tourInfos.getArbeitsIdx(element.getArbeit()));
+    });
     return toReturn;
   }
 

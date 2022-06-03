@@ -290,6 +290,12 @@ class AddEventFormState extends State<AddEventForm> {
                   customOnclick: (Aufzug afz) => {
                         setState(() {
                           this.widget.event.addAfz(afz);
+
+                          List<String> arbeiten =
+                              tourInfos.getArbeitsArtStringList();
+                          if (arbeiten.length > 0) {
+                            afz.setArbeit(arbeiten[0]);
+                          }
                         })
                       }),
             ),

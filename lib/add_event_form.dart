@@ -109,7 +109,7 @@ class AddEventFormState extends State<AddEventForm> {
           widget.eventList.add(widget
               .event); //Event(int.parse(responseStr), _selectedDay, text, []));
         }
-
+        widget.eventList.save();
         Navigator.pop(context);
       }
     });
@@ -296,6 +296,7 @@ class AddEventFormState extends State<AddEventForm> {
                           if (arbeiten.length > 0) {
                             afz.setArbeit(arbeiten[0]);
                           }
+                          afz.setErledigt(false);
                         })
                       }),
             ),

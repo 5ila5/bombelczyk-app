@@ -251,6 +251,10 @@ class EventList {
     return toReturn + "]\n";
   }
 
+  String toString() {
+    return "instance Of EventList:" + this.toJson();
+  }
+
   void forEach(void action(Event element)) {
     for (Event element in events) action(element);
   }
@@ -278,6 +282,7 @@ class Aufzug {
   String _FK_zeit;
   String _Zg_txt;
   String _arbeit;
+  bool _erledigt;
 
   Aufzug(Map<String, dynamic> afzMap) {
     if (afzMap["AfzIdx"] is String) {
@@ -297,11 +302,19 @@ class Aufzug {
     if (afzMap.containsKey("art")) {
       _arbeit = afzMap["art"];
     }
+    if (afzMap.containsKey("arbeit")) {
+      _arbeit = afzMap["arbeit"];
+    }
+    if (afzMap.containsKey("erledigt")) {
+      _erledigt = (afzMap["erledigt"] == 1 ||
+          (afzMap["erledigt"] is String &&
+              afzMap["erledigt"].toLowerCase() == 'true'));
+    }
   }
 
   Aufzug.fromArgs(this._AfzIdx, this._Anr, this._Astr, this._Ahnr, this._plz,
       this._Ort, this._FK_zeit, this._Zg_txt,
-      {String arbeit}) {
+      {String arbeit, bool erledigt}) {
     if (this._AfzIdx == null) {
       this._AfzIdx = -1;
     }
@@ -329,6 +342,9 @@ class Aufzug {
     if (arbeit != null) {
       this._arbeit = arbeit;
     }
+    if (erledigt != null) {
+      this._erledigt = erledigt;
+    }
   }
 
   String toJson() {
@@ -352,7 +368,13 @@ class Aufzug {
       toReturn += ',"Zg_txt":"' + _Zg_txt + '"';
     }
     if (_arbeit != null) {
+      //print("ARBEIT IS Not NULL");
       toReturn += ',"arbeit":"' + _arbeit + '"';
+    } else {
+      //print("ARBEIT IS NULL");
+    }
+    if (_erledigt != null) {
+      toReturn += ',"erledigt":"' + _erledigt.toString() + '"';
     }
     toReturn += '}';
     return toReturn;
@@ -403,8 +425,25 @@ class Aufzug {
     return this._arbeit;
   }
 
-  String setArbeit(String arbeit) {
+  bool getErledigt() {
+    return this._erledigt;
+  }
+
+  void setArbeit(String arbeit) {
     this._arbeit = arbeit;
+  }
+
+  void setErledigt(bool erledigt, {int tourIdx}) {
+    this._erledigt = erledigt;
+    if (tourIdx != null) {
+      WebComunicater.sendRequest(<String, String>{
+        "afz_erledigt": this._AfzIdx.toString(),
+        "tour_for_erledigt": tourIdx.toString(),
+        "erledigt": (erledigt) ? "1" : "0",
+      });
+      EventList eventList = EventList.getInstance();
+      eventList.save();
+    }
   }
 }
 
@@ -416,6 +455,22 @@ class Event {
   TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
+    print("CREATE EVENT");
+
+    if (afz is List<dynamic>) {
+      afz.forEach((element) {
+        //print(element);
+        //print(element.runtimeType);
+        if ((element is Map && element["AfzIdx"] == 250) ||
+            (element is String &&
+                jsonDecode(element) is Map &&
+                jsonDecode(element)["AfzIdx"] == 250)) {
+          print(afz.toString());
+          print(afz.runtimeType.toString());
+        }
+      });
+    }
+
     afz.forEach((element) {
       if (element is String) {
         this.afz.add(Aufzug(jsonDecode(element)));
@@ -511,7 +566,7 @@ class Event {
   }
 
   String toJson() {
-    print(afz.toString());
+    //print(afz.toString());
     return "{ \"afz\": " +
         jsonEncode(afz) +
         ", \"date\": \"" +
@@ -535,7 +590,7 @@ class Event {
     List<Widget> toReturn = [];
     bool first = true;
     int count = 0;
-    this.afz.forEach((e) {
+    this.afz.forEach((Aufzug e) {
       count++;
       if (even) {
         tablecolor = Colors.white;
@@ -544,6 +599,9 @@ class Event {
       }
       if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
         tablecolor = Colors.lightGreen;
+      }
+      if (e.getErledigt() != null && e.getErledigt()) {
+        tablecolor = Color.fromARGB(255, 0, 255, 8);
       }
       even = !even;
       //print(e.toString());
@@ -559,6 +617,19 @@ class Event {
         arbeit: e.getArbeit().toString(),
         tablecolor: tablecolor,
         customWorkWidget: customWorkWidget,
+        erledigt: e.getErledigt(),
+        check: (bool newState) => {
+          print("setErledigt for Afz" + e.getAfzIdx().toString()),
+          print("currSlectState:" + e.getErledigt().toString()),
+          print("e.setErledigt(" +
+              newState.toString() +
+              ", tourIdx:" +
+              this.id.toString() +
+              ")"),
+          e.setErledigt(newState, tourIdx: this.id),
+          print(e.getErledigt()),
+          refresh(),
+        },
       ));
       if (this.date.isAfter(DateTime.now()) ||
           isSameDay(DateTime.now(), this.date)) {

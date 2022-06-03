@@ -20,6 +20,8 @@ class AufzugListItem extends StatefulWidget {
   Function customOnclick;
   String arbeit;
   Function customWorkWidget;
+  bool erledigt;
+  Function check;
 
   AufzugListItem({
     Key key,
@@ -37,6 +39,8 @@ class AufzugListItem extends StatefulWidget {
     this.customOnclick,
     this.arbeit,
     this.customWorkWidget,
+    this.erledigt,
+    this.check,
   }) {
     if (fKZeit == null) {
       fKZeit = "NULL";
@@ -80,7 +84,7 @@ class AufzugListItemState extends State<AufzugListItem> {
             widget.arbeit,
             style: tableRowTopStyle.apply(fontSizeFactor: 1.5),
             overflow: TextOverflow.fade,
-          ))
+          )),
         ]),
       Row(children: [
         Flexible(
@@ -169,25 +173,40 @@ class AufzugListItemState extends State<AufzugListItem> {
                   },
                 ),
               ),
-              if (widget.showMapIcon)
-                new InkWell(
-                  child: Icon(
-                    Icons.map_outlined,
-                    size: 50,
-                    color: Colors.blue,
-                  ),
-                  onTap: () {
-                    launchUrlString(
-                        "https://www.google.de/maps/search/?api=1&query=" +
-                            widget.astr +
-                            "+" +
-                            widget.ahnr +
-                            ",+" +
-                            widget.plz +
-                            "+" +
-                            widget.ort);
-                  },
-                ),
+              Column(
+                children: [
+                  if (widget.customWorkWidget == null &&
+                      widget.arbeit != null &&
+                      widget.erledigt != null)
+                    InkWell(
+                      child: Icon(
+                        Icons.check_circle,
+                        color: (widget.erledigt) ? Colors.grey : Colors.green,
+                        size: 50,
+                      ),
+                      onTap: () => widget.check(!widget.erledigt),
+                    ),
+                  if (widget.showMapIcon)
+                    new InkWell(
+                      child: Icon(
+                        Icons.map_outlined,
+                        size: 50,
+                        color: Colors.blue,
+                      ),
+                      onTap: () {
+                        launchUrlString(
+                            "https://www.google.de/maps/search/?api=1&query=" +
+                                widget.astr +
+                                "+" +
+                                widget.ahnr +
+                                ",+" +
+                                widget.plz +
+                                "+" +
+                                widget.ort);
+                      },
+                    ),
+                ],
+              )
             ],
           ),
           //Divider(thickness: 0.0),

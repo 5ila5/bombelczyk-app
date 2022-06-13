@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'helper.dart';
 import 'events.dart';
@@ -51,8 +50,8 @@ class AufzugListItem extends StatefulWidget {
       this.ahnr = aufzug.getAhnr();
       this.plz = aufzug.getplz().toString();
       this.ort = aufzug.getOrt();
-      this.fKZeit = aufzug.getFK_zeit();
-      this.zgTxt = aufzug.getZg_txt();
+      this.fKZeit = aufzug.getFkZeit();
+      this.zgTxt = aufzug.getZgTxt();
       this.afzIdx = aufzug.getAfzIdx().toString();
     }
   }

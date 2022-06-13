@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'web_comunicater.dart';
-import 'dart:developer';
 import 'tour_get_general.dart';
-
-import 'package:intl/intl.dart';
 
 /* class EventListDebug {
   static show(String prefix) {
@@ -22,18 +19,18 @@ import 'package:intl/intl.dart';
 } */
 
 class Buttons extends StatelessWidget {
-  bool first;
-  bool last;
-  Color arrowColor = Colors.green;
-  Color deleteColor = Colors.red;
-  Color tablecolor;
-  double buttonSize = 30;
-  EventList eventList = EventList.getInstance();
-  Event event;
-  int afzIdx;
-  int sort;
+  final bool first;
+  final bool last;
+  final Color arrowColor = Colors.green;
+  final Color deleteColor = Colors.red;
+  final Color tablecolor;
+  final double buttonSize = 30;
+  final EventList eventList = EventList.getInstance();
+  final Event event;
+  final int afzIdx;
+  final int sort;
 
-  Function() refresh;
+  final Function() refresh;
 
   Buttons(this.event, this.sort, this.afzIdx,
       {Key key,
@@ -136,16 +133,12 @@ class Buttons extends StatelessWidget {
 
 class EventList {
   DateTime _lastWebCall;
-  static EventList _instance;
+  static final EventList _instance = new EventList._();
   List<Event> events = [];
 
   EventList._();
 
   static EventList getInstance() {
-    if (_instance == null) {
-      // print("create new Instance of EventList");
-      _instance = new EventList._();
-    }
     return _instance;
   }
 
@@ -273,14 +266,14 @@ class EventList {
 }
 
 class Aufzug {
-  int _AfzIdx;
-  String _Anr;
-  String _Astr;
-  String _Ahnr;
+  int _afzIdx;
+  String _anr;
+  String _astr;
+  String _ahnr;
   int _plz;
-  String _Ort;
-  String _FK_zeit;
-  String _Zg_txt;
+  String _ort;
+  String _fkZeit;
+  String _zgTxt;
   String _arbeit;
   bool _erledigt;
 
@@ -291,14 +284,14 @@ class Aufzug {
     if (afzMap["plz"] is String) {
       afzMap["plz"] = int.parse(afzMap["plz"]);
     }
-    _AfzIdx = afzMap["AfzIdx"];
-    _Anr = afzMap["Anr"];
-    _Astr = afzMap["Astr"];
-    _Ahnr = afzMap["Ahnr"];
+    _afzIdx = afzMap["AfzIdx"];
+    _anr = afzMap["Anr"];
+    _astr = afzMap["Astr"];
+    _ahnr = afzMap["Ahnr"];
     _plz = afzMap["plz"];
-    _Ort = afzMap["Ort"];
-    _FK_zeit = afzMap["FK_zeit"];
-    _Zg_txt = afzMap["Zg_txt"];
+    _ort = afzMap["Ort"];
+    _fkZeit = afzMap["FK_zeit"];
+    _zgTxt = afzMap["Zg_txt"];
     if (afzMap.containsKey("art")) {
       _arbeit = afzMap["art"];
     }
@@ -312,32 +305,32 @@ class Aufzug {
     }
   }
 
-  Aufzug.fromArgs(this._AfzIdx, this._Anr, this._Astr, this._Ahnr, this._plz,
-      this._Ort, this._FK_zeit, this._Zg_txt,
+  Aufzug.fromArgs(this._afzIdx, this._anr, this._astr, this._ahnr, this._plz,
+      this._ort, this._fkZeit, this._zgTxt,
       {String arbeit, bool erledigt}) {
-    if (this._AfzIdx == null) {
-      this._AfzIdx = -1;
+    if (this._afzIdx == null) {
+      this._afzIdx = -1;
     }
-    if (this._Anr == null) {
-      this._Anr = "";
+    if (this._anr == null) {
+      this._anr = "";
     }
-    if (this._Astr == null) {
-      this._Astr = "";
+    if (this._astr == null) {
+      this._astr = "";
     }
-    if (this._Ahnr == null) {
-      this._Ahnr = "";
+    if (this._ahnr == null) {
+      this._ahnr = "";
     }
     if (this._plz == null) {
       this._plz = 00000;
     }
-    if (this._Ort == null) {
-      this._Ort = "";
+    if (this._ort == null) {
+      this._ort = "";
     }
-    if (this._FK_zeit == null) {
-      this._FK_zeit = "";
+    if (this._fkZeit == null) {
+      this._fkZeit = "";
     }
-    if (this._Zg_txt == null) {
-      this._Zg_txt = "";
+    if (this._zgTxt == null) {
+      this._zgTxt = "";
     }
     if (arbeit != null) {
       this._arbeit = arbeit;
@@ -349,23 +342,23 @@ class Aufzug {
 
   String toJson() {
     String toReturn = '{"AfzIdx":' +
-        _AfzIdx.toString() +
+        _afzIdx.toString() +
         ',"Anr":"' +
-        _Anr +
+        _anr +
         '","Astr":"' +
-        _Astr +
+        _astr +
         '","Ahnr":"' +
-        _Ahnr +
+        _ahnr +
         '","plz":' +
         _plz.toString() +
         ',"Ort":"' +
-        _Ort +
+        _ort +
         '"';
-    if (_FK_zeit != null) {
-      toReturn += ',"FK_zeit":"' + _FK_zeit + '"';
+    if (_fkZeit != null) {
+      toReturn += ',"FK_zeit":"' + _fkZeit + '"';
     }
-    if (_Zg_txt != null) {
-      toReturn += ',"Zg_txt":"' + _Zg_txt + '"';
+    if (_zgTxt != null) {
+      toReturn += ',"Zg_txt":"' + _zgTxt + '"';
     }
     if (_arbeit != null) {
       //print("ARBEIT IS Not NULL");
@@ -386,23 +379,23 @@ class Aufzug {
   }
 
   bool hasIdx(int idx) {
-    return (idx == this._AfzIdx);
+    return (idx == this._afzIdx);
   }
 
   int getAfzIdx() {
-    return this._AfzIdx;
+    return this._afzIdx;
   }
 
   String getAnr() {
-    return this._Anr;
+    return this._anr;
   }
 
   String getAstr() {
-    return this._Astr;
+    return this._astr;
   }
 
   String getAhnr() {
-    return this._Ahnr;
+    return this._ahnr;
   }
 
   int getplz() {
@@ -410,15 +403,15 @@ class Aufzug {
   }
 
   String getOrt() {
-    return this._Ort;
+    return this._ort;
   }
 
-  String getFK_zeit() {
-    return this._FK_zeit;
+  String getFkZeit() {
+    return this._fkZeit;
   }
 
-  String getZg_txt() {
-    return this._Zg_txt;
+  String getZgTxt() {
+    return this._zgTxt;
   }
 
   String getArbeit() {
@@ -437,7 +430,7 @@ class Aufzug {
     this._erledigt = erledigt;
     if (tourIdx != null) {
       WebComunicater.sendRequest(<String, String>{
-        "afz_erledigt": this._AfzIdx.toString(),
+        "afz_erledigt": this._afzIdx.toString(),
         "tour_for_erledigt": tourIdx.toString(),
         "erledigt": (erledigt) ? "1" : "0",
       });
@@ -606,10 +599,10 @@ class Event {
       even = !even;
       //print(e.toString());
       toReturn.add(AufzugListItem(
-        zgTxt: e.getZg_txt(),
+        zgTxt: e.getZgTxt(),
         plz: e.getplz().toString(),
         ort: e.getOrt(),
-        fKZeit: e.getFK_zeit(),
+        fKZeit: e.getFkZeit(),
         astr: e.getAstr(),
         anr: e.getAnr().toString(),
         ahnr: e.getAhnr(),
@@ -664,5 +657,9 @@ class Event {
       toReturn.add(element.getAfzIdx());
     });
     return toReturn;
+  }
+
+  getDate() {
+    return this.date;
   }
 }

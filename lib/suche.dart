@@ -1,11 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'key_checker.dart';
 import 'auto_key.dart';
 import 'web_comunicater.dart';
 import 'dart:convert';
 import 'aufzug_list_item.dart';
-
 
 enum Sorts {
   Aufzugsnummer,
@@ -16,11 +14,11 @@ enum Sorts {
 }
 
 class Suche extends StatefulWidget {
-  bool showMapIcon = true;
-  Function customOnclick;
+  final bool showMapIcon;
+  final Function customOnclick;
   Suche({
     Key key,
-    this.showMapIcon=true,
+    this.showMapIcon = true,
     this.customOnclick,
   }) : super(key: key);
 
@@ -103,6 +101,7 @@ class SucheState extends State<Suche> {
       _tabelle = tmpTabelle;
     });
   }
+
   void refreshTable(String text) {
     if (text.length > 2)
       search(text);
@@ -112,6 +111,7 @@ class SucheState extends State<Suche> {
       });
     }
   }
+
   void sortieren(int sort) {
     if (_sort == sort) {
       _sortDirection = !_sortDirection;
@@ -161,8 +161,7 @@ class SucheState extends State<Suche> {
 
               child: DropdownButton<Sorts>(
                 value: Sorts.values[_sort],
-                items:
-                Sorts.values.map<DropdownMenuItem<Sorts>>((Sorts value) {
+                items: Sorts.values.map<DropdownMenuItem<Sorts>>((Sorts value) {
                   return DropdownMenuItem<Sorts>(
                     value: value,
                     child: Text(value.toString().replaceAll("Sorts.", "")),
@@ -186,13 +185,13 @@ class SucheState extends State<Suche> {
         ]),
         new Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-              //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-              child: SingleChildScrollView(
-                  child: Column(
-                    children: _tabelle,
-                  )),
-            )),
+          padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+          //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+          child: SingleChildScrollView(
+              child: Column(
+            children: _tabelle,
+          )),
+        )),
       ],
     );
   }

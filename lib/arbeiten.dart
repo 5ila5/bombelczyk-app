@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Arbeiten extends StatelessWidget {
@@ -77,4 +76,3 @@ class Arbeiten extends StatelessWidget {
     );
   }
 }
-

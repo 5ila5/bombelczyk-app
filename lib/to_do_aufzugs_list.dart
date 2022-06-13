@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'aufzug_to_do.dart';
@@ -7,17 +6,17 @@ class ToDoAufzugList extends StatefulWidget {
   ToDoAufzugList(this.response, this.afzIdx, {Key key}) : super(key: key);
   final Future<String> response;
   final String afzIdx;
-  Widget aufzugToDo;
 
   @override
   ToDoAufzugListState createState() => ToDoAufzugListState();
 }
 
 class ToDoAufzugListState extends State<ToDoAufzugList> {
+  Widget aufzugToDo;
   @override
   Widget build(BuildContext context) {
-    if (widget.aufzugToDo != null) {
-      return widget.aufzugToDo;
+    if (aufzugToDo != null) {
+      return aufzugToDo;
     }
     return FutureBuilder<String>(
       future: widget.response,
@@ -34,9 +33,8 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
           } else {
             toDoMap = {};
           }
-          this.widget.aufzugToDo =
-              AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
-          return this.widget.aufzugToDo;
+          this.aufzugToDo = AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
+          return this.aufzugToDo;
         } else if (snapshot.hasError) {
           children.addAll(
             [

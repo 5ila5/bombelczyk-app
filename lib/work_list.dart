@@ -1,22 +1,22 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'keep_alive_future_builder.dart';
 import 'dart:convert';
 import 'arbeiten.dart';
+
 class WorkList extends StatefulWidget {
   WorkList(this.response, {Key key}) : super(key: key);
   final Future<String> response;
-  Widget arbeit;
 
   @override
   WorkListState createState() => WorkListState();
 }
 
 class WorkListState extends State<WorkList> {
+  Widget arbeit;
   @override
   Widget build(BuildContext context) {
-    if (widget.arbeit != null) {
-      return widget.arbeit;
+    if (arbeit != null) {
+      return arbeit;
     }
     return KeepAliveFutureBuilder(
       future: widget.response,
@@ -33,8 +33,8 @@ class WorkListState extends State<WorkList> {
             arbeitMap.remove("error");
             //print("arbeitMap".toString());
             //print(arbeitMap.toString());
-            widget.arbeit = Arbeiten(arbeitMap);
-            return widget.arbeit;
+            arbeit = Arbeiten(arbeitMap);
+            return arbeit;
           } else {
             return ListView.builder(
               itemCount: 0,

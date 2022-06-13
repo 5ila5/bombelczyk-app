@@ -206,7 +206,8 @@ class NearByState extends State<NearBy> {
                               ",+" +
                               value["plz"].toString() +
                               "+" +
-                              value["Ort"].toString());
+                              value["Ort"].toString(),
+                          mode: LaunchMode.externalNonBrowserApplication);
                     },
                   ),
                 ],

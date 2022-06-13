@@ -2,8 +2,7 @@ import 'auto_key.dart';
 import 'web_comunicater.dart';
 
 class KeyChecker {
-  KeyChecker._() {
-  }
+  KeyChecker._();
   static Future<String> checkKey(context) async {
     //print("CheckKey:");
     String response = await WebComunicater.sendRequest(<String, String>{});

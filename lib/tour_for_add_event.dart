@@ -2,11 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'events.dart';
 import 'tour.dart';
-import 'aufzug_list_item.dart';
 import 'tour_single.dart';
 
 class TourForAddToEvent extends Tours {
-  Map<String, dynamic> afz;
+  final Map<String, dynamic> afz;
 
   TourForAddToEvent(
     this.afz, {
@@ -26,8 +25,8 @@ class TourForAddToEventState extends ToursState<TourForAddToEvent> {
 
   @override
   Widget loadTour(Event e, bool first) {
-    bool containsAfz = false;
-    List<Widget> _widgets = [];
+    //bool containsAfz = false;
+    //List<Widget> _widgets = [];
 
     return Tour(
       refresh,

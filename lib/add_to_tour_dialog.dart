@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'tour_for_add_event.dart';
 
 class AddToTourDialog extends StatefulWidget {
-  Map<String, dynamic> afz;
+  final Map<String, dynamic> afz;
 
-  AddToTourDialog(
+  const AddToTourDialog(
     this.afz, {
     Key key,
   }) : super(key: key);

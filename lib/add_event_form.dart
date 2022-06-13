@@ -11,24 +11,26 @@ import 'multiselect.dart';
 import 'tour_get_general.dart';
 
 class AddEventForm extends StatefulWidget {
-  DateTime defaultDate;
-  EventList eventList = EventList.getInstance();
-  int id;
-  Event event;
-  bool createNew = true;
+  final DateTime defaultDate;
+  final EventList eventList;
+  final int id;
+  final Event event;
+  final bool createNew;
 
   AddEventForm({
     Key key,
     this.defaultDate,
-    this.eventList,
     this.id = -1,
-  }) : super(key: key);
+  })  : this.event = Event(id, DateTime.now(), "", []),
+        this.createNew = true,
+        this.eventList = EventList.getInstance(),
+        super(key: key);
 
-  AddEventForm.fromEvent(this.event) {
-    this.defaultDate = event.date;
-    this.id = event.id;
-    this.createNew = false;
-  }
+  AddEventForm.fromEvent(this.event)
+      : this.defaultDate = event.date,
+        this.id = event.id,
+        eventList = EventList.getInstance(),
+        this.createNew = false;
 
   @override
   AddEventFormState createState() => AddEventFormState();
@@ -49,10 +51,7 @@ class AddEventFormState extends State<AddEventForm> {
   void initState() {
     super.initState();
     if (widget.defaultDate != null) this._selectedDay = widget.defaultDate;
-    if (widget.event == null) {
-      widget.event = Event(widget.id, DateTime.now(), titleController.text,
-          []); //this.aufzuege);
-    }
+
     titleController.text = widget.event.text;
   }
 
@@ -141,7 +140,6 @@ class AddEventFormState extends State<AddEventForm> {
       },
       value: afz.getArbeit(),
     );
-    return Text("Hier DropDown" + afz.getAnr().toString());
   }
 
   @override

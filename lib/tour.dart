@@ -6,9 +6,6 @@ import 'tour_single.dart';
 import 'package:intl/intl.dart';
 import 'events.dart';
 import 'add_event_form.dart';
-import 'dart:developer';
-
-import 'helper.dart';
 
 class Tours extends StatefulWidget {
   Tours({
@@ -155,7 +152,7 @@ class ToursState<T extends Tours> extends State<T> {
               color: Colors.white,
             ),
             child: (event == null)
-                ? AddEventForm(eventList: _eventList, defaultDate: _selectedDay)
+                ? AddEventForm(defaultDate: _selectedDay)
                 : AddEventForm.fromEvent(event),
           ));
         }).then((value) {

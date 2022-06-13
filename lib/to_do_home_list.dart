@@ -1,13 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'aufzug_to_do.dart';
 import 'helper.dart';
 
 class ToDoHomeList extends StatefulWidget {
-  Map<String, dynamic> toDoresponseMap;
-  String afzIdx;
-  bool allExpanded;
-  Map<String, Widget> allreadyExpanded = {};
+  final Map<String, dynamic> toDoresponseMap;
+  //String afzIdx;
+  final bool allExpanded;
 
   ToDoHomeList({this.toDoresponseMap, this.allExpanded = false, Key key})
       : super(key: key);
@@ -18,6 +16,7 @@ class ToDoHomeList extends StatefulWidget {
 
 class ToDoHomeListState extends State<ToDoHomeList> {
   Map<String, bool> expandedToDos = {};
+  Map<String, Widget> allreadyExpanded = {};
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +42,8 @@ class ToDoHomeListState extends State<ToDoHomeList> {
           widget.allExpanded;
 
       if (expanded &&
-          !widget.allreadyExpanded.containsKey(value["AfzIdx"].toString())) {
-        widget.allreadyExpanded[value["AfzIdx"].toString()] = AufzugToDo(
+          !allreadyExpanded.containsKey(value["AfzIdx"].toString())) {
+        allreadyExpanded[value["AfzIdx"].toString()] = AufzugToDo(
             afzIdx: value["AfzIdx"].toString(), toDoMap: value["todos"]);
       }
 
@@ -144,7 +143,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                 ],
               ),
               (expanded)
-                  ? widget.allreadyExpanded[value["AfzIdx"].toString()]
+                  ? allreadyExpanded[value["AfzIdx"].toString()]
                   : Text(""),
               //Divider(thickness: 0.0),
             ],

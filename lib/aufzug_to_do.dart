@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'web_comunicater.dart';
@@ -7,7 +6,7 @@ import 'package:flutter/services.dart';
 
 class AufzugToDo extends StatefulWidget {
   Map<String, dynamic> toDoMap;
-  String afzIdx;
+  final String afzIdx;
 
   AufzugToDo({this.afzIdx, this.toDoMap, Key key}) : super(key: key);
 

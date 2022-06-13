@@ -4,14 +4,14 @@ import 'events.dart';
 import "web_comunicater.dart";
 
 class Tour extends StatefulWidget {
-  Event event;
-  bool collapsed;
-  Aufzug afzToAdd;
+  final Event event;
+  final bool collapsed;
+  final Aufzug afzToAdd;
   final Function() refreshParent;
-  bool addable;
-  bool editMode;
-  Function edit;
-  Function customWorkWidget;
+  final bool addable;
+  final bool editMode;
+  final Function edit;
+  final Function customWorkWidget;
   Tour(this.refreshParent,
       {Key key,
       this.collapsed = false,

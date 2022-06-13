@@ -202,7 +202,8 @@ class AufzugListItemState extends State<AufzugListItem> {
                                 ",+" +
                                 widget.plz +
                                 "+" +
-                                widget.ort);
+                                widget.ort,
+                            mode: LaunchMode.externalNonBrowserApplication);
                       },
                     ),
                 ],

@@ -8,7 +8,7 @@ import 'work_list.dart';
 import 'akku_list.dart';
 import 'add_to_tour_dialog.dart';
 
-class Aufzug extends StatelessWidget {
+class AufzugWidget extends StatelessWidget {
   static const aufzugRoute = '/aufzugRoute';
 
   // This widget is the root of your application.

@@ -91,7 +91,7 @@ class SelectElevator {
     args.printArgs();
     Navigator.pushNamed(
       context,
-      Aufzug.aufzugRoute,
+      AufzugWidget.aufzugRoute,
       arguments: args,
     );
   }

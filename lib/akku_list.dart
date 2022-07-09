@@ -15,7 +15,7 @@ class AkkuListState extends State<AkkuList> {
     return FutureBuilder<String>(
       future: widget.response,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        List<TableRow> children;
+        List<TableRow> children = [];
         if (snapshot.hasData) {
           //print("snapshot.data");
           //print(snapshot.data);

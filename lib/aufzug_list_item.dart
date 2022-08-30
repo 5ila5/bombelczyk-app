@@ -200,7 +200,7 @@ class AufzugListItemState extends State<AufzugListItem> {
               ),
               Column(
                 children: [
-                  if (widget.customWorkWidget == null)
+                  if (widget.customWorkWidget == null && widget.check != null)
                     InkWell(
                       child: Icon(
                         Icons.check_circle,

@@ -1,3 +1,5 @@
+import 'package:photo_view/photo_view_gallery.dart';
+
 import 'aufzug_list_item.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'web_comunicater.dart';
 import 'tour_get_general.dart';
+import 'package:photo_view/photo_view.dart';
 
 /* class EventListDebug {
   static show(String prefix) {
@@ -276,6 +279,8 @@ class Aufzug {
   String _zgTxt;
   String _arbeit;
   bool _erledigt;
+  int _anzImg;
+  String _beschreibung;
 
   Aufzug(Map<String, dynamic> afzMap) {
     if (afzMap["AfzIdx"] is String) {
@@ -298,6 +303,20 @@ class Aufzug {
     if (afzMap.containsKey("arbeit")) {
       _arbeit = afzMap["arbeit"];
     }
+    if (afzMap.containsKey("anzImg")) {
+      if (afzMap["anzImg"] is String)
+        _anzImg = int.parse(afzMap["anzImg"]);
+      else
+        _anzImg = afzMap["anzImg"];
+    } else {
+      _anzImg = 0;
+    }
+    if (afzMap.containsKey("beschreibung")) {
+      _beschreibung = afzMap["beschreibung"];
+    } else {
+      _beschreibung = "";
+    }
+
     if (afzMap.containsKey("erledigt")) {
       _erledigt = (afzMap["erledigt"] == 1 ||
           (afzMap["erledigt"] is String &&
@@ -307,7 +326,7 @@ class Aufzug {
 
   Aufzug.fromArgs(this._afzIdx, this._anr, this._astr, this._ahnr, this._plz,
       this._ort, this._fkZeit, this._zgTxt,
-      {String arbeit, bool erledigt}) {
+      [this._arbeit, this._erledigt, this._anzImg]) {
     if (this._afzIdx == null) {
       this._afzIdx = -1;
     }
@@ -331,12 +350,6 @@ class Aufzug {
     }
     if (this._zgTxt == null) {
       this._zgTxt = "";
-    }
-    if (arbeit != null) {
-      this._arbeit = arbeit;
-    }
-    if (erledigt != null) {
-      this._erledigt = erledigt;
     }
   }
 
@@ -368,6 +381,12 @@ class Aufzug {
     }
     if (_erledigt != null) {
       toReturn += ',"erledigt":"' + _erledigt.toString() + '"';
+    }
+    if (_beschreibung != null) {
+      toReturn += ',"beschreibung":"' + _beschreibung + '"';
+    }
+    if (_anzImg != null) {
+      toReturn += ',"anzImg":"' + _anzImg.toString() + '"';
     }
     toReturn += '}';
     return toReturn;
@@ -418,6 +437,14 @@ class Aufzug {
     return this._arbeit;
   }
 
+  int getAnzImg() {
+    return this._anzImg;
+  }
+
+  String getBeschreibugn() {
+    return this._beschreibung;
+  }
+
   bool getErledigt() {
     return this._erledigt;
   }
@@ -448,22 +475,6 @@ class Event {
   TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
-    print("CREATE EVENT");
-
-    if (afz is List<dynamic>) {
-      afz.forEach((element) {
-        //print(element);
-        //print(element.runtimeType);
-        if ((element is Map && element["AfzIdx"] == 250) ||
-            (element is String &&
-                jsonDecode(element) is Map &&
-                jsonDecode(element)["AfzIdx"] == 250)) {
-          print(afz.toString());
-          print(afz.runtimeType.toString());
-        }
-      });
-    }
-
     afz.forEach((element) {
       if (element is String) {
         this.afz.add(Aufzug(jsonDecode(element)));
@@ -519,10 +530,7 @@ class Event {
       "up": up.toString(),
       "id": this.id.toString(),
     }).then((r) => print(r));
-    // print("event Length" + EventList.getInstance().events.length.toString());
-    // EventListDebug.show("afzMove before Save");
     await EventList.getInstance().save();
-    // EventListDebug.show("afzMove after Save");
 
     return true;
   }
@@ -569,6 +577,46 @@ class Event {
         "\", \"id\": " +
         id.toString() +
         "}";
+  }
+
+  void showImage(context, int afzIdx) {
+    Future<String> response = WebComunicater.sendRequest(<String, String>{
+      "getImage": "1",
+      "afzIdx": afzIdx.toString(),
+      "tourIdx": this.id.toString()
+    });
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+              child: FutureBuilder(
+                  future: response,
+                  builder: (context, snapshot) {
+                    Widget toReturn;
+                    //print(snapshot.hasData);
+                    // print(snapshot.data);
+                    if (snapshot.hasData) {
+                      //log(snapshot.data);
+                      List<String> photolist =
+                          (List<String>.from(jsonDecode(snapshot.data)));
+
+                      toReturn = PhotoViewGallery.builder(
+                          itemCount: photolist.length,
+                          builder: (BuildContext context, int index) {
+                            return PhotoViewGalleryPageOptions(
+                              imageProvider:
+                                  MemoryImage(base64Decode(photolist[index])),
+                              initialScale: PhotoViewComputedScale.contained,
+                              minScale: PhotoViewComputedScale.contained,
+                              maxScale: PhotoViewComputedScale.contained * 4,
+                            );
+                          });
+                    } else {
+                      toReturn = CircularProgressIndicator();
+                    }
+                    return toReturn;
+                  }));
+        });
   }
 
   List<Widget> getAfzWidgets(
@@ -623,6 +671,9 @@ class Event {
           print(e.getErledigt()),
           refresh(),
         },
+        beschreibung: e.getBeschreibugn(),
+        anzImg: e.getAnzImg(),
+        showImg: showImage,
       ));
       if (this.date.isAfter(DateTime.now()) ||
           isSameDay(DateTime.now(), this.date)) {

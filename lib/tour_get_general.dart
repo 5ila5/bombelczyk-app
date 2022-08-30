@@ -32,7 +32,7 @@ class TourGeneralInfo {
     request();
   }
 
-  static TourGeneralInfo getInstance() {
+  static TourGeneralInfo /*!*/ getInstance() {
     if (_instance == null) {
       _instance = new TourGeneralInfo();
     }

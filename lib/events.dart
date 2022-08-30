@@ -26,7 +26,7 @@ class Buttons extends StatelessWidget {
   final bool last;
   final Color arrowColor = Colors.green;
   final Color deleteColor = Colors.red;
-  final Color tablecolor;
+  final Color /*!*/ tablecolor;
   final double buttonSize = 30;
   final EventList eventList = EventList.getInstance();
   final Event event;
@@ -40,13 +40,12 @@ class Buttons extends StatelessWidget {
       this.refresh,
       this.first = false,
       this.last = false,
-      this.tablecolor = Colors.white})
+      this.tablecolor /*!*/ = Colors.white})
       : super(key: key);
 
   Future<void> move(bool up) async {
     await this.event.afzMove(up, sort, afzIdx);
-
-    this.refresh();
+    if (this.refresh != null) this.refresh();
   }
 
   showAlertDialog(BuildContext context) {
@@ -55,7 +54,7 @@ class Buttons extends StatelessWidget {
       child: Text("Ja"),
       onPressed: () {
         this.event.afzDelete(sort, afzIdx);
-        refresh();
+        if (this.refresh != null) this.refresh();
         Navigator.pop(context);
       },
     );
@@ -166,15 +165,8 @@ class EventList {
   }
 
   save() async {
-    // print("start save");
     SharedPreferences prefs = await Preferences.getPrefs();
-    if (prefs != null) {
-      prefs.setString("events", this.toJson());
-      // print(this.toJson());
-    } else {
-      // print("erro no Prefs");
-    }
-    // print("end Save");
+    prefs.setString("events", this.toJson());
   }
 
   void _initWithJson(String json) {
@@ -199,7 +191,7 @@ class EventList {
     String response = await WebComunicater.sendRequest({
       "get_events": "1",
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       return this;
     }
 
@@ -269,18 +261,18 @@ class EventList {
 }
 
 class Aufzug {
-  int _afzIdx;
-  String _anr;
-  String _astr;
-  String _ahnr;
-  int _plz;
-  String _ort;
-  String _fkZeit;
-  String _zgTxt;
-  String _arbeit;
-  bool _erledigt;
-  int _anzImg;
-  String _beschreibung;
+  int /*!*/ _afzIdx = -1;
+  String /*!*/ _anr = "0";
+  String _astr = "";
+  String _ahnr = "";
+  int _plz = 00000;
+  String _ort = "";
+  String _fkZeit = "";
+  String _zgTxt = "";
+  String _arbeit = "";
+  bool _erledigt = false;
+  int _anzImg = 0;
+  String _beschreibung = "";
 
   Aufzug(Map<String, dynamic> afzMap) {
     if (afzMap["AfzIdx"] is String) {
@@ -327,12 +319,6 @@ class Aufzug {
   Aufzug.fromArgs(this._afzIdx, this._anr, this._astr, this._ahnr, this._plz,
       this._ort, this._fkZeit, this._zgTxt,
       [this._arbeit, this._erledigt, this._anzImg]) {
-    if (this._afzIdx == null) {
-      this._afzIdx = -1;
-    }
-    if (this._anr == null) {
-      this._anr = "";
-    }
     if (this._astr == null) {
       this._astr = "";
     }
@@ -409,43 +395,53 @@ class Aufzug {
     return this._anr;
   }
 
-  String getAstr() {
+  String /*!*/ getAstr() {
+    if (this._astr == null) return "";
     return this._astr;
   }
 
-  String getAhnr() {
+  String /*!*/ getAhnr() {
+    if (this._ahnr == null) return "";
     return this._ahnr;
   }
 
-  int getplz() {
+  int /*!*/ getplz() {
+    if (this._plz == null) return 00000;
     return this._plz;
   }
 
-  String getOrt() {
+  String /*!*/ getOrt() {
+    if (this._ort == null) return "";
     return this._ort;
   }
 
-  String getFkZeit() {
+  String /*!*/ getFkZeit() {
+    if (this._fkZeit == null) return "";
     return this._fkZeit;
   }
 
-  String getZgTxt() {
+  String /*!*/ getZgTxt() {
+    if (this._zgTxt == null) return "";
     return this._zgTxt;
   }
 
-  String getArbeit() {
+  String /*!*/ getArbeit() {
+    if (this._arbeit == null) return "";
     return this._arbeit;
   }
 
-  int getAnzImg() {
+  int /*!*/ getAnzImg() {
+    if (this._anzImg == null) return 0;
     return this._anzImg;
   }
 
-  String getBeschreibugn() {
+  String /*!*/ getBeschreibugn() {
+    if (this._beschreibung == null) return "";
     return this._beschreibung;
   }
 
-  bool getErledigt() {
+  bool /*!*/ getErledigt() {
+    if (this._erledigt == null) return false;
     return this._erledigt;
   }
 
@@ -470,8 +466,8 @@ class Aufzug {
 class Event {
   final List<Aufzug> afz = [];
   DateTime date;
-  String text;
-  int id;
+  String /*!*/ text;
+  int /*!*/ id;
   TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
@@ -620,7 +616,7 @@ class Event {
   }
 
   List<Widget> getAfzWidgets(
-      {Function() refresh,
+      {Function refresh,
       Aufzug toAdd,
       bool editMode = false,
       Function customWorkWidget}) {
@@ -632,59 +628,61 @@ class Event {
     bool first = true;
     int count = 0;
     this.afz.forEach((Aufzug e) {
-      count++;
-      if (even) {
-        tablecolor = Colors.white;
-      } else {
-        tablecolor = Colors.grey[300];
-      }
-      if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
-        tablecolor = Colors.lightGreen;
-      }
-      if (e.getErledigt() != null && e.getErledigt()) {
-        tablecolor = Color.fromARGB(255, 0, 255, 8);
-      }
-      even = !even;
-      //print(e.toString());
-      toReturn.add(AufzugListItem(
-        zgTxt: e.getZgTxt(),
-        plz: e.getplz().toString(),
-        ort: e.getOrt(),
-        fKZeit: e.getFkZeit(),
-        astr: e.getAstr(),
-        anr: e.getAnr().toString(),
-        ahnr: e.getAhnr(),
-        afzIdx: e.getAfzIdx().toString(),
-        arbeit: e.getArbeit().toString(),
-        tablecolor: tablecolor,
-        customWorkWidget: customWorkWidget,
-        erledigt: e.getErledigt(),
-        check: (bool newState) => {
-          print("setErledigt for Afz" + e.getAfzIdx().toString()),
-          print("currSlectState:" + e.getErledigt().toString()),
-          print("e.setErledigt(" +
-              newState.toString() +
-              ", tourIdx:" +
-              this.id.toString() +
-              ")"),
-          e.setErledigt(newState, tourIdx: this.id),
-          print(e.getErledigt()),
-          refresh(),
-        },
-        beschreibung: e.getBeschreibugn(),
-        anzImg: e.getAnzImg(),
-        showImg: showImage,
-      ));
-      if (this.date.isAfter(DateTime.now()) ||
-          isSameDay(DateTime.now(), this.date)) {
-        if (editMode) {
-          toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
-              refresh: refresh,
-              first: first,
-              last: (this.afz.length <= count),
-              tablecolor: tablecolor));
+      if (e != null) {
+        count++;
+        if (even) {
+          tablecolor = Colors.white;
+        } else {
+          tablecolor = Colors.grey[300];
         }
-        first = false;
+        if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
+          tablecolor = Colors.lightGreen;
+        }
+        if (e.getErledigt() != null && e.getErledigt()) {
+          tablecolor = Color.fromARGB(255, 0, 255, 8);
+        }
+        even = !even;
+        //print(e.toString());
+        toReturn.add(AufzugListItem(
+          zgTxt: e.getZgTxt(),
+          plz: e.getplz().toString(),
+          ort: e.getOrt(),
+          fKZeit: e.getFkZeit(),
+          astr: e.getAstr(),
+          anr: e.getAnr().toString(),
+          ahnr: e.getAhnr(),
+          afzIdx: e.getAfzIdx().toString(),
+          arbeit: e.getArbeit().toString(),
+          tablecolor: tablecolor,
+          customWorkWidget: customWorkWidget,
+          erledigt: e.getErledigt(),
+          check: (bool newState) => {
+            print("setErledigt for Afz" + e.getAfzIdx().toString()),
+            print("currSlectState:" + e.getErledigt().toString()),
+            print("e.setErledigt(" +
+                newState.toString() +
+                ", tourIdx:" +
+                this.id.toString() +
+                ")"),
+            e.setErledigt(newState, tourIdx: this.id),
+            print(e.getErledigt()),
+            if (refresh != null) refresh(),
+          },
+          beschreibung: e.getBeschreibugn(),
+          anzImg: e.getAnzImg(),
+          showImg: showImage,
+        ));
+        if (this.date.isAfter(DateTime.now()) ||
+            isSameDay(DateTime.now(), this.date)) {
+          if (editMode) {
+            toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
+                refresh: refresh,
+                first: first,
+                last: (this.afz.length <= count),
+                tablecolor: tablecolor));
+          }
+          first = false;
+        }
       }
     });
 
@@ -694,7 +692,8 @@ class Event {
   List<int> getAfzArbeit() {
     List<int> toReturn = [];
     this.afz.forEach((element) {
-      toReturn.add(tourInfos.getArbeitsIdx(element.getArbeit()));
+      if (element != null)
+        toReturn.add(tourInfos.getArbeitsIdx(element.getArbeit()));
     });
     return toReturn;
   }

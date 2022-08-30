@@ -78,7 +78,7 @@ class NearByState extends State<NearBy> {
       //"sort": _sort.toString(),
       //"sortDirection": _sortDirection.toString(),
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       AuthKey.wrongKey(context);
       return;
     }
@@ -98,7 +98,7 @@ class NearByState extends State<NearBy> {
     List<Widget> tmpWidgets = [createDropDown(true)];
     String entfernungsText = "";
     bool even = true;
-    Color tablecolor = Colors.grey[300];
+    Color /*!*/ tablecolor = Colors.grey[300];
 
     TextStyle tableRowTopStyle =
         TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
@@ -249,6 +249,7 @@ class NearByState extends State<NearBy> {
       DropdownButton<int>(
         value: _menge,
         onChanged: (int newValue) {
+          if (newValue == null) return;
           _menge = newValue;
           //print("set State");
           if (working) {

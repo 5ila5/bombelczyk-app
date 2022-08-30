@@ -125,13 +125,9 @@ class ToursState<T extends Tours> extends State<T> {
   Future<void> getWebEvents() async {
     print("in Get From WEB");
     await _eventList.loadFromWeb();
-    if (_eventList == null) {
-      _eventList.clear();
-      AuthKey.wrongKey(context);
-      return;
-    }
-
-    initEvents();
+    _eventList.clear();
+    AuthKey.wrongKey(context);
+    return;
   }
 
   @override

@@ -25,7 +25,7 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
         if (snapshot.hasData) {
           Map<String, dynamic> responseMap =
               Map<String, dynamic>.from(jsonDecode(snapshot.data));
-          Map<String, dynamic> toDoMap;
+          Map<String, dynamic> /*!*/ toDoMap = {};
           if (!(responseMap["2"].runtimeType == String ||
               responseMap["2"]["error"] == "true")) {
             toDoMap = responseMap["2"];

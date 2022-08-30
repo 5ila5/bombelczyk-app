@@ -60,12 +60,9 @@ class HistoryState extends State<History> {
 
   @override
   Widget build(BuildContext context) {
-    print("Preferences.prefs == null: " +
-        (Preferences.prefs == null).toString() +
-        "\n!Preferences.prefs.containsKey(\"lastAFZs\")" +
-        (!Preferences.prefs.containsKey("lastAFZs")).toString());
     if (Preferences.prefs == null ||
-        !Preferences.prefs.containsKey("lastAFZs")) {
+        !Preferences.prefs.containsKey("lastAFZs") ||
+        Preferences.prefs.getStringList("lastAFZs") == null) {
       return Text("Der Verlauf ist Leer oder es ist ein Fehler aufgetreten");
     }
     String listString = "";
@@ -83,7 +80,7 @@ class HistoryState extends State<History> {
       child: FutureBuilder<List<Widget>>(
         future: response,
         builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
-          List<Widget> children;
+          List<Widget> /*!*/ children = [];
           if (snapshot.hasData) {
             children = snapshot.data;
           } else if (snapshot.hasError) {

@@ -13,7 +13,7 @@ import 'tour_get_general.dart';
 class AddEventForm extends StatefulWidget {
   final DateTime defaultDate;
   final EventList eventList;
-  final int id;
+  final int /*!*/ id;
   final Event event;
   final bool createNew;
 
@@ -38,10 +38,10 @@ class AddEventForm extends StatefulWidget {
 
 class AddEventFormState extends State<AddEventForm> {
   TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
-  DateTime _selectedDay = DateTime.now();
+  DateTime /*!*/ _selectedDay = DateTime.now();
   final DateFormat formatter = DateFormat('dd.MM.yyyy', 'de_DE');
   final DateFormat sendFormatter = DateFormat('yyyy-MM-dd');
-  List<int> shareWith = [];
+  List<int> /*!*/ shareWith = [];
 
   //List<Aufzug> aufzuege = [];
 
@@ -66,7 +66,7 @@ class AddEventFormState extends State<AddEventForm> {
     return toReturn;
   }
 
-  bool isInt(String s) {
+  bool isInt(String /*?*/ s) {
     if (s == null) {
       return false;
     }
@@ -133,10 +133,13 @@ class AddEventFormState extends State<AddEventForm> {
         );
       }).toList(),
       onChanged: (String newVal) => {
-        setState(() {
-          print("changed Dropdown to:" + newVal);
-          afz.setArbeit(newVal);
-        })
+        if (newVal != null)
+          {
+            setState(() {
+              print("changed Dropdown to:" + newVal);
+              afz.setArbeit(newVal);
+            })
+          }
       },
       value: afz.getArbeit(),
     );

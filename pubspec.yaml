@@ -32,7 +32,7 @@ dependencies:
   #flappy_search_bar: 1.7.2
   url_launcher: ^6.0.3
   shared_preferences: ^2.0.5
-  geolocator: ^8.0.1
+  geolocator: ^9.0.1
   #location: ^3.0.0
   #encrypt: 4.1.0
   #flutter_secure_storage: 4.1.0

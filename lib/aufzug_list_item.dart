@@ -7,61 +7,66 @@ import 'package:url_launcher/url_launcher_string.dart';
 //ignore: must_be_immutable
 class AufzugListItem extends StatefulWidget {
   Color tablecolor;
-  String anr;
-  String astr;
-  String ahnr;
-  String plz;
-  String ort;
-  String fKZeit;
-  String zgTxt;
-  String afzIdx;
-  bool showMapIcon;
-  Function customOnclick;
-  String arbeit;
-  Function customWorkWidget;
-  bool erledigt;
-  Function check;
-  String beschreibung;
-  int anzImg;
-  Function showImg;
+  final String anr;
+  final String astr;
+  final String ahnr;
+  final String plz;
+  final String ort;
+  final String fKZeit;
+  final String zgTxt;
+  final String afzIdx;
+  final bool showMapIcon;
+  final Function customOnclick;
+  final String arbeit;
+  final Function customWorkWidget;
+  final bool erledigt;
+  final Function check;
+  final String beschreibung;
+  final int anzImg;
+  final Function showImg;
 
   AufzugListItem(
       {Key key,
-      this.anr,
-      this.astr,
-      this.ahnr,
-      this.plz,
+      this.anr = "-1",
+      this.astr = "",
+      this.ahnr = "",
+      this.plz = "",
       this.ort = "",
-      this.fKZeit = "",
-      this.zgTxt,
-      this.afzIdx,
-      this.tablecolor,
-      Aufzug aufzug,
+      this.fKZeit = "NULL",
+      this.zgTxt = "",
+      this.afzIdx = "",
+      this.tablecolor = Colors.white,
+      //Aufzug aufzug,
       this.showMapIcon = true,
       this.customOnclick,
-      this.arbeit,
+      this.arbeit = "",
       this.customWorkWidget,
-      this.erledigt,
+      this.erledigt = false,
       this.check,
-      this.beschreibung,
-      this.anzImg,
-      this.showImg}) {
-    if (fKZeit == null) {
-      fKZeit = "NULL";
-    }
-    if (aufzug != null) {
-      this.anr = aufzug.getAnr();
-      this.astr = aufzug.getAstr();
-      this.ahnr = aufzug.getAhnr();
-      this.plz = aufzug.getplz().toString();
-      this.ort = aufzug.getOrt();
-      this.fKZeit = aufzug.getFkZeit();
-      this.zgTxt = aufzug.getZgTxt();
-      this.afzIdx = aufzug.getAfzIdx().toString();
-      this.beschreibung = aufzug.getBeschreibugn();
-      this.anzImg = aufzug.getAnzImg();
-    }
-  }
+      this.beschreibung = "",
+      this.anzImg = 0,
+      this.showImg});
+
+  AufzugListItem.fromAufzug(Aufzug aufzug,
+      {Key key,
+      this.showImg,
+      this.showMapIcon = true,
+      this.customOnclick,
+      this.arbeit = "",
+      this.customWorkWidget,
+      this.erledigt = false,
+      this.check,
+      this.tablecolor = Colors.white})
+      : this.anr = aufzug.getAnr(),
+        this.astr = aufzug.getAstr(),
+        this.ahnr = aufzug.getAhnr(),
+        this.plz = aufzug.getplz().toString(),
+        this.ort = aufzug.getOrt(),
+        this.fKZeit = aufzug.getFkZeit(),
+        this.zgTxt = aufzug.getZgTxt(),
+        this.afzIdx = aufzug.getAfzIdx().toString(),
+        this.beschreibung = aufzug.getBeschreibugn(),
+        this.anzImg = aufzug.getAnzImg();
 
   @override
   AufzugListItemState createState() => AufzugListItemState();

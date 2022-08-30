@@ -24,7 +24,7 @@ class _MultiSelectState extends State<MultiSelect> {
 // This function is triggered when a checkbox is checked or unchecked
   void _itemChange(int idx, bool isSelected) {
     setState(() {
-      if (isSelected) {
+      if (isSelected != null && isSelected) {
         selected.add(idx);
       } else {
         selected.remove(idx);

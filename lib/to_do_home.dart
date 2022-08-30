@@ -43,7 +43,7 @@ class ToDoHomeState extends State<ToDoHome> {
       "showChecked": _toDoShowChecked.toString(),
       "showUnchecked": _toDoShowUnchecked.toString(),
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       AuthKey.wrongKey(context);
       return {};
     }
@@ -141,6 +141,7 @@ class ToDoHomeState extends State<ToDoHome> {
                   );
                 }).toList(),
                 onChanged: (ToDoSorts newValue) {
+                  if (newValue == null) return;
                   _toDoSort = newValue.index;
                   refreshToDoTable(_searchToDoController.text);
                 },
@@ -165,7 +166,7 @@ class ToDoHomeState extends State<ToDoHome> {
                       Checkbox(
                         value: _toDoShowChecked,
                         onChanged: (bool val) {
-                          if (val || _toDoShowUnchecked) {
+                          if (val != null && (val || _toDoShowUnchecked)) {
                             _toDoShowChecked = !_toDoShowChecked;
                             refreshToDoTable(_searchToDoController.text);
                           }
@@ -179,7 +180,7 @@ class ToDoHomeState extends State<ToDoHome> {
                       Checkbox(
                         value: _toDoShowUnchecked,
                         onChanged: (bool val) {
-                          if (val || _toDoShowChecked) {
+                          if (val != null && (val || _toDoShowChecked)) {
                             _toDoShowUnchecked = !_toDoShowUnchecked;
                             refreshToDoTable(_searchToDoController.text);
                           }
@@ -194,7 +195,7 @@ class ToDoHomeState extends State<ToDoHome> {
                     Checkbox(
                       value: _toDoShowChecked,
                       onChanged: (bool val) {
-                        if (val || _toDoShowUnchecked) {
+                        if (val != null && (val || _toDoShowUnchecked)) {
                           _toDoShowChecked = !_toDoShowChecked;
                           refreshToDoTable(_searchToDoController.text);
                         }
@@ -205,7 +206,7 @@ class ToDoHomeState extends State<ToDoHome> {
                     Checkbox(
                       value: _toDoShowUnchecked,
                       onChanged: (bool val) {
-                        if (val || _toDoShowChecked) {
+                        if (val != null && (val || _toDoShowChecked)) {
                           _toDoShowUnchecked = !_toDoShowUnchecked;
                           refreshToDoTable(_searchToDoController.text);
                         }

@@ -39,6 +39,7 @@ class TourState extends State<Tour> {
 
   void delete() {
     EventList eventList = EventList.getInstance();
+    if (widget.event == null) return;
     WebComunicater.sendRequest(<String, String>{
       "DeleteTour": "true",
       "tourIdx": widget.event.id.toString(),
@@ -81,6 +82,7 @@ class TourState extends State<Tour> {
   }
 
   void addAfz() {
+    if (widget.event == null || widget.afzToAdd == null) return;
     EventList eventList = EventList.getInstance();
     widget.event.afz.add(widget.afzToAdd);
     eventList.save();
@@ -94,6 +96,7 @@ class TourState extends State<Tour> {
 
   Widget buttons() {
     List<Widget> toReturn = [];
+    if (widget.event == null || widget.afzToAdd == null) return Text("Fehler");
 
     if (widget.addable && !widget.event.containsAfz(widget.afzToAdd)) {
       widget.event.afz.forEach((Aufzug element) {
@@ -152,7 +155,9 @@ class TourState extends State<Tour> {
                                           : Icons.keyboard_arrow_down_rounded,
                                       color: Colors.white),
                                   Text(
-                                    widget.event.text,
+                                    (widget.event != null)
+                                        ? widget.event.text
+                                        : "",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20,
@@ -173,12 +178,14 @@ class TourState extends State<Tour> {
         ),
         Collapsible(
             child: Column(
-              children: widget.event.getAfzWidgets(
-                refresh: widget.refreshParent,
-                toAdd: widget.afzToAdd,
-                editMode: widget.editMode,
-                customWorkWidget: widget.customWorkWidget,
-              ),
+              children: (widget.event != null)
+                  ? widget.event.getAfzWidgets(
+                      refresh: widget.refreshParent,
+                      toAdd: widget.afzToAdd,
+                      editMode: widget.editMode,
+                      customWorkWidget: widget.customWorkWidget,
+                    )
+                  : [Text("")],
             ),
             collapsed: _collapsed,
             axis: CollapsibleAxis.both),

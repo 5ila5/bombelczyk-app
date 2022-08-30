@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class KeepAliveFutureBuilder extends StatefulWidget {
   final Future future;
-  final AsyncWidgetBuilder builder;
+  final AsyncWidgetBuilder /*!*/ builder;
 
   KeepAliveFutureBuilder({this.future, this.builder});
 

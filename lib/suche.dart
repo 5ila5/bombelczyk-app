@@ -44,7 +44,7 @@ class SucheState extends State<Suche> {
       "sort": _sort.toString(),
       "sortDirection": _sortDirection.toString(),
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       AuthKey.wrongKey(context);
       return;
     }
@@ -168,6 +168,7 @@ class SucheState extends State<Suche> {
                   );
                 }).toList(),
                 onChanged: (Sorts newValue) {
+                  if (newValue == null) return;
                   _sort = newValue.index;
                   refreshTable(_searchController.text);
                 },

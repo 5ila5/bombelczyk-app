@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 
 class AkkuList extends StatefulWidget {
-  AkkuList(this.response, {Key key}) : super(key: key);
+  AkkuList(this.response, {Key? key}) : super(key: key);
   final Future<String> response;
 
   @override
@@ -21,7 +21,7 @@ class AkkuListState extends State<AkkuList> {
           //print(snapshot.data);
           //children = snapshot.data;
           Map<String, dynamic> responseMap =
-              Map<String, dynamic>.from(jsonDecode(snapshot.data));
+              Map<String, dynamic>.from(jsonDecode(snapshot.data!));
           if (!(responseMap["0"].runtimeType == String ||
               responseMap["0"]["error"] == "true")) {
             Map<String, dynamic> akkuMap = responseMap["0"];

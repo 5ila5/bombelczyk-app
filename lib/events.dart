@@ -26,17 +26,17 @@ class Buttons extends StatelessWidget {
   final bool last;
   final Color arrowColor = Colors.green;
   final Color deleteColor = Colors.red;
-  final Color /*!*/ tablecolor;
+  final Color tablecolor;
   final double buttonSize = 30;
   final EventList eventList = EventList.getInstance();
   final Event event;
   final int afzIdx;
   final int sort;
 
-  final Function() refresh;
+  final Function()? refresh;
 
   Buttons(this.event, this.sort, this.afzIdx,
-      {Key key,
+      {Key? key,
       this.refresh,
       this.first = false,
       this.last = false,
@@ -45,7 +45,7 @@ class Buttons extends StatelessWidget {
 
   Future<void> move(bool up) async {
     await this.event.afzMove(up, sort, afzIdx);
-    if (this.refresh != null) this.refresh();
+    if (this.refresh != null) this.refresh!();
   }
 
   showAlertDialog(BuildContext context) {
@@ -54,7 +54,7 @@ class Buttons extends StatelessWidget {
       child: Text("Ja"),
       onPressed: () {
         this.event.afzDelete(sort, afzIdx);
-        if (this.refresh != null) this.refresh();
+        if (this.refresh != null) this.refresh!();
         Navigator.pop(context);
       },
     );
@@ -134,7 +134,7 @@ class Buttons extends StatelessWidget {
 }
 
 class EventList {
-  DateTime _lastWebCall;
+  DateTime? _lastWebCall;
   static final EventList _instance = new EventList._();
   List<Event> events = [];
 
@@ -148,7 +148,7 @@ class EventList {
     if (_lastWebCall == null) {
       return Duration(days: 10);
     } else {
-      return _lastWebCall.difference(DateTime.now()).abs();
+      return _lastWebCall!.difference(DateTime.now()).abs();
     }
   }
 
@@ -223,8 +223,8 @@ class EventList {
 
   Future<EventList> load() async {
     SharedPreferences prefs = await Preferences.getPrefs();
-    if (prefs != null && prefs.containsKey("events")) {
-      _initWithJson(prefs.get("events"));
+    if (prefs.containsKey("events")) {
+      _initWithJson(prefs.get("events") as String);
     } else {}
     return this;
   }
@@ -261,18 +261,18 @@ class EventList {
 }
 
 class Aufzug {
-  int /*!*/ _afzIdx = -1;
-  String /*!*/ _anr = "0";
-  String _astr = "";
-  String _ahnr = "";
-  int _plz = 00000;
-  String _ort = "";
-  String _fkZeit = "";
-  String _zgTxt = "";
-  String _arbeit = "";
-  bool _erledigt = false;
-  int _anzImg = 0;
-  String _beschreibung = "";
+  int _afzIdx = -1;
+  String _anr = "0";
+  String? _astr = "";
+  String? _ahnr = "";
+  int? _plz = 00000;
+  String? _ort = "";
+  String? _fkZeit = "";
+  String? _zgTxt = "";
+  String? _arbeit = "";
+  bool? _erledigt = false;
+  int? _anzImg = 0;
+  String? _beschreibung = "";
 
   Aufzug(Map<String, dynamic> afzMap) {
     if (afzMap["AfzIdx"] is String) {
@@ -345,23 +345,23 @@ class Aufzug {
         ',"Anr":"' +
         _anr +
         '","Astr":"' +
-        _astr +
+        _astr! +
         '","Ahnr":"' +
-        _ahnr +
+        _ahnr! +
         '","plz":' +
         _plz.toString() +
         ',"Ort":"' +
-        _ort +
+        _ort! +
         '"';
     if (_fkZeit != null) {
-      toReturn += ',"FK_zeit":"' + _fkZeit + '"';
+      toReturn += ',"FK_zeit":"' + _fkZeit! + '"';
     }
     if (_zgTxt != null) {
-      toReturn += ',"Zg_txt":"' + _zgTxt + '"';
+      toReturn += ',"Zg_txt":"' + _zgTxt! + '"';
     }
     if (_arbeit != null) {
       //print("ARBEIT IS Not NULL");
-      toReturn += ',"arbeit":"' + _arbeit + '"';
+      toReturn += ',"arbeit":"' + _arbeit! + '"';
     } else {
       //print("ARBEIT IS NULL");
     }
@@ -369,7 +369,7 @@ class Aufzug {
       toReturn += ',"erledigt":"' + _erledigt.toString() + '"';
     }
     if (_beschreibung != null) {
-      toReturn += ',"beschreibung":"' + _beschreibung + '"';
+      toReturn += ',"beschreibung":"' + _beschreibung! + '"';
     }
     if (_anzImg != null) {
       toReturn += ',"anzImg":"' + _anzImg.toString() + '"';
@@ -395,61 +395,61 @@ class Aufzug {
     return this._anr;
   }
 
-  String /*!*/ getAstr() {
+  String getAstr() {
     if (this._astr == null) return "";
-    return this._astr;
+    return this._astr!;
   }
 
-  String /*!*/ getAhnr() {
+  String getAhnr() {
     if (this._ahnr == null) return "";
-    return this._ahnr;
+    return this._ahnr!;
   }
 
-  int /*!*/ getplz() {
+  int getplz() {
     if (this._plz == null) return 00000;
-    return this._plz;
+    return this._plz!;
   }
 
-  String /*!*/ getOrt() {
+  String getOrt() {
     if (this._ort == null) return "";
-    return this._ort;
+    return this._ort!;
   }
 
-  String /*!*/ getFkZeit() {
+  String getFkZeit() {
     if (this._fkZeit == null) return "";
-    return this._fkZeit;
+    return this._fkZeit!;
   }
 
-  String /*!*/ getZgTxt() {
+  String getZgTxt() {
     if (this._zgTxt == null) return "";
-    return this._zgTxt;
+    return this._zgTxt!;
   }
 
-  String /*!*/ getArbeit() {
+  String getArbeit() {
     if (this._arbeit == null) return "";
-    return this._arbeit;
+    return this._arbeit!;
   }
 
-  int /*!*/ getAnzImg() {
+  int getAnzImg() {
     if (this._anzImg == null) return 0;
-    return this._anzImg;
+    return this._anzImg!;
   }
 
-  String /*!*/ getBeschreibugn() {
+  String getBeschreibugn() {
     if (this._beschreibung == null) return "";
-    return this._beschreibung;
+    return this._beschreibung!;
   }
 
-  bool /*!*/ getErledigt() {
+  bool getErledigt() {
     if (this._erledigt == null) return false;
-    return this._erledigt;
+    return this._erledigt!;
   }
 
   void setArbeit(String arbeit) {
     this._arbeit = arbeit;
   }
 
-  void setErledigt(bool erledigt, {int tourIdx}) {
+  void setErledigt(bool erledigt, {int? tourIdx}) {
     this._erledigt = erledigt;
     if (tourIdx != null) {
       WebComunicater.sendRequest(<String, String>{
@@ -464,10 +464,10 @@ class Aufzug {
 }
 
 class Event {
-  final List<Aufzug> afz = [];
+  final List<Aufzug?> afz = [];
   DateTime date;
-  String /*!*/ text;
-  int /*!*/ id;
+  String text;
+  int id;
   TourGeneralInfo tourInfos = TourGeneralInfo.getInstance();
 
   Event(this.id, this.date, this.text, List<dynamic> afz) {
@@ -489,10 +489,6 @@ class Event {
   }
 
   bool isSameDay(DateTime a, DateTime b) {
-    if (a == null || b == null) {
-      return false;
-    }
-
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
@@ -517,7 +513,7 @@ class Event {
         indx >= afz.length) {
       return false;
     }
-    Aufzug tmp = afz[indx];
+    Aufzug? tmp = afz[indx];
     afz[indx] = afz[indx + ((up) ? -1 : 1)];
     afz[indx + ((up) ? -1 : 1)] = tmp;
     WebComunicater.sendRequest(<String, String>{
@@ -535,26 +531,16 @@ class Event {
     int idx = aufzug.getAfzIdx();
     bool toReturn = false;
     afz.forEach((element) {
-      if (element.hasIdx(idx)) {
+      if (element!.hasIdx(idx)) {
         toReturn = true;
       }
     });
     return toReturn;
   }
 
-  bool containsAfzWithIdx(int idx) {
-    // print(afz.toString());
-    afz.forEach((element) {
-      if (element.hasIdx(idx)) {
-        return true;
-      }
-    });
-    return false;
-  }
-
-  Aufzug getAfzWithIdx(int idx) {
+  Aufzug? getAfzWithIdx(int idx) {
     for (var element in afz) {
-      if (element.getAfzIdx() == idx) {
+      if (element!.getAfzIdx() == idx) {
         print("return: " + element.toString());
         return element;
       }
@@ -593,8 +579,8 @@ class Event {
                     // print(snapshot.data);
                     if (snapshot.hasData) {
                       //log(snapshot.data);
-                      List<String> photolist =
-                          (List<String>.from(jsonDecode(snapshot.data)));
+                      List<String> photolist = (List<String>.from(
+                          jsonDecode(snapshot.data.toString())));
 
                       toReturn = PhotoViewGallery.builder(
                           itemCount: photolist.length,
@@ -616,18 +602,18 @@ class Event {
   }
 
   List<Widget> getAfzWidgets(
-      {Function refresh,
-      Aufzug toAdd,
+      {Function? refresh,
+      Aufzug? toAdd,
       bool editMode = false,
-      Function customWorkWidget}) {
+      Function? customWorkWidget}) {
     bool even = false;
-    Color tablecolor;
+    Color? tablecolor;
 
     //print("zeug" + afz.toString());
     List<Widget> toReturn = [];
     bool first = true;
     int count = 0;
-    this.afz.forEach((Aufzug e) {
+    this.afz.forEach((Aufzug? e) {
       if (e != null) {
         count++;
         if (even) {
@@ -638,7 +624,7 @@ class Event {
         if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
           tablecolor = Colors.lightGreen;
         }
-        if (e.getErledigt() != null && e.getErledigt()) {
+        if (e.getErledigt()) {
           tablecolor = Color.fromARGB(255, 0, 255, 8);
         }
         even = !even;
@@ -676,10 +662,10 @@ class Event {
             isSameDay(DateTime.now(), this.date)) {
           if (editMode) {
             toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
-                refresh: refresh,
+                refresh: refresh as dynamic Function()?,
                 first: first,
                 last: (this.afz.length <= count),
-                tablecolor: tablecolor));
+                tablecolor: tablecolor!));
           }
           first = false;
         }
@@ -704,7 +690,7 @@ class Event {
   List<int> getAfzIdxList() {
     List<int> toReturn = [];
     afz.forEach((element) {
-      toReturn.add(element.getAfzIdx());
+      toReturn.add(element!.getAfzIdx());
     });
     return toReturn;
   }

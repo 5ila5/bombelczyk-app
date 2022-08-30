@@ -7,9 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class WebComunicater {
   static final String _ipToAsk = 'bombelczyk-aufzuege.de';
   static final gzip = GZipCodec();
-  static SharedPreferences prefs;
+  static late SharedPreferences prefs;
 
-  static Future<String /*!*/ > sendRequest(Map<String, String /*!*/ > body,
+  static Future<String > sendRequest(Map<String, String > body,
       {bool login = false}) async {
     prefs = await Preferences.getPrefs();
 
@@ -17,7 +17,7 @@ class WebComunicater {
       return "notLoggedIn";
     }
     if (!login) {
-      body.addAll({'auth': prefs.getString("key")});
+      body.addAll({'auth': prefs.getString("key")!});
     }
     http.Response response = await http.post(
       Uri.https(_ipToAsk,

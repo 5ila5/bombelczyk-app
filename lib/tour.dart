@@ -9,7 +9,7 @@ import 'add_event_form.dart';
 
 class Tours extends StatefulWidget {
   Tours({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -136,7 +136,7 @@ class ToursState<T extends Tours> extends State<T> {
     getEvents(respectCashe: true);
   }
 
-  void addEvent({Event event}) {
+  void addEvent({Event? event}) {
     showDialog(
         context: context,
         builder: (BuildContext context) {

@@ -4,7 +4,7 @@ import 'web_comunicater.dart';
 import 'package:flutter/foundation.dart';
 
 class TourGeneralInfo {
-  static TourGeneralInfo _instance;
+  static TourGeneralInfo? _instance;
   Map<int, String> personen = {};
   Map<int, String> arbeitsarten = {};
 
@@ -22,9 +22,9 @@ class TourGeneralInfo {
 
     Map<String, Map<dynamic, dynamic>> json =
         Map<String, Map<dynamic, dynamic>>.from(jsonDecode(response));
-    personen = json["pers"].map((key, value) =>
+    personen = json["pers"]!.map((key, value) =>
         MapEntry<int, String>(int.parse(key), value.toString()));
-    arbeitsarten = json["art"].map((key, value) =>
+    arbeitsarten = json["art"]!.map((key, value) =>
         MapEntry<int, String>(int.parse(key), value.toString()));
   }
 
@@ -32,12 +32,12 @@ class TourGeneralInfo {
     request();
   }
 
-  static TourGeneralInfo /*!*/ getInstance() {
+  static TourGeneralInfo getInstance() {
     if (_instance == null) {
       _instance = new TourGeneralInfo();
     }
 
-    return _instance;
+    return _instance!;
   }
 
   int getArbeitsIdx(String arbeit) {

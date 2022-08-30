@@ -24,16 +24,16 @@ enum ToDoSorts {
 }*/
 
 class Preferences {
-  static SharedPreferences prefs;
+  static SharedPreferences? prefs;
 
-  static Future<SharedPreferences /*!*/ > initPrefs() async {
+  static Future<SharedPreferences > initPrefs() async {
     prefs = await SharedPreferences.getInstance();
-    return prefs;
+    return prefs!;
   }
 
-  static Future<SharedPreferences /*!*/ > getPrefs() async {
+  static Future<SharedPreferences > getPrefs() async {
     if (prefs != null) {
-      return prefs;
+      return prefs!;
     }
     return await initPrefs();
   }
@@ -78,7 +78,7 @@ class SelectElevator {
     if (prefs.containsKey("key") && prefs.getString("key") != null) {
       Future<String> response = WebComunicater.sendRequest(<String, String>{
         'AfzIdx': afzIdx,
-        'auth': prefs.getString("key"),
+        'auth': prefs.getString("key")!,
       });
 
       //Future<String> responseStr = response.replaceAll("\n", "");

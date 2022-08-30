@@ -19,9 +19,9 @@ class AufzugWidget extends StatelessWidget {
 }
 
 class AufzugPage extends StatefulWidget {
-  AufzugPage({Key key, this.title}) : super(key: key);
+  AufzugPage({Key? key, this.title}) : super(key: key);
 
-  final String title;
+  final String? title;
 
   @override
   AufzugPageState createState() => AufzugPageState();
@@ -34,8 +34,8 @@ class AufzugPageState extends State<AufzugPage> {
 
   //Map<String, String> savedText = {};
   Map<String, dynamic> addedTodos = {};
-  Widget toDoList;
-  Widget arbeitsList;
+  Widget? toDoList;
+  Widget? arbeitsList;
 
   void writeInLastAFZs(AufzugsArgumente args) async {
     _lastInited = true;
@@ -45,8 +45,8 @@ class AufzugPageState extends State<AufzugPage> {
 
       await Preferences.initPrefs();
     }
-    if (Preferences.prefs.containsKey("lastAFZs")) {
-      List<String> lastAFZs = Preferences.prefs.getStringList("lastAFZs");
+    if (Preferences.prefs!.containsKey("lastAFZs")) {
+      List<String> lastAFZs = Preferences.prefs!.getStringList("lastAFZs")!;
       if (lastAFZs.contains(args.afzIdx.toString()))
         lastAFZs.remove(args.afzIdx.toString());
       lastAFZs.insert(0, args.afzIdx.toString());
@@ -54,15 +54,15 @@ class AufzugPageState extends State<AufzugPage> {
         //print("removed: "+lastAFZs[10]);
         lastAFZs.removeAt(10);
       }
-      Preferences.prefs.setStringList("lastAFZs", lastAFZs);
+      Preferences.prefs!.setStringList("lastAFZs", lastAFZs);
     } else {
-      Preferences.prefs.setStringList("lastAFZs", [args.afzIdx.toString()]);
+      Preferences.prefs!.setStringList("lastAFZs", [args.afzIdx.toString()]);
     }
   }
 
   void printFutureResponse(Future<http.Response> response) async {}
 
-  bool isNumeric(String s) {
+  bool isNumeric(String? s) {
     if (s == null) {
       return false;
     }
@@ -71,7 +71,7 @@ class AufzugPageState extends State<AufzugPage> {
 
   void createNewToDo(String key, String aidx) async {
     String response = await WebComunicater.sendRequest(<String, String>{
-      'auth': Preferences.prefs.getString("key"),
+      'auth': Preferences.prefs!.getString("key")!,
       'toDoNewText': addedTodos[key]['text'],
       'AfzIdx': aidx,
       'toDoSet': (addedTodos[key]["checked"] != "").toString(),
@@ -84,7 +84,8 @@ class AufzugPageState extends State<AufzugPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AufzugsArgumente args = ModalRoute.of(context).settings.arguments;
+    final AufzugsArgumente args =
+        ModalRoute.of(context)!.settings.arguments as AufzugsArgumente;
     if (this.toDoList == null) {
       this.toDoList = ToDoAufzugList(args.json, args.afzIdx);
     }
@@ -92,7 +93,7 @@ class AufzugPageState extends State<AufzugPage> {
       this.arbeitsList = WorkList(args.json);
     }
     if (!_lastInited) writeInLastAFZs(args);
-    List<Widget> workWidget = [];
+    List<Widget?> workWidget = [];
 
     workWidget.add(
       DataTable(
@@ -233,7 +234,7 @@ class AufzugPageState extends State<AufzugPage> {
           itemCount: workWidget.length,
           itemBuilder: (context, index) {
             //final count = index + 1;
-            return workWidget[index];
+            return workWidget[index]!;
           },
           //children: workWidget,
           //crossAxisAlignment: CrossAxisAlignment.stretch,

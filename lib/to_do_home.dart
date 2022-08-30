@@ -10,7 +10,7 @@ class ToDoHome extends StatefulWidget {
   //Map <String,dynamic> toDoresponseMap;
   //String afzIdx;
 
-  ToDoHome({Key key}) : super(key: key);
+  ToDoHome({Key? key}) : super(key: key);
 
   @override
   ToDoHomeState createState() => ToDoHomeState();
@@ -22,7 +22,7 @@ class ToDoHomeState extends State<ToDoHome> {
   TextEditingController _searchToDoController = new TextEditingController();
   bool _toDoShowChecked = false;
   bool _toDoShowUnchecked = true;
-  Future<Map<String, dynamic>> toDoresponseMap;
+  Future<Map<String, dynamic>>? toDoresponseMap;
   bool firstBuild = true;
   bool allExpanded = false;
   Map<String, Widget> expandedWidgets = {};
@@ -140,7 +140,7 @@ class ToDoHomeState extends State<ToDoHome> {
                     child: Text(value.toString().replaceAll("ToDoSorts.", "")),
                   );
                 }).toList(),
-                onChanged: (ToDoSorts newValue) {
+                onChanged: (ToDoSorts? newValue) {
                   if (newValue == null) return;
                   _toDoSort = newValue.index;
                   refreshToDoTable(_searchToDoController.text);
@@ -165,7 +165,7 @@ class ToDoHomeState extends State<ToDoHome> {
                       Icon(Icons.check),
                       Checkbox(
                         value: _toDoShowChecked,
-                        onChanged: (bool val) {
+                        onChanged: (bool? val) {
                           if (val != null && (val || _toDoShowUnchecked)) {
                             _toDoShowChecked = !_toDoShowChecked;
                             refreshToDoTable(_searchToDoController.text);
@@ -179,7 +179,7 @@ class ToDoHomeState extends State<ToDoHome> {
                       Icon(Icons.crop_square_sharp),
                       Checkbox(
                         value: _toDoShowUnchecked,
-                        onChanged: (bool val) {
+                        onChanged: (bool? val) {
                           if (val != null && (val || _toDoShowChecked)) {
                             _toDoShowUnchecked = !_toDoShowUnchecked;
                             refreshToDoTable(_searchToDoController.text);
@@ -194,7 +194,7 @@ class ToDoHomeState extends State<ToDoHome> {
                     Icon(Icons.check),
                     Checkbox(
                       value: _toDoShowChecked,
-                      onChanged: (bool val) {
+                      onChanged: (bool? val) {
                         if (val != null && (val || _toDoShowUnchecked)) {
                           _toDoShowChecked = !_toDoShowChecked;
                           refreshToDoTable(_searchToDoController.text);
@@ -205,7 +205,7 @@ class ToDoHomeState extends State<ToDoHome> {
                     Icon(Icons.crop_square_sharp),
                     Checkbox(
                       value: _toDoShowUnchecked,
-                      onChanged: (bool val) {
+                      onChanged: (bool? val) {
                         if (val != null && (val || _toDoShowChecked)) {
                           _toDoShowUnchecked = !_toDoShowUnchecked;
                           refreshToDoTable(_searchToDoController.text);

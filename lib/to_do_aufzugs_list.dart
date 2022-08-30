@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'aufzug_to_do.dart';
 
 class ToDoAufzugList extends StatefulWidget {
-  ToDoAufzugList(this.response, this.afzIdx, {Key key}) : super(key: key);
+  ToDoAufzugList(this.response, this.afzIdx, {Key? key}) : super(key: key);
   final Future<String> response;
   final String afzIdx;
 
@@ -12,11 +12,11 @@ class ToDoAufzugList extends StatefulWidget {
 }
 
 class ToDoAufzugListState extends State<ToDoAufzugList> {
-  Widget aufzugToDo;
+  Widget? aufzugToDo;
   @override
   Widget build(BuildContext context) {
     if (aufzugToDo != null) {
-      return aufzugToDo;
+      return aufzugToDo!;
     }
     return FutureBuilder<String>(
       future: widget.response,
@@ -24,8 +24,8 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
         List<Widget> children = [];
         if (snapshot.hasData) {
           Map<String, dynamic> responseMap =
-              Map<String, dynamic>.from(jsonDecode(snapshot.data));
-          Map<String, dynamic> /*!*/ toDoMap = {};
+              Map<String, dynamic>.from(jsonDecode(snapshot.data!));
+          Map<String, dynamic> toDoMap = {};
           if (!(responseMap["2"].runtimeType == String ||
               responseMap["2"]["error"] == "true")) {
             toDoMap = responseMap["2"];
@@ -34,7 +34,7 @@ class ToDoAufzugListState extends State<ToDoAufzugList> {
             toDoMap = {};
           }
           this.aufzugToDo = AufzugToDo(afzIdx: widget.afzIdx, toDoMap: toDoMap);
-          return this.aufzugToDo;
+          return this.aufzugToDo!;
         } else if (snapshot.hasError) {
           children.addAll(
             [

@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class KeepAliveFutureBuilder extends StatefulWidget {
-  final Future future;
-  final AsyncWidgetBuilder /*!*/ builder;
+  final Future? future;
+  final AsyncWidgetBuilder builder;
 
-  KeepAliveFutureBuilder({this.future, this.builder});
+  KeepAliveFutureBuilder({this.future, required this.builder});
 
   @override
   _KeepAliveFutureBuilderState createState() => _KeepAliveFutureBuilderState();

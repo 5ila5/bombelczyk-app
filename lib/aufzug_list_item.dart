@@ -21,26 +21,31 @@ class AufzugListItem extends StatefulWidget {
   Function customWorkWidget;
   bool erledigt;
   Function check;
+  String beschreibung;
+  int anzImg;
+  Function showImg;
 
-  AufzugListItem({
-    Key key,
-    this.anr,
-    this.astr,
-    this.ahnr,
-    this.plz,
-    this.ort = "",
-    this.fKZeit = "",
-    this.zgTxt,
-    this.afzIdx,
-    this.tablecolor,
-    Aufzug aufzug,
-    this.showMapIcon = true,
-    this.customOnclick,
-    this.arbeit,
-    this.customWorkWidget,
-    this.erledigt,
-    this.check,
-  }) {
+  AufzugListItem(
+      {Key key,
+      this.anr,
+      this.astr,
+      this.ahnr,
+      this.plz,
+      this.ort = "",
+      this.fKZeit = "",
+      this.zgTxt,
+      this.afzIdx,
+      this.tablecolor,
+      Aufzug aufzug,
+      this.showMapIcon = true,
+      this.customOnclick,
+      this.arbeit,
+      this.customWorkWidget,
+      this.erledigt,
+      this.check,
+      this.beschreibung,
+      this.anzImg,
+      this.showImg}) {
     if (fKZeit == null) {
       fKZeit = "NULL";
     }
@@ -53,6 +58,8 @@ class AufzugListItem extends StatefulWidget {
       this.fKZeit = aufzug.getFkZeit();
       this.zgTxt = aufzug.getZgTxt();
       this.afzIdx = aufzug.getAfzIdx().toString();
+      this.beschreibung = aufzug.getBeschreibugn();
+      this.anzImg = aufzug.getAnzImg();
     }
   }
 
@@ -132,6 +139,20 @@ class AufzugListItemState extends State<AufzugListItem> {
       ));
     }
 
+    if (widget.beschreibung != null && widget.beschreibung.length > 1) {
+      columnChildren.add(Row(
+        children: [
+          Flexible(
+            child: Text(
+              "\n" + widget.beschreibung,
+              style: tableRowBottomStyle,
+              overflow: TextOverflow.fade,
+            ),
+          ),
+        ],
+      ));
+    }
+
     return Container(
       padding:
           const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
@@ -184,6 +205,21 @@ class AufzugListItemState extends State<AufzugListItem> {
                         size: 50,
                       ),
                       onTap: () => widget.check(!widget.erledigt),
+                    ),
+                  if (widget.anzImg != null && widget.anzImg > 0)
+                    InkWell(
+                      child: Row(
+                        children: [
+                          Text(widget.anzImg.toString(),
+                              style: TextStyle(fontSize: 20)),
+                          Icon(
+                            Icons.image_outlined,
+                            size: 50,
+                          )
+                        ],
+                      ),
+                      onTap: () =>
+                          widget.showImg(context, int.parse(widget.afzIdx)),
                     ),
                   if (widget.showMapIcon)
                     new InkWell(

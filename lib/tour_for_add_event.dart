@@ -9,7 +9,7 @@ class TourForAddToEvent extends Tours {
 
   TourForAddToEvent(
     this.afz, {
-    Key key,
+    Key? key,
   }) : super();
 
   @override

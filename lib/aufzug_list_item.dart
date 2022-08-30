@@ -6,62 +6,67 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 //ignore: must_be_immutable
 class AufzugListItem extends StatefulWidget {
-  Color tablecolor;
-  String anr;
-  String astr;
-  String ahnr;
-  String plz;
-  String ort;
-  String fKZeit;
-  String zgTxt;
-  String afzIdx;
-  bool showMapIcon;
-  Function customOnclick;
-  String arbeit;
-  Function customWorkWidget;
-  bool erledigt;
-  Function check;
-  String beschreibung;
-  int anzImg;
-  Function showImg;
+  Color? tablecolor;
+  final String anr;
+  final String astr;
+  final String ahnr;
+  final String plz;
+  final String ort;
+  final String fKZeit;
+  final String zgTxt;
+  final String afzIdx;
+  final bool showMapIcon;
+  final Function? customOnclick;
+  final String arbeit;
+  final Function? customWorkWidget;
+  final bool erledigt;
+  final Function? check;
+  final String beschreibung;
+  final int anzImg;
+  final Function? showImg;
 
   AufzugListItem(
-      {Key key,
-      this.anr,
-      this.astr,
-      this.ahnr,
-      this.plz,
+      {Key? key,
+      this.anr = "-1",
+      this.astr = "",
+      this.ahnr = "",
+      this.plz = "",
       this.ort = "",
-      this.fKZeit = "",
-      this.zgTxt,
-      this.afzIdx,
-      this.tablecolor,
-      Aufzug aufzug,
+      this.fKZeit = "NULL",
+      this.zgTxt = "",
+      this.afzIdx = "",
+      this.tablecolor = Colors.white,
+      //Aufzug aufzug,
       this.showMapIcon = true,
       this.customOnclick,
-      this.arbeit,
+      this.arbeit = "",
       this.customWorkWidget,
-      this.erledigt,
+      this.erledigt = false,
       this.check,
-      this.beschreibung,
-      this.anzImg,
-      this.showImg}) {
-    if (fKZeit == null) {
-      fKZeit = "NULL";
-    }
-    if (aufzug != null) {
-      this.anr = aufzug.getAnr();
-      this.astr = aufzug.getAstr();
-      this.ahnr = aufzug.getAhnr();
-      this.plz = aufzug.getplz().toString();
-      this.ort = aufzug.getOrt();
-      this.fKZeit = aufzug.getFkZeit();
-      this.zgTxt = aufzug.getZgTxt();
-      this.afzIdx = aufzug.getAfzIdx().toString();
-      this.beschreibung = aufzug.getBeschreibugn();
-      this.anzImg = aufzug.getAnzImg();
-    }
-  }
+      this.beschreibung = "",
+      this.anzImg = 0,
+      this.showImg});
+
+  AufzugListItem.fromAufzug(Aufzug aufzug,
+      {Key? key,
+      this.showImg,
+      this.showMapIcon = true,
+      this.customOnclick,
+      this.arbeit = "",
+      this.customWorkWidget,
+      this.erledigt = false,
+      this.check,
+      this.tablecolor = Colors.white})
+      : this.anr = aufzug.getAnr(),
+        this.astr = aufzug.getAstr(),
+        this.ahnr = aufzug.getAhnr(),
+        this.plz = aufzug.getplz().toString(),
+        this.ort = aufzug.getOrt(),
+        this.fKZeit = aufzug.getFkZeit(),
+        this.zgTxt = aufzug.getZgTxt(),
+        this.afzIdx = aufzug.getAfzIdx().toString(),
+        this.beschreibung = aufzug.getBeschreibugn(),
+        this.anzImg = aufzug.getAnzImg();
 
   @override
   AufzugListItemState createState() => AufzugListItemState();
@@ -81,9 +86,9 @@ class AufzugListItemState extends State<AufzugListItem> {
     List<Widget> columnChildren = [
       if (widget.customWorkWidget != null)
         Row(children: [
-          Flexible(child: widget.customWorkWidget(int.parse(widget.afzIdx))),
+          Flexible(child: widget.customWorkWidget!(int.parse(widget.afzIdx))),
         ]),
-      if (widget.customWorkWidget == null && widget.arbeit != null)
+      if (widget.customWorkWidget == null)
         Row(children: [
           Flexible(
               child: Text(
@@ -139,7 +144,7 @@ class AufzugListItemState extends State<AufzugListItem> {
       ));
     }
 
-    if (widget.beschreibung != null && widget.beschreibung.length > 1) {
+    if (widget.beschreibung.length > 1) {
       columnChildren.add(Row(
         children: [
           Flexible(
@@ -180,7 +185,7 @@ class AufzugListItemState extends State<AufzugListItem> {
                           widget.zgTxt,
                           context);
                     } else {
-                      widget.customOnclick(Aufzug.fromArgs(
+                      widget.customOnclick!(Aufzug.fromArgs(
                           int.parse(widget.afzIdx),
                           widget.anr,
                           widget.astr,
@@ -195,18 +200,16 @@ class AufzugListItemState extends State<AufzugListItem> {
               ),
               Column(
                 children: [
-                  if (widget.customWorkWidget == null &&
-                      widget.arbeit != null &&
-                      widget.erledigt != null)
+                  if (widget.customWorkWidget == null && widget.check != null)
                     InkWell(
                       child: Icon(
                         Icons.check_circle,
                         color: (widget.erledigt) ? Colors.grey : Colors.green,
                         size: 50,
                       ),
-                      onTap: () => widget.check(!widget.erledigt),
+                      onTap: () => widget.check!(!widget.erledigt),
                     ),
-                  if (widget.anzImg != null && widget.anzImg > 0)
+                  if (widget.anzImg > 0)
                     InkWell(
                       child: Row(
                         children: [
@@ -219,7 +222,7 @@ class AufzugListItemState extends State<AufzugListItem> {
                         ],
                       ),
                       onTap: () =>
-                          widget.showImg(context, int.parse(widget.afzIdx)),
+                          widget.showImg!(context, int.parse(widget.afzIdx)),
                     ),
                   if (widget.showMapIcon)
                     new InkWell(

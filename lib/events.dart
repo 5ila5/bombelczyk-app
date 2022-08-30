@@ -33,20 +33,19 @@ class Buttons extends StatelessWidget {
   final int afzIdx;
   final int sort;
 
-  final Function() refresh;
+  final Function()? refresh;
 
   Buttons(this.event, this.sort, this.afzIdx,
-      {Key key,
+      {Key? key,
       this.refresh,
       this.first = false,
       this.last = false,
-      this.tablecolor = Colors.white})
+      this.tablecolor /*!*/ = Colors.white})
       : super(key: key);
 
   Future<void> move(bool up) async {
     await this.event.afzMove(up, sort, afzIdx);
-
-    this.refresh();
+    if (this.refresh != null) this.refresh!();
   }
 
   showAlertDialog(BuildContext context) {
@@ -55,7 +54,7 @@ class Buttons extends StatelessWidget {
       child: Text("Ja"),
       onPressed: () {
         this.event.afzDelete(sort, afzIdx);
-        refresh();
+        if (this.refresh != null) this.refresh!();
         Navigator.pop(context);
       },
     );
@@ -135,7 +134,7 @@ class Buttons extends StatelessWidget {
 }
 
 class EventList {
-  DateTime _lastWebCall;
+  DateTime? _lastWebCall;
   static final EventList _instance = new EventList._();
   List<Event> events = [];
 
@@ -149,7 +148,7 @@ class EventList {
     if (_lastWebCall == null) {
       return Duration(days: 10);
     } else {
-      return _lastWebCall.difference(DateTime.now()).abs();
+      return _lastWebCall!.difference(DateTime.now()).abs();
     }
   }
 
@@ -166,15 +165,8 @@ class EventList {
   }
 
   save() async {
-    // print("start save");
     SharedPreferences prefs = await Preferences.getPrefs();
-    if (prefs != null) {
-      prefs.setString("events", this.toJson());
-      // print(this.toJson());
-    } else {
-      // print("erro no Prefs");
-    }
-    // print("end Save");
+    prefs.setString("events", this.toJson());
   }
 
   void _initWithJson(String json) {
@@ -199,7 +191,7 @@ class EventList {
     String response = await WebComunicater.sendRequest({
       "get_events": "1",
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       return this;
     }
 
@@ -231,8 +223,8 @@ class EventList {
 
   Future<EventList> load() async {
     SharedPreferences prefs = await Preferences.getPrefs();
-    if (prefs != null && prefs.containsKey("events")) {
-      _initWithJson(prefs.get("events"));
+    if (prefs.containsKey("events")) {
+      _initWithJson(prefs.get("events") as String);
     } else {}
     return this;
   }
@@ -269,18 +261,18 @@ class EventList {
 }
 
 class Aufzug {
-  int _afzIdx;
-  String _anr;
-  String _astr;
-  String _ahnr;
-  int _plz;
-  String _ort;
-  String _fkZeit;
-  String _zgTxt;
-  String _arbeit;
-  bool _erledigt;
-  int _anzImg;
-  String _beschreibung;
+  int _afzIdx = -1;
+  String _anr = "0";
+  String? _astr = "";
+  String? _ahnr = "";
+  int? _plz = 00000;
+  String? _ort = "";
+  String? _fkZeit = "";
+  String? _zgTxt = "";
+  String? _arbeit = "";
+  bool? _erledigt = false;
+  int? _anzImg = 0;
+  String? _beschreibung = "";
 
   Aufzug(Map<String, dynamic> afzMap) {
     if (afzMap["AfzIdx"] is String) {
@@ -327,12 +319,6 @@ class Aufzug {
   Aufzug.fromArgs(this._afzIdx, this._anr, this._astr, this._ahnr, this._plz,
       this._ort, this._fkZeit, this._zgTxt,
       [this._arbeit, this._erledigt, this._anzImg]) {
-    if (this._afzIdx == null) {
-      this._afzIdx = -1;
-    }
-    if (this._anr == null) {
-      this._anr = "";
-    }
     if (this._astr == null) {
       this._astr = "";
     }
@@ -359,23 +345,23 @@ class Aufzug {
         ',"Anr":"' +
         _anr +
         '","Astr":"' +
-        _astr +
+        _astr! +
         '","Ahnr":"' +
-        _ahnr +
+        _ahnr! +
         '","plz":' +
         _plz.toString() +
         ',"Ort":"' +
-        _ort +
+        _ort! +
         '"';
     if (_fkZeit != null) {
-      toReturn += ',"FK_zeit":"' + _fkZeit + '"';
+      toReturn += ',"FK_zeit":"' + _fkZeit! + '"';
     }
     if (_zgTxt != null) {
-      toReturn += ',"Zg_txt":"' + _zgTxt + '"';
+      toReturn += ',"Zg_txt":"' + _zgTxt! + '"';
     }
     if (_arbeit != null) {
       //print("ARBEIT IS Not NULL");
-      toReturn += ',"arbeit":"' + _arbeit + '"';
+      toReturn += ',"arbeit":"' + _arbeit! + '"';
     } else {
       //print("ARBEIT IS NULL");
     }
@@ -383,7 +369,7 @@ class Aufzug {
       toReturn += ',"erledigt":"' + _erledigt.toString() + '"';
     }
     if (_beschreibung != null) {
-      toReturn += ',"beschreibung":"' + _beschreibung + '"';
+      toReturn += ',"beschreibung":"' + _beschreibung! + '"';
     }
     if (_anzImg != null) {
       toReturn += ',"anzImg":"' + _anzImg.toString() + '"';
@@ -410,50 +396,60 @@ class Aufzug {
   }
 
   String getAstr() {
-    return this._astr;
+    if (this._astr == null) return "";
+    return this._astr!;
   }
 
   String getAhnr() {
-    return this._ahnr;
+    if (this._ahnr == null) return "";
+    return this._ahnr!;
   }
 
   int getplz() {
-    return this._plz;
+    if (this._plz == null) return 00000;
+    return this._plz!;
   }
 
   String getOrt() {
-    return this._ort;
+    if (this._ort == null) return "";
+    return this._ort!;
   }
 
   String getFkZeit() {
-    return this._fkZeit;
+    if (this._fkZeit == null) return "";
+    return this._fkZeit!;
   }
 
   String getZgTxt() {
-    return this._zgTxt;
+    if (this._zgTxt == null) return "";
+    return this._zgTxt!;
   }
 
   String getArbeit() {
-    return this._arbeit;
+    if (this._arbeit == null) return "";
+    return this._arbeit!;
   }
 
   int getAnzImg() {
-    return this._anzImg;
+    if (this._anzImg == null) return 0;
+    return this._anzImg!;
   }
 
   String getBeschreibugn() {
-    return this._beschreibung;
+    if (this._beschreibung == null) return "";
+    return this._beschreibung!;
   }
 
   bool getErledigt() {
-    return this._erledigt;
+    if (this._erledigt == null) return false;
+    return this._erledigt!;
   }
 
   void setArbeit(String arbeit) {
     this._arbeit = arbeit;
   }
 
-  void setErledigt(bool erledigt, {int tourIdx}) {
+  void setErledigt(bool erledigt, {int? tourIdx}) {
     this._erledigt = erledigt;
     if (tourIdx != null) {
       WebComunicater.sendRequest(<String, String>{
@@ -468,7 +464,7 @@ class Aufzug {
 }
 
 class Event {
-  final List<Aufzug> afz = [];
+  final List<Aufzug?> afz = [];
   DateTime date;
   String text;
   int id;
@@ -493,10 +489,6 @@ class Event {
   }
 
   bool isSameDay(DateTime a, DateTime b) {
-    if (a == null || b == null) {
-      return false;
-    }
-
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
@@ -521,7 +513,7 @@ class Event {
         indx >= afz.length) {
       return false;
     }
-    Aufzug tmp = afz[indx];
+    Aufzug? tmp = afz[indx];
     afz[indx] = afz[indx + ((up) ? -1 : 1)];
     afz[indx + ((up) ? -1 : 1)] = tmp;
     WebComunicater.sendRequest(<String, String>{
@@ -539,26 +531,16 @@ class Event {
     int idx = aufzug.getAfzIdx();
     bool toReturn = false;
     afz.forEach((element) {
-      if (element.hasIdx(idx)) {
+      if (element!.hasIdx(idx)) {
         toReturn = true;
       }
     });
     return toReturn;
   }
 
-  bool containsAfzWithIdx(int idx) {
-    // print(afz.toString());
-    afz.forEach((element) {
-      if (element.hasIdx(idx)) {
-        return true;
-      }
-    });
-    return false;
-  }
-
-  Aufzug getAfzWithIdx(int idx) {
+  Aufzug? getAfzWithIdx(int idx) {
     for (var element in afz) {
-      if (element.getAfzIdx() == idx) {
+      if (element!.getAfzIdx() == idx) {
         print("return: " + element.toString());
         return element;
       }
@@ -597,8 +579,8 @@ class Event {
                     // print(snapshot.data);
                     if (snapshot.hasData) {
                       //log(snapshot.data);
-                      List<String> photolist =
-                          (List<String>.from(jsonDecode(snapshot.data)));
+                      List<String> photolist = (List<String>.from(
+                          jsonDecode(snapshot.data.toString())));
 
                       toReturn = PhotoViewGallery.builder(
                           itemCount: photolist.length,
@@ -620,71 +602,73 @@ class Event {
   }
 
   List<Widget> getAfzWidgets(
-      {Function() refresh,
-      Aufzug toAdd,
+      {Function? refresh,
+      Aufzug? toAdd,
       bool editMode = false,
-      Function customWorkWidget}) {
+      Function? customWorkWidget}) {
     bool even = false;
-    Color tablecolor;
+    Color? tablecolor;
 
     //print("zeug" + afz.toString());
     List<Widget> toReturn = [];
     bool first = true;
     int count = 0;
-    this.afz.forEach((Aufzug e) {
-      count++;
-      if (even) {
-        tablecolor = Colors.white;
-      } else {
-        tablecolor = Colors.grey[300];
-      }
-      if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
-        tablecolor = Colors.lightGreen;
-      }
-      if (e.getErledigt() != null && e.getErledigt()) {
-        tablecolor = Color.fromARGB(255, 0, 255, 8);
-      }
-      even = !even;
-      //print(e.toString());
-      toReturn.add(AufzugListItem(
-        zgTxt: e.getZgTxt(),
-        plz: e.getplz().toString(),
-        ort: e.getOrt(),
-        fKZeit: e.getFkZeit(),
-        astr: e.getAstr(),
-        anr: e.getAnr().toString(),
-        ahnr: e.getAhnr(),
-        afzIdx: e.getAfzIdx().toString(),
-        arbeit: e.getArbeit().toString(),
-        tablecolor: tablecolor,
-        customWorkWidget: customWorkWidget,
-        erledigt: e.getErledigt(),
-        check: (bool newState) => {
-          print("setErledigt for Afz" + e.getAfzIdx().toString()),
-          print("currSlectState:" + e.getErledigt().toString()),
-          print("e.setErledigt(" +
-              newState.toString() +
-              ", tourIdx:" +
-              this.id.toString() +
-              ")"),
-          e.setErledigt(newState, tourIdx: this.id),
-          print(e.getErledigt()),
-          refresh(),
-        },
-        beschreibung: e.getBeschreibugn(),
-        anzImg: e.getAnzImg(),
-        showImg: showImage,
-      ));
-      if (this.date.isAfter(DateTime.now()) ||
-          isSameDay(DateTime.now(), this.date)) {
-        if (editMode) {
-          toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
-              refresh: refresh,
-              first: first,
-              last: (this.afz.length <= count),
-              tablecolor: tablecolor));
+    this.afz.forEach((Aufzug? e) {
+      if (e != null) {
+        count++;
+        if (even) {
+          tablecolor = Colors.white;
+        } else {
+          tablecolor = Colors.grey[300];
         }
-        first = false;
+        if (toAdd != null && e.hasIdx(toAdd.getAfzIdx())) {
+          tablecolor = Colors.lightGreen;
+        }
+        if (e.getErledigt()) {
+          tablecolor = Color.fromARGB(255, 0, 255, 8);
+        }
+        even = !even;
+        //print(e.toString());
+        toReturn.add(AufzugListItem(
+          zgTxt: e.getZgTxt(),
+          plz: e.getplz().toString(),
+          ort: e.getOrt(),
+          fKZeit: e.getFkZeit(),
+          astr: e.getAstr(),
+          anr: e.getAnr().toString(),
+          ahnr: e.getAhnr(),
+          afzIdx: e.getAfzIdx().toString(),
+          arbeit: e.getArbeit().toString(),
+          tablecolor: tablecolor,
+          customWorkWidget: customWorkWidget,
+          erledigt: e.getErledigt(),
+          check: (bool newState) => {
+            print("setErledigt for Afz" + e.getAfzIdx().toString()),
+            print("currSlectState:" + e.getErledigt().toString()),
+            print("e.setErledigt(" +
+                newState.toString() +
+                ", tourIdx:" +
+                this.id.toString() +
+                ")"),
+            e.setErledigt(newState, tourIdx: this.id),
+            print(e.getErledigt()),
+            if (refresh != null) refresh(),
+          },
+          beschreibung: e.getBeschreibugn(),
+          anzImg: e.getAnzImg(),
+          showImg: showImage,
+        ));
+        if (this.date.isAfter(DateTime.now()) ||
+            isSameDay(DateTime.now(), this.date)) {
+          if (editMode) {
+            toReturn.add(Buttons(this, count - 1, e.getAfzIdx(),
+                refresh: refresh as dynamic Function()?,
+                first: first,
+                last: (this.afz.length <= count),
+                tablecolor: tablecolor!));
+          }
+          first = false;
+        }
       }
     });
 
@@ -694,7 +678,8 @@ class Event {
   List<int> getAfzArbeit() {
     List<int> toReturn = [];
     this.afz.forEach((element) {
-      toReturn.add(tourInfos.getArbeitsIdx(element.getArbeit()));
+      if (element != null)
+        toReturn.add(tourInfos.getArbeitsIdx(element.getArbeit()));
     });
     return toReturn;
   }
@@ -705,7 +690,7 @@ class Event {
   List<int> getAfzIdxList() {
     List<int> toReturn = [];
     afz.forEach((element) {
-      toReturn.add(element.getAfzIdx());
+      toReturn.add(element!.getAfzIdx());
     });
     return toReturn;
   }

@@ -9,7 +9,7 @@ import 'add_event_form.dart';
 
 class Tours extends StatefulWidget {
   Tours({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -125,13 +125,6 @@ class ToursState<T extends Tours> extends State<T> {
   Future<void> getWebEvents() async {
     print("in Get From WEB");
     await _eventList.loadFromWeb();
-    if (_eventList == null) {
-      _eventList.clear();
-      AuthKey.wrongKey(context);
-      return;
-    }
-
-    initEvents();
   }
 
   @override
@@ -140,7 +133,7 @@ class ToursState<T extends Tours> extends State<T> {
     getEvents(respectCashe: true);
   }
 
-  void addEvent({Event event}) {
+  void addEvent({Event? event}) {
     showDialog(
         context: context,
         builder: (BuildContext context) {

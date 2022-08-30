@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Arbeiten extends StatelessWidget {
   final Map<String, dynamic> arbeitsMap;
 
-  Arbeiten(this.arbeitsMap, {Key key}) : super(key: key);
+  Arbeiten(this.arbeitsMap, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

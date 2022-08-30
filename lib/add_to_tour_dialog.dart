@@ -6,7 +6,7 @@ class AddToTourDialog extends StatefulWidget {
 
   const AddToTourDialog(
     this.afz, {
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

@@ -24,16 +24,16 @@ enum ToDoSorts {
 }*/
 
 class Preferences {
-  static SharedPreferences prefs;
+  static SharedPreferences? prefs;
 
-  static Future<SharedPreferences> initPrefs() async {
+  static Future<SharedPreferences > initPrefs() async {
     prefs = await SharedPreferences.getInstance();
-    return prefs;
+    return prefs!;
   }
 
-  static Future<SharedPreferences> getPrefs() async {
+  static Future<SharedPreferences > getPrefs() async {
     if (prefs != null) {
-      return prefs;
+      return prefs!;
     }
     return await initPrefs();
   }
@@ -74,25 +74,22 @@ class SelectElevator {
   static void selectElevator(String afzIdx, String nr, String str, String pLZ,
       String ort, String fZ, String schluessel, BuildContext context) async {
     SharedPreferences prefs;
-    if (Preferences.prefs == null) {
-      prefs = await Preferences.initPrefs();
-    } else {
-      prefs = Preferences.prefs;
+    prefs = await Preferences.getPrefs();
+    if (prefs.containsKey("key") && prefs.getString("key") != null) {
+      Future<String> response = WebComunicater.sendRequest(<String, String>{
+        'AfzIdx': afzIdx,
+        'auth': prefs.getString("key")!,
+      });
+
+      //Future<String> responseStr = response.replaceAll("\n", "");
+      AufzugsArgumente args =
+          AufzugsArgumente(afzIdx, nr, response, str, pLZ, ort, fZ, schluessel);
+      args.printArgs();
+      Navigator.pushNamed(
+        context,
+        AufzugWidget.aufzugRoute,
+        arguments: args,
+      );
     }
-
-    Future<String> response = WebComunicater.sendRequest(<String, String>{
-      'AfzIdx': afzIdx,
-      'auth': prefs.getString("key"),
-    });
-
-    //Future<String> responseStr = response.replaceAll("\n", "");
-    AufzugsArgumente args =
-        AufzugsArgumente(afzIdx, nr, response, str, pLZ, ort, fZ, schluessel);
-    args.printArgs();
-    Navigator.pushNamed(
-      context,
-      AufzugWidget.aufzugRoute,
-      arguments: args,
-    );
   }
 }

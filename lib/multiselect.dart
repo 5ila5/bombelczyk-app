@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 // Multi Select widget
 // This widget is reusable
 class MultiSelect extends StatefulWidget {
-  final Map<int, String> items;
+  final Map<int, String>? items;
   final List<int> selected;
-  MultiSelect({Key key, this.items, this.selected = const []})
+  MultiSelect({Key? key, this.items, this.selected = const []})
       : super(key: key);
 
   @override
@@ -22,9 +22,9 @@ class _MultiSelectState extends State<MultiSelect> {
   }
 
 // This function is triggered when a checkbox is checked or unchecked
-  void _itemChange(int idx, bool isSelected) {
+  void _itemChange(int idx, bool? isSelected) {
     setState(() {
-      if (isSelected) {
+      if (isSelected != null && isSelected) {
         selected.add(idx);
       } else {
         selected.remove(idx);
@@ -48,7 +48,7 @@ class _MultiSelectState extends State<MultiSelect> {
       Text(
           "Personen mit denen die Tour schon geteilt wurde werden hier trotzdem nicht als ausgewählt angezeigt")
     ];
-    widget.items.forEach((idx, name) => {
+    widget.items!.forEach((idx, name) => {
           itemWidgets.add(CheckboxListTile(
             value: selected.contains(idx),
             title: Text(name),

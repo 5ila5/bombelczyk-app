@@ -40,9 +40,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title}) : super(key: key);
 
-  final String title;
+  final String? title;
 
   @override
   MyHomePageState createState() => MyHomePageState();
@@ -50,9 +50,9 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
-  static List<Widget> _widgetOptions;
+  static List<Widget>? _widgetOptions;
 
-  Map<String, dynamic> toDoresponseMap;
+  Map<String, dynamic>? toDoresponseMap;
 
   @override
   void initState() {
@@ -67,7 +67,7 @@ class MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_widgetOptions == null || _widgetOptions.length == 0) {
+    if (_widgetOptions == null || _widgetOptions!.length == 0) {
       _widgetOptions = <Widget>[
         Suche(),
         NearBy(),
@@ -94,11 +94,11 @@ class MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title!),
       ),
       body: //Center(
           //child:
-          _widgetOptions.elementAt(_selectedIndex),
+          _widgetOptions!.elementAt(_selectedIndex),
       //),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

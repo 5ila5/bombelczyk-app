@@ -12,7 +12,7 @@ class AuthKey {
 
   static void setKey(BuildContext context) async {
     //print("setKey");
-    SharedPreferences prefs;
+    SharedPreferences? prefs;
     if (Preferences.prefs == null) {
       prefs = await Preferences.initPrefs();
     } else {
@@ -36,7 +36,7 @@ class AuthKey {
       return;
     }
 
-    prefs.setString("key", respnse);
+    prefs!.setString("key", respnse);
   }
 
   static Future<void> displayTextInputDialog(BuildContext context) async {

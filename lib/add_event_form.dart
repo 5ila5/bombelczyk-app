@@ -11,14 +11,14 @@ import 'multiselect.dart';
 import 'tour_get_general.dart';
 
 class AddEventForm extends StatefulWidget {
-  final DateTime defaultDate;
+  final DateTime? defaultDate;
   final EventList eventList;
   final int id;
   final Event event;
   final bool createNew;
 
   AddEventForm({
-    Key key,
+    Key? key,
     this.defaultDate,
     this.id = -1,
   })  : this.event = Event(id, DateTime.now(), "", []),
@@ -50,7 +50,7 @@ class AddEventFormState extends State<AddEventForm> {
   @override
   void initState() {
     super.initState();
-    if (widget.defaultDate != null) this._selectedDay = widget.defaultDate;
+    if (widget.defaultDate != null) this._selectedDay = widget.defaultDate!;
 
     titleController.text = widget.event.text;
   }
@@ -66,7 +66,7 @@ class AddEventFormState extends State<AddEventForm> {
     return toReturn;
   }
 
-  bool isInt(String s) {
+  bool isInt(String? s) {
     if (s == null) {
       return false;
     }
@@ -74,12 +74,12 @@ class AddEventFormState extends State<AddEventForm> {
   }
 
   void showShare() async {
-    this.shareWith = await showDialog(
+    this.shareWith = await (showDialog(
       context: context,
       builder: (BuildContext context) {
         return MultiSelect(items: tourInfos.personen, selected: shareWith);
       },
-    );
+    ));
     print(shareWith);
   }
 
@@ -115,7 +115,7 @@ class AddEventFormState extends State<AddEventForm> {
   }
 
   Widget workDropDown(int afzIdx) {
-    Aufzug afz = widget.event.getAfzWithIdx(afzIdx);
+    Aufzug? afz = widget.event.getAfzWithIdx(afzIdx);
     if (afz == null) {
       return Text("error");
     }
@@ -132,11 +132,14 @@ class AddEventFormState extends State<AddEventForm> {
           child: Text(value),
         );
       }).toList(),
-      onChanged: (String newVal) => {
-        setState(() {
-          print("changed Dropdown to:" + newVal);
-          afz.setArbeit(newVal);
-        })
+      onChanged: (String? newVal) => {
+        if (newVal != null)
+          {
+            setState(() {
+              print("changed Dropdown to:" + newVal);
+              afz.setArbeit(newVal);
+            })
+          }
       },
       value: afz.getArbeit(),
     );

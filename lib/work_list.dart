@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'arbeiten.dart';
 
 class WorkList extends StatefulWidget {
-  WorkList(this.response, {Key key}) : super(key: key);
+  WorkList(this.response, {Key? key}) : super(key: key);
   final Future<String> response;
 
   @override
@@ -12,11 +12,11 @@ class WorkList extends StatefulWidget {
 }
 
 class WorkListState extends State<WorkList> {
-  Widget arbeit;
+  Widget? arbeit;
   @override
   Widget build(BuildContext context) {
     if (arbeit != null) {
-      return arbeit;
+      return arbeit!;
     }
     return KeepAliveFutureBuilder(
       future: widget.response,
@@ -34,7 +34,7 @@ class WorkListState extends State<WorkList> {
             //print("arbeitMap".toString());
             //print(arbeitMap.toString());
             arbeit = Arbeiten(arbeitMap);
-            return arbeit;
+            return arbeit!;
           } else {
             return ListView.builder(
               itemCount: 0,

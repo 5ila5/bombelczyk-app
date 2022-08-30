@@ -3,11 +3,11 @@ import 'aufzug_to_do.dart';
 import 'helper.dart';
 
 class ToDoHomeList extends StatefulWidget {
-  final Map<String, dynamic> toDoresponseMap;
+  final Map<String, dynamic>? toDoresponseMap;
   //String afzIdx;
   final bool allExpanded;
 
-  ToDoHomeList({this.toDoresponseMap, this.allExpanded = false, Key key})
+  ToDoHomeList({this.toDoresponseMap, this.allExpanded = false, Key? key})
       : super(key: key);
 
   @override
@@ -21,11 +21,11 @@ class ToDoHomeListState extends State<ToDoHomeList> {
   @override
   Widget build(BuildContext context) {
     if (widget.toDoresponseMap == null ||
-        (widget.toDoresponseMap.containsKey("error") &&
-            widget.toDoresponseMap.containsKey("error") == true))
+        (widget.toDoresponseMap!.containsKey("error") &&
+            widget.toDoresponseMap!.containsKey("error") == true))
       return Text("Für angegebene Parameter nichts Gefunden");
     bool even = true;
-    Color tablecolor = Colors.grey[300];
+    Color? tablecolor = Colors.grey[300];
 
     List<Widget> tmpTabelle = [];
     TextStyle tableRowTopStyle =
@@ -34,11 +34,11 @@ class ToDoHomeListState extends State<ToDoHomeList> {
       fontWeight: FontWeight.normal,
     );
     //toDoresponseMap.
-    widget.toDoresponseMap.forEach((key, value) {
+    widget.toDoresponseMap!.forEach((key, value) {
       value["todos"].remove("error");
 
       bool expanded = (expandedToDos.containsKey(value["AfzIdx"].toString()) &&
-              expandedToDos[value["AfzIdx"].toString()]) ||
+              expandedToDos[value["AfzIdx"].toString()]!) ||
           widget.allExpanded;
 
       if (expanded &&
@@ -143,7 +143,7 @@ class ToDoHomeListState extends State<ToDoHomeList> {
                 ],
               ),
               (expanded)
-                  ? allreadyExpanded[value["AfzIdx"].toString()]
+                  ? allreadyExpanded[value["AfzIdx"].toString()]!
                   : Text(""),
               //Divider(thickness: 0.0),
             ],

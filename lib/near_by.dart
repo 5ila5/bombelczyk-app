@@ -8,7 +8,7 @@ import 'helper.dart';
 
 class NearBy extends StatefulWidget {
   NearBy({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -40,7 +40,7 @@ class NearByState extends State<NearBy> {
 
   Future<void> getNearby() async {
     bool error = false;
-    String errorMessage;
+    late String errorMessage;
 
     if (_neaByWidgets.length < 2) {
       createDropDown(true);
@@ -78,7 +78,7 @@ class NearByState extends State<NearBy> {
       //"sort": _sort.toString(),
       //"sortDirection": _sortDirection.toString(),
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       AuthKey.wrongKey(context);
       return;
     }
@@ -98,7 +98,7 @@ class NearByState extends State<NearBy> {
     List<Widget> tmpWidgets = [createDropDown(true)];
     String entfernungsText = "";
     bool even = true;
-    Color tablecolor = Colors.grey[300];
+    Color tablecolor = Colors.grey[300]!;
 
     TextStyle tableRowTopStyle =
         TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
@@ -220,7 +220,7 @@ class NearByState extends State<NearBy> {
       if (even) {
         tablecolor = Colors.white;
       } else {
-        tablecolor = Colors.grey[300];
+        tablecolor = Colors.grey[300]!;
       }
       even = !even;
     });
@@ -248,7 +248,8 @@ class NearByState extends State<NearBy> {
       Text("Menge: "),
       DropdownButton<int>(
         value: _menge,
-        onChanged: (int newValue) {
+        onChanged: (int? newValue) {
+          if (newValue == null) return;
           _menge = newValue;
           //print("set State");
           if (working) {

@@ -6,7 +6,7 @@ import 'aufzug_list_item.dart';
 
 class History extends StatefulWidget {
   History({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -14,12 +14,12 @@ class History extends StatefulWidget {
 }
 
 class HistoryState extends State<History> {
-  Map<String, String> response;
+  Map<String, String>? response;
 
   Future<List<Widget>> getResponse(String listString) async {
     String response = await WebComunicater.sendRequest(<String, String>{
       'AfzIdxList': listString,
-      'auth': Preferences.prefs.getString("key"),
+      'auth': Preferences.prefs!.getString("key")!,
     });
     //print("response:" + response);
     response = response.replaceAll("\n", "");
@@ -32,7 +32,7 @@ class HistoryState extends State<History> {
 
     List<Widget> toReturn = [];
     bool even = true;
-    Color tablecolor = Colors.grey[300];
+    Color? tablecolor = Colors.grey[300];
 
     responseMap
       ..forEach((key, value) {
@@ -60,16 +60,13 @@ class HistoryState extends State<History> {
 
   @override
   Widget build(BuildContext context) {
-    print("Preferences.prefs == null: " +
-        (Preferences.prefs == null).toString() +
-        "\n!Preferences.prefs.containsKey(\"lastAFZs\")" +
-        (!Preferences.prefs.containsKey("lastAFZs")).toString());
     if (Preferences.prefs == null ||
-        !Preferences.prefs.containsKey("lastAFZs")) {
+        !Preferences.prefs!.containsKey("lastAFZs") ||
+        Preferences.prefs!.getStringList("lastAFZs") == null) {
       return Text("Der Verlauf ist Leer oder es ist ein Fehler aufgetreten");
     }
     String listString = "";
-    Preferences.prefs.getStringList("lastAFZs").forEach((element) {
+    Preferences.prefs!.getStringList("lastAFZs")!.forEach((element) {
       listString += element + ",";
     });
     if (listString.length > 0) {
@@ -83,9 +80,9 @@ class HistoryState extends State<History> {
       child: FutureBuilder<List<Widget>>(
         future: response,
         builder: (BuildContext context, AsyncSnapshot<List<Widget>> snapshot) {
-          List<Widget> children;
+          List<Widget> children = [];
           if (snapshot.hasData) {
-            children = snapshot.data;
+            children = snapshot.data!;
           } else if (snapshot.hasError) {
             children = <Widget>[
               const Icon(

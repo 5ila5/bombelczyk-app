@@ -5,10 +5,10 @@ import 'helper.dart';
 import 'package:flutter/services.dart';
 
 class AufzugToDo extends StatefulWidget {
-  Map<String, dynamic> toDoMap;
-  final String afzIdx;
+  Map<String, dynamic>? toDoMap;
+  final String? afzIdx;
 
-  AufzugToDo({this.afzIdx, this.toDoMap, Key key}) : super(key: key);
+  AufzugToDo({this.afzIdx, this.toDoMap, Key? key}) : super(key: key);
 
   @override
   AufzugToDoState createState() => AufzugToDoState();
@@ -35,25 +35,25 @@ class AufzugToDoState extends State<AufzugToDo> {
     return this.readableTimeFormat.format(parsedDate);
   }
 
-  void deleteToDo(Future<String> alertResponse, String idx) async {
-    String response = await alertResponse;
+  void deleteToDo(Future<String?> alertResponse, String idx) async {
+    String? response = await alertResponse;
     if (response != "OK") return;
     WebComunicater.sendRequest(<String, String>{
-      'auth': Preferences.prefs.getString("key"),
+      'auth': Preferences.prefs!.getString("key")!,
       'removeToDoIdx': idx,
     });
 
     //this.savedText.remove(idx);
     this.checkboxStates.remove(idx);
     this.addedTodos.remove(idx);
-    widget.toDoMap.removeWhere((key, value) => value["idx"].toString() == idx);
+    widget.toDoMap!.removeWhere((key, value) => value["idx"].toString() == idx);
 
     setState(() {});
   }
 
   void createNewToDo(String key, String aidx) async {
     String response = await WebComunicater.sendRequest(<String, String>{
-      'auth': Preferences.prefs.getString("key"),
+      'auth': Preferences.prefs!.getString("key")!,
       'toDoNewText': addedTodos[key]['text'],
       'AfzIdx': aidx,
       'toDoSet': (addedTodos[key]["checked"] != "").toString(),
@@ -62,7 +62,7 @@ class AufzugToDoState extends State<AufzugToDo> {
     if (isNumeric(response)) {
       addedTodos[key]["idx"] = int.parse(response).toString();
     }
-    widget.toDoMap.addAll({key: addedTodos[key]});
+    widget.toDoMap!.addAll({key: addedTodos[key]});
     addedTodos.remove(key);
     setState(() {});
   }
@@ -79,7 +79,7 @@ class AufzugToDoState extends State<AufzugToDo> {
         child: Icon(Icons.add, size: 40, color: Colors.blue),
         onTap: () {
           int newKey = 1000;
-          while (widget.toDoMap.containsKey(newKey.toString())) {
+          while (widget.toDoMap!.containsKey(newKey.toString())) {
             newKey++;
           }
 
@@ -99,14 +99,14 @@ class AufzugToDoState extends State<AufzugToDo> {
     //addedTodos.addAll(toDoMap);
     Map<String, dynamic> newMap = {};
     newMap.addAll(addedTodos);
-    newMap.addAll(widget.toDoMap);
+    newMap.addAll(widget.toDoMap!);
     widget.toDoMap = newMap;
     //toDoMap=addedTodos;
     //print("addedTodos" + addedTodos.toString());
     //print("newMap" + newMap.toString());
     //print("toDoMap" + widget.toDoMap.toString());
 
-    widget.toDoMap.forEach((key, value) {
+    widget.toDoMap!.forEach((key, value) {
       if (value["created"] == null) {
         value["created"] = "";
       }
@@ -172,21 +172,21 @@ class AufzugToDoState extends State<AufzugToDo> {
             Column(children: [
               Checkbox(
                 value: (checkBoxVal),
-                onChanged: (bool newValue) {
+                onChanged: (bool? newValue) {
                   DateTime now = DateTime.now();
                   DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
                   String formatted = formatter.format(now);
 
                   //printFutureResponse(
                   if (!value.containsKey("idx")) {
-                    addedTodos[key]["checked"] = (newValue) ? formatted : "";
+                    addedTodos[key]["checked"] = newValue! ? formatted : "";
                     if (newValue) {
-                      addedTodos[key]["text"] = textController[key].text;
-                      createNewToDo(key.toString(), widget.afzIdx);
+                      addedTodos[key]["text"] = textController[key]!.text;
+                      createNewToDo(key.toString(), widget.afzIdx!);
                     }
                   } else {
                     WebComunicater.sendRequest(<String, String>{
-                      'auth': Preferences.prefs.getString("key"),
+                      'auth': Preferences.prefs!.getString("key")!,
                       'toDoSet': newValue.toString(),
                       'toDoIdx': value['idx'].toString(),
                     });
@@ -217,7 +217,7 @@ class AufzugToDoState extends State<AufzugToDo> {
                                 //maxHeight: 60.0,
                               ),
                               child: SelectableText(
-                                textController[key].text,
+                                textController[key]!.text,
                               ),
                             ),
                             deleteButton,
@@ -239,12 +239,12 @@ class AufzugToDoState extends State<AufzugToDo> {
                               onTap: () {
                                 if (!value.containsKey("idx")) {
                                   addedTodos[key]["text"] =
-                                      textController[key].text;
-                                  createNewToDo(key.toString(), widget.afzIdx);
+                                      textController[key]!.text;
+                                  createNewToDo(key.toString(), widget.afzIdx!);
                                 } else {
                                   WebComunicater.sendRequest(<String, String>{
-                                    'auth': Preferences.prefs.getString("key"),
-                                    'toDoNewText': textController[key].text,
+                                    'auth': Preferences.prefs!.getString("key")!,
+                                    'toDoNewText': textController[key]!.text,
                                     'toDoIdx': value['idx'].toString(),
                                   });
                                 }
@@ -268,9 +268,9 @@ class AufzugToDoState extends State<AufzugToDo> {
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(snackBar);
                                   HapticFeedback.heavyImpact();
-                                  widget.toDoMap.updateAll((mapIdx, value) {
+                                  widget.toDoMap!.updateAll((mapIdx, value) {
                                     if (mapIdx == key) {
-                                      value["text"] = textController[key].text;
+                                      value["text"] = textController[key]!.text;
                                     }
                                     return value;
                                   });

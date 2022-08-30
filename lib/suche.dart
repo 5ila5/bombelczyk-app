@@ -15,9 +15,9 @@ enum Sorts {
 
 class Suche extends StatefulWidget {
   final bool showMapIcon;
-  final Function customOnclick;
+  final Function? customOnclick;
   Suche({
-    Key key,
+    Key? key,
     this.showMapIcon = true,
     this.customOnclick,
   }) : super(key: key);
@@ -28,7 +28,7 @@ class Suche extends StatefulWidget {
 
 class SucheState extends State<Suche> {
   final _searchController = TextEditingController();
-  Map<String, dynamic> _responseMap;
+  late Map<String, dynamic> _responseMap;
 
   List<Widget> _tabelle = [Text("")];
   bool _sortDirection = false;
@@ -44,7 +44,7 @@ class SucheState extends State<Suche> {
       "sort": _sort.toString(),
       "sortDirection": _sortDirection.toString(),
     });
-    if (response == null) {
+    if (response == "notLoggedIn") {
       AuthKey.wrongKey(context);
       return;
     }
@@ -71,7 +71,7 @@ class SucheState extends State<Suche> {
     if (_requestError) return;
 
     bool even = true;
-    Color tablecolor = Colors.grey[300];
+    Color? tablecolor = Colors.grey[300];
     List<Widget> tmpTabelle = [];
 
     _responseMap.forEach((key, value) {
@@ -167,7 +167,8 @@ class SucheState extends State<Suche> {
                     child: Text(value.toString().replaceAll("Sorts.", "")),
                   );
                 }).toList(),
-                onChanged: (Sorts newValue) {
+                onChanged: (Sorts? newValue) {
+                  if (newValue == null) return;
                   _sort = newValue.index;
                   refreshTable(_searchController.text);
                 },

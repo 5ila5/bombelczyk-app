@@ -96,13 +96,11 @@ class TourState extends State<Tour> {
 
   Widget buttons() {
     List<Widget> toReturn = [];
-    if (widget.event == null || widget.afzToAdd == null) return Text("Fehler");
 
-    if (widget.addable && !widget.event!.containsAfz(widget.afzToAdd!)) {
-      widget.event!.afz.forEach((Aufzug? element) {
-        // print(element.getAfzIdx().toString());
-      });
-
+    if (widget.event != null &&
+        widget.afzToAdd != null &&
+        widget.addable &&
+        !widget.event!.containsAfz(widget.afzToAdd!)) {
       toReturn.add(
         InkWell(
             onTap: () => addAfz(),

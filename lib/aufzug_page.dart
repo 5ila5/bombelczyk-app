@@ -149,7 +149,7 @@ class AufzugPageState extends State<AufzugPage> {
             ElevatedButton(
               child: Text("Arbeiten"),
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey[!(_showArbeiten) ? 700 : 500],
+                backgroundColor: Colors.grey[!(_showArbeiten) ? 700 : 500],
                 elevation: 20,
                 shape: const BeveledRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(5))),
@@ -165,7 +165,7 @@ class AufzugPageState extends State<AufzugPage> {
             ElevatedButton(
               child: Text("To-Dos"),
               style: ElevatedButton.styleFrom(
-                primary: Colors.grey[_showArbeiten ? 700 : 500],
+                backgroundColor: Colors.grey[_showArbeiten ? 700 : 500],
                 elevation: 10,
                 shape: const BeveledRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(5))),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'auto_key.dart';
 import 'tour_get_general.dart';
 import 'tour_single.dart';
 import 'package:intl/intl.dart';

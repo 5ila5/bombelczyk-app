@@ -24,9 +24,6 @@ class AufzugToDoState extends State<AufzugToDo> {
   DateFormat readableTimeFormat = DateFormat('dd.MM.yy HH:mm');
 
   bool isNumeric(String s) {
-    if (s == null) {
-      return false;
-    }
     return double.tryParse(s) != null;
   }
 
@@ -243,7 +240,8 @@ class AufzugToDoState extends State<AufzugToDo> {
                                   createNewToDo(key.toString(), widget.afzIdx!);
                                 } else {
                                   WebComunicater.sendRequest(<String, String>{
-                                    'auth': Preferences.prefs!.getString("key")!,
+                                    'auth':
+                                        Preferences.prefs!.getString("key")!,
                                     'toDoNewText': textController[key]!.text,
                                     'toDoIdx': value['idx'].toString(),
                                   });

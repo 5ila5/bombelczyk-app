@@ -58,7 +58,7 @@ class AuthKey {
                 style: TextButton.styleFrom(
                   elevation: 10.0,
                   shadowColor: Colors.blueGrey,
-                  primary: Colors.white,
+                  disabledForegroundColor: Colors.white,
                   backgroundColor: Colors.blue,
                   onSurface: Colors.grey,
                 ),

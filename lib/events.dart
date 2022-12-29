@@ -473,7 +473,24 @@ class Event {
   Event(this.id, this.date, this.text, List<dynamic> afz) {
     afz.forEach((element) {
       if (element is String) {
-        this.afz.add(Aufzug(jsonDecode(element)));
+        element = element.replaceAll("\n", "\\n");
+        Map<String, dynamic> afzMap;
+        try {
+          afzMap = jsonDecode(element);
+        } catch (e) {
+          afzMap = {
+            "AfzIdx": "0",
+            "Anr": "0",
+            "Astr": "error",
+            "Ahnr": "error",
+            "plz": "0",
+            "Ort": "error",
+            "FK_zeit": "error",
+            "Zg_txt": "error",
+            "beschreibung": e.toString(),
+          };
+        }
+        this.afz.add(Aufzug(afzMap));
       } else if (element is Map<String, dynamic>) {
         this.afz.add(Aufzug(element));
       } else if (element is Aufzug) {

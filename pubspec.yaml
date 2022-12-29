@@ -38,7 +38,7 @@ dependencies:
   #encrypt: 4.1.0
   #flutter_secure_storage: 4.1.0
   intl: ^0.17.0
-  archive: ^3.1.6
+  #archive: ^3.1.6
   table_calendar: ^3.0.3
   collapsible: ^1.0.0
   photo_view: ^0.14.0

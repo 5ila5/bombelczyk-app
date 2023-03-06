@@ -354,25 +354,25 @@ class Aufzug {
         _ort! +
         '"';
     if (_fkZeit != null) {
-      toReturn += ',"FK_zeit":"' + _fkZeit! + '"';
+      toReturn += ',"FK_zeit":' + jsonEncode(_fkZeit!);
     }
     if (_zgTxt != null) {
-      toReturn += ',"Zg_txt":"' + _zgTxt! + '"';
+      toReturn += ',"Zg_txt":' + jsonEncode(_zgTxt!);
     }
     if (_arbeit != null) {
       //print("ARBEIT IS Not NULL");
-      toReturn += ',"arbeit":"' + _arbeit! + '"';
+      toReturn += ',"arbeit":' + jsonEncode(_arbeit!);
     } else {
       //print("ARBEIT IS NULL");
     }
     if (_erledigt != null) {
-      toReturn += ',"erledigt":"' + _erledigt.toString() + '"';
+      toReturn += ',"erledigt":' + jsonEncode(_erledigt);
     }
     if (_beschreibung != null) {
-      toReturn += ',"beschreibung":"' + _beschreibung! + '"';
+      toReturn += ',"beschreibung":' + jsonEncode(_beschreibung!);
     }
     if (_anzImg != null) {
-      toReturn += ',"anzImg":"' + _anzImg.toString() + '"';
+      toReturn += ',"anzImg":' + jsonEncode(_anzImg);
     }
     toReturn += '}';
     return toReturn;

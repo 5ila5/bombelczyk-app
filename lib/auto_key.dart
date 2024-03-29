@@ -60,7 +60,6 @@ class AuthKey {
                   shadowColor: Colors.blueGrey,
                   disabledForegroundColor: Colors.white,
                   backgroundColor: Colors.blue,
-                  onSurface: Colors.grey,
                 ),
                 child: Text('OK'),
                 onPressed: () {

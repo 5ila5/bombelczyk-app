@@ -195,7 +195,6 @@ class AufzugPageState extends State<AufzugPage> {
     } else {
       //print(toDoExists);
       //print("keine Arbeit für diesen Aufzug eingetragen");
-
     }
     //print(toDoMap);
 

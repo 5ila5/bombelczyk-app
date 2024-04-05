@@ -6,14 +6,14 @@ import 'package:flutter/services.dart';
 
 //import 'dart:developer' as developer;
 
-import 'aufzug_page.dart';
-import 'to_do_home.dart';
-import 'history.dart';
-import 'tour.dart';
+import 'old/aufzug_page.dart';
+import 'old/to_do_home.dart';
+import 'old/history.dart';
+import 'old/tour.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'key_checker.dart';
-import 'suche.dart';
-import 'near_by.dart';
+import 'old/key_checker.dart';
+import 'old/suche.dart';
+import 'old/near_by.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(MyApp()));

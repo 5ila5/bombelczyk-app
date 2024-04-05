@@ -26,12 +26,12 @@ enum ToDoSorts {
 class Preferences {
   static SharedPreferences? prefs;
 
-  static Future<SharedPreferences > initPrefs() async {
+  static Future<SharedPreferences> initPrefs() async {
     prefs = await SharedPreferences.getInstance();
     return prefs!;
   }
 
-  static Future<SharedPreferences > getPrefs() async {
+  static Future<SharedPreferences> getPrefs() async {
     if (prefs != null) {
       return prefs!;
     }

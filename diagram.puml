@@ -1,0 +1,264 @@
+@startuml classDiagram
+
+'skin rose
+
+title Relationships - Class Diagram
+
+'Widget Types
+class StatefulWidget
+class StatelessWidget
+
+
+'bottom Bar Widgets
+class SearchView
+StatelessWidget <|-- SearchView
+
+class NextToMeView
+StatelessWidget <|-- NextToMeView
+
+class ToDoView
+StatelessWidget <|-- ToDoView
+
+class HistoryView
+StatelessWidget <|-- HistoryView
+
+class TourView
+StatelessWidget <|-- TourView
+
+
+'Seperate Views not in Bottom Bar
+class AufzugView
+
+
+
+
+class AufzugList
+StatefulWidget <|-- AufzugList
+
+
+class SortSelect<Options: SortType> {
+  -Options selected
+  -Function onSelect
+}
+Select <|-- SortSelect
+
+class SearchBar {
+  -String placeholder
+}
+StatefulWidget <|-- SearchBar
+
+
+
+
+class Address {
+  -String city
+  -String street
+  -String zip
+  -String number
+}
+
+class Aufzug {
+  -Int afzIdx
+  -String anr
+  -String astr
+  -String ahnr
+  -String plz
+  -String ort
+  -String fKZeit
+  -String zgTxt
+}
+
+
+class AufzugWithDistance {
+  -double distance
+}
+Aufzug <|-- AufzugWithDistance
+
+
+class Arbeit{
+  -Date date
+  -List<String> workers
+  -String work
+  -String description
+}
+
+class ToDo{
+  -String text
+  -bool done
+  -Date CreationDate
+  -Date DoneDate
+}
+
+class DetailedAufzug {}
+Aufzug <|-- DetailedAufzug
+
+class AufzugBar {
+  -Function clickEvent
+  -bool showDistance
+  -Color tablecolor
+}
+StatelessWidget <|-- AufzugBar
+
+
+class AufzugBarRightIcon {
+  -Icon icon
+  -Function clickEvent
+}
+StatelessWidget <|-- AufzugBarRightIcon
+
+
+
+enum Direction {
+  ASC
+  DESC
+}
+
+abstract class SortType {
+}
+
+enum AfzSortType {
+  ANR
+  SREET
+  ZIP
+  CITY
+  TRAVEL_TIME
+}
+SortType <|-- AfzSortType
+
+
+enum ToDoSortType {
+  CREATION_DATE
+  DONE_DATE
+  TEXT
+}
+AfzSortType <|-- ToDoSortType
+
+
+
+
+class WebComunicater {
+  -String url
+  -WebComunicater()
+  +{static}WebComunicater getInstance()
+  +Future<bool> login(String password)
+  +Future<List<Aufzug>> searchAufzug(String search, AufzSortType sort)
+  +Future<List<AufzugWithDistance>> getNearbyAufzug(Position pos, int count)
+  +Future<DetailedAufzug> getDetailedAufzug(Aufzug aufzug)
+  +Future<bool> setToDo(inx toDoIdx, bool done)
+  +Future<Todo> createToDo(int afzIdx, String text, bool done)
+  +Future<bool> deleteToDo(int toDoIdx)
+  +Future<List<ToDo>> getToDos()
+  +Future<List<ToDo>> getToDos(int afzIdx)
+  +Future<List<Aufzug>> getHistory()
+  +Future<List<String>> getTourWorkTypes()
+  -Future<List<Arbeit>> getArbeiten(int afzIdx)
+}
+
+
+class Select<Options: enum> {
+  -Options selected
+  -Function onSelect
+}
+StatefulWidget <|-- Select
+
+
+class Position {
+  -double latitude
+  -double longitude
+}
+
+
+
+
+class TodoFilter {
+  -ToDoSortType sort
+  -bool showDone
+  -bool showNotDone
+  -Function onFilterChange
+}
+StatefulWidget <|-- TodoFilter
+
+class ToDoAufzugBar {
+
+}
+AufzugBar <|-- ToDoAufzugBar
+
+class ToDoList {
+}
+StatefulWidget <|-- ToDoList
+
+class ToDoBar 
+StatefulWidget <|-- ToDoBar
+
+
+
+class ArbeitenList {
+}
+class ArbeitBar 
+StatelessWidget <|-- ArbeitBar
+
+
+class TourWorkType {
+  -List<String> types
+  -TourWorkType()
+  +{static}TourWorkType getInstance()
+}
+
+class Tour{
+  -String name
+  -Date date
+  -List<String> workTypes
+  -List<Aufzug> aufzugs
+}
+
+
+class ExpandableTour {
+
+}
+StatefulWidget <|-- ExpandableTour
+
+
+
+
+SearchView "1" -- "1" AufzugList
+SearchView "1" -- "1" SortSelect 
+SearchView "1" -- "1" SearchBar
+
+NextToMeView "1" -- "1" AufzugList
+NextToMeView "1" -- "1" SortSelect
+
+ToDoView "1" -- "1" AufzugList
+ToDoView "1" -- "1" TodoFilter
+
+HistoryView "1" -- "1" AufzugList
+
+TodoFilter "1" -- "1" SortSelect
+
+
+AufzugView "1" -- "1" ToDoList
+AufzugView "1" -- "1" ArbeitenList
+
+ToDoList "*" -- "*" ToDoBar
+
+ToDoBar "1" -- "1" ToDo
+
+ArbeitenList "*" -- "*" ArbeitBar
+
+AufzugBar "1" -- "1" AufzugBarRightIcon 
+AufzugBar "*" -- "1" Aufzug 
+AufzugBar "*" -- "*" AufzugList 
+Address "1" -- "*" Aufzug
+Arbeit "*" -- "1" DetailedAufzug
+ToDo "*" -- "1" DetailedAufzug
+SortType "1" -- "1" Direction
+
+ExpandableTour "1" -- "1" Tour
+ExpandableTour "1" -- "*" AufzugBar
+
+
+
+
+
+'StatefulWidget "1" *-up- "many" Door: Composition
+
+@enduml

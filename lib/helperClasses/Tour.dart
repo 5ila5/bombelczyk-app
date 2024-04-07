@@ -1,5 +1,6 @@
 import 'package:Bombelczyk/editable/Editable.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
+import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/helperClasses/User.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
@@ -57,6 +58,38 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     }
   }
 
+  void moveAfz(TourAufzug afz, MoveDirection dir, {bool immediate = false}) {
+    int idx = this._aufzuege.indexOf(afz);
+    if (idx == -1) {
+      throw Exception("Aufzug not in tour");
+    }
+    List<TourAufzug> afzList = _aufzuege;
+
+    if (!immediate) {
+      afzList = [..._aufzuege];
+      TourChange<dynamic>? afzChange = this
+          .changes
+          .firstWhereOrNull((element) => element.attr == "aufzuege");
+      if (afzChange != null) {
+        afzList = afzChange.newValue;
+      }
+    }
+
+    if (dir == MoveDirection.UP) {
+      if (idx == 0) {
+        return;
+      }
+      afzList.removeAt(idx);
+      afzList.insert(idx - 1, afz);
+    } else {
+      if (idx == afzList.length - 1) {
+        return;
+      }
+      afzList.removeAt(idx);
+      afzList.insert(idx + 1, afz);
+    }
+  }
+
   void removeAufzug(TourAufzug aufzug) {
     TourChange<dynamic>? afzChange =
         this.changes.firstWhereOrNull((element) => element.attr == "aufzuege");
@@ -88,7 +121,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
 
   @override
   Future<Tour> create() {
-    return WebComunicater.instance.createTourByTour(this);
+    Future<Tour> newTour = WebComunicater.instance.createTourByTour(this);
+    isDeleted = true;
+    return newTour;
   }
 
   @override
@@ -116,6 +151,8 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
         date: changes["date"],
         share: changes["sharedWith"],
         afzs: changes["aufzuege"]);
+
+    this.isDeleted = true;
 
     return Tour(
         this.idx, changes["name"] ?? this.name, changes["date"] ?? this.date,

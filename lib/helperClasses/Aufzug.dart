@@ -1,5 +1,6 @@
 import 'package:Bombelczyk/helperClasses/Address.dart';
 import 'package:Bombelczyk/helperClasses/Arbeit.dart';
+import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/ToDo.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
@@ -96,15 +97,17 @@ class DetailedAufzug extends AufzugWithToDos {
 }
 
 class TourAufzug extends Aufzug {
+  bool _finished = false;
   TourWorkType _workType;
   Tour _tour;
   bool _has_images = false;
 
   TourAufzug(this._tour, int afzIdx, String anr, String fKZeit, String zgTxt,
       Address address, this._workType,
-      {bool hasImages = false})
+      {bool hasImages = false, finished = false})
       : super(afzIdx, anr, fKZeit, zgTxt, address) {
     _has_images = hasImages;
+    _finished = finished;
   }
 
   TourAufzug.fromApiJson(
@@ -117,6 +120,22 @@ class TourAufzug extends Aufzug {
   TourWorkType get workType => _workType;
 
   bool get hasImages => _has_images;
+  bool get finished => _finished;
+
+  set finished(bool finished) =>
+      WebComunicater.instance.tourModifyAfz(_tour, this, done: finished);
+
+  void moveUp({bool immediate = true}) {
+    this._tour.moveAfz(this, MoveDirection.UP, immediate: immediate);
+  }
+
+  void moveDown({bool immediate = true}) {
+    this._tour.moveAfz(
+          this,
+          MoveDirection.DOWN,
+          immediate: immediate,
+        );
+  }
 
   Future<List<MemoryImage>>? get images =>
       WebComunicater.instance.getTourAfzImages(_tour, this);

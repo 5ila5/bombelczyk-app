@@ -1,7 +1,8 @@
 import 'package:Bombelczyk/editable/Editable.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
+import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 
-class ToDo extends Editable<ToDo, ToDoChange> {
+class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
   int _id;
   Aufzug _aufzug;
   String _text;
@@ -20,12 +21,12 @@ class ToDo extends Editable<ToDo, ToDoChange> {
           json['checked'] == null ? null : DateTime.parse(json['checked']),
         );
 
-  int get id => _id;
-  Aufzug get aufzug => _aufzug;
-  String get text => _text;
-  DateTime get creationDate => _creationDate;
-  DateTime? get doneDate => _doneDate;
-  bool get isDone => _doneDate != null;
+  int get id => returnIfNotDeleted(_id);
+  Aufzug get aufzug => returnIfNotDeleted(_aufzug);
+  String get text => returnIfNotDeleted(changeOr("text", _text));
+  DateTime get creationDate => returnIfNotDeleted(_creationDate);
+  DateTime? get doneDate => returnIfNotDeleted(changeOr("doneDate", _doneDate));
+  bool get isDone => this.doneDate != null;
 
   void set done(bool done) {
     if (done) {
@@ -35,20 +36,58 @@ class ToDo extends Editable<ToDo, ToDoChange> {
     }
   }
 
+  void set text(String text) {
+    edit(ToDoChange("text", this._text, text));
+  }
+
   @override
   Future<ToDo> create() {
-    // TODO: implement create
-    throw UnimplementedError();
+    Future<ToDo> newTodo = WebComunicater.instance
+        .createToDo(this._aufzug, this._text, this.isDone);
+    this.isDeleted = true;
+    return newTodo;
   }
 
   @override
   void delete() {
-    // TODO: implement delete
+    WebComunicater.instance.deleteToDo(this);
+    this.isDeleted = true;
   }
 
   @override
   ToDo save() {
-    // TODO: implement save
-    throw UnimplementedError();
+    if (!this.hasChanged) {
+      return this;
+    }
+
+    Map<String, dynamic> changes = {};
+
+    for (ToDoChange change in this.changes) {
+      if (change.isChanged) {
+        changes[change.attr] = change.newValue;
+      }
+    }
+
+    WebComunicater.instance.setToDo(
+      this,
+      done:
+          changes.containsKey('doneDate') ? changes['doneDate'] != null : null,
+      text: changes['text'],
+    );
+
+    this.isDeleted = true;
+
+    return ToDo(
+      this._id,
+      this._aufzug,
+      changes['text'] ?? this._text,
+      this._creationDate,
+      changes.containsKey('doneDate') ? changes['doneDate'] : this._doneDate,
+    );
   }
+
+  @override
+  // TODO: implement original
+  ToDo get original => ToDo(
+      this._id, this._aufzug, this._text, this._creationDate, this._doneDate);
 }

@@ -5,19 +5,18 @@ import 'package:collection/collection.dart';
 
 abstract class Change<T> {
   final String _attr;
-  final T _oldValue;
+  final T? _oldValue;
   final Map<String, Type>? _allowedAttributes;
-
-  T _newValue;
+  T? _newValue;
 
   Change(this._attr, this._oldValue, this._newValue, [this._allowedAttributes]);
 
   String get attr => _attr;
-  T get oldValue => _oldValue;
-  T get newValue => _newValue;
+  T? get oldValue => _oldValue;
+  T? get newValue => _newValue;
   bool get isChanged => _oldValue != _newValue;
 
-  void set newValue(T newValue) {
+  void set newValue(T? newValue) {
     if (_allowedAttributes != null) {
       if (!_allowedAttributes!.containsKey(_attr)) {
         throw Exception("Invalid attribute");
@@ -45,7 +44,6 @@ class TourChange<T> extends Change<T> {
 
 class ToDoChange<T> extends Change<T> {
   static final TODO_ATTRS = {
-    "aufzug": Aufzug,
     "text": String,
     "doneDate": DateTime,
   };

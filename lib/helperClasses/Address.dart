@@ -30,4 +30,9 @@ class Address {
       'city': _city,
     };
   }
+
+  String get street => _street;
+  String get houseNumber => _houseNumber;
+  String get zip => _zip;
+  String get city => _city;
 }

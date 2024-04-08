@@ -9,6 +9,10 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
   DateTime _creationDate;
   DateTime? _doneDate;
 
+  List<void Function(ToDo, ToDo)> replaceNotify = [];
+  List<void Function(ToDo)> addNotify = [];
+  List<void Function(ToDo)> deleteNotify = [];
+
   ToDo(this._id, this._aufzug, this._text, this._creationDate,
       [this._doneDate]);
 
@@ -28,7 +32,14 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
   DateTime? get doneDate => returnIfNotDeleted(changeOr("doneDate", _doneDate));
   bool get isDone => this.doneDate != null;
 
-  void set done(bool done) {
+  void registerListener(void Function(ToDo, ToDo) replaceNotify,
+      void Function(ToDo) addNotify, void Function(ToDo) deleteNotify) {
+    this.replaceNotify.add(replaceNotify);
+    this.addNotify.add(addNotify);
+    this.deleteNotify.add(deleteNotify);
+  }
+
+  void set isDone(bool done) {
     if (done) {
       edit(ToDoChange("doneDate", this._doneDate, DateTime.now()));
     } else {
@@ -42,8 +53,18 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
 
   @override
   Future<ToDo> create() {
+    if (this.isDeleted) {
+      throw Exception("ToDo is already created");
+    }
     Future<ToDo> newTodo = WebComunicater.instance
         .createToDo(this._aufzug, this._text, this.isDone);
+
+    newTodo.then((value) {
+      this.addNotify.forEach((element) {
+        element(value);
+      });
+    });
+
     this.isDeleted = true;
     return newTodo;
   }
@@ -52,6 +73,10 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
   void delete() {
     WebComunicater.instance.deleteToDo(this);
     this.isDeleted = true;
+
+    this.deleteNotify.forEach((element) {
+      element(this);
+    });
   }
 
   @override
@@ -77,17 +102,21 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
 
     this.isDeleted = true;
 
-    return ToDo(
+    ToDo newTodo = ToDo(
       this._id,
       this._aufzug,
       changes['text'] ?? this._text,
       this._creationDate,
       changes.containsKey('doneDate') ? changes['doneDate'] : this._doneDate,
     );
+
+    this.replaceNotify.forEach((element) {
+      element(this, newTodo);
+    });
+    return newTodo;
   }
 
   @override
-  // TODO: implement original
   ToDo get original => ToDo(
       this._id, this._aufzug, this._text, this._creationDate, this._doneDate);
 }

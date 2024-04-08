@@ -1,11 +1,13 @@
 import 'package:Bombelczyk/helperClasses/Address.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
+import 'package:Bombelczyk/widgets/AufzugPage.dart';
 import 'package:Bombelczyk/widgets/ImgHandling.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'dart:math';
 
 class ClickableMapIcon extends InkWell {
-  Address address;
+  final Address address;
 
   ClickableMapIcon(this.address)
       : super(
@@ -29,9 +31,22 @@ class ClickableMapIcon extends InkWell {
         );
 }
 
+class ClickableAfzIcon extends InkWell {
+  final Aufzug aufzug;
+
+  ClickableAfzIcon(this.aufzug)
+      : super(
+            child: Icon(
+              Icons.elevator_outlined,
+              size: 50,
+              color: Colors.blue,
+            ),
+            onTap: () => AufzugPage.showPage(aufzug));
+}
+
 class TourCheckIcon extends InkWell {
-  TourAufzug aufzug;
-  void Function(void Function()?) updateParent;
+  final TourAufzug aufzug;
+  final void Function(void Function()?) updateParent;
 
   TourCheckIcon(this.aufzug, this.updateParent)
       : super(
@@ -62,5 +77,50 @@ class TourShowImage extends InkWell {
             ],
           ),
           onTap: () => ImgHandling.showIMGs(context, aufzug.images),
+        );
+}
+
+class ExpandAll extends InkWell {
+  ExpandAll(bool collapsed, void Function(bool newCollapsed) clicked)
+      : super(
+          child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+              child: Transform.rotate(
+                child: Icon(Icons.double_arrow, color: Colors.blue),
+                angle: ((collapsed) ? 270 : 90) * pi / 180,
+              )),
+          onTap: () => clicked(!collapsed),
+        );
+}
+
+class SaveInkWell extends InkWell {
+  final void Function() save;
+
+  SaveInkWell(this.save, bool changed)
+      : super(
+          child: Icon(Icons.save_outlined,
+              size: 40, color: changed ? Colors.green : Colors.grey),
+          onTap: changed ? save : () {},
+        );
+}
+
+class CancelInkWell extends InkWell {
+  final void Function() cancel;
+
+  CancelInkWell(this.cancel, bool changed)
+      : super(
+          child: Icon(Icons.cancel_outlined,
+              size: 40, color: changed ? Colors.red : Colors.grey),
+          onTap: cancel,
+        );
+}
+
+class DeleteInkWell extends InkWell {
+  final void Function() delete;
+
+  DeleteInkWell(this.delete)
+      : super(
+          child: Icon(Icons.delete_outlined, size: 40, color: Colors.red),
+          onTap: delete,
         );
 }

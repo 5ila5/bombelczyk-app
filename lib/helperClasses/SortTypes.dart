@@ -1,5 +1,8 @@
 abstract class SortType {
   String get name;
+  List<SortType> get vals;
+
+  List<String> get names;
 }
 
 class Sort {
@@ -16,6 +19,9 @@ enum AfzSortType implements SortType {
   TRAVEL_TIME(name: "fk_zeit");
 
   final String name;
+
+  List<AfzSortType> get vals => AfzSortType.values;
+  List<String> get names => vals.map((e) => e.name).toList();
   const AfzSortType({required this.name});
 }
 
@@ -31,6 +37,9 @@ enum ToDoSortType implements SortType {
 
   final String name;
   const ToDoSortType({required this.name});
+  List<ToDoSortType> get vals => ToDoSortType.values;
+
+  List<String> get names => vals.map((e) => e.name).toList();
 }
 
 enum SortDirection {

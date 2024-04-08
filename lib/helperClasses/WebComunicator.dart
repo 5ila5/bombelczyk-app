@@ -26,7 +26,7 @@ enum RequestType {
 }
 
 class WebComunicater {
-  final String? _auth_token;
+  final Future<String?>? _auth_token;
   static final String BASE_URL = "https://api.bombelczyk.de/UpP0UH3nFKMsnJk3/";
   static final gzip = GZipCodec();
   static WebComunicater? _instance;
@@ -42,15 +42,28 @@ class WebComunicater {
     _instance = this;
   }
 
-  Future<bool> login(String password) {
-    return requestWithAnalyse("login", RequestType.POST, {
+  Future<String?> requestAuthToken(String password) {
+    Future<String?> token = requestWithAnalyse("login", RequestType.POST, {
       "password": password,
     }).then((value) {
-      if (value is String) {
-        StorageHelper.save_auth(value);
-        return false;
+      if (value is String && value.isNotEmpty) {
+        return value;
       }
-      return testConnection();
+      return null;
+    });
+
+    _instance = WebComunicater(token);
+    return token;
+  }
+
+  Future<bool> login(String password) {
+    return requestAuthToken(password).then((value) {
+      if (value != null) {
+        StorageHelper.setAuth(value);
+        _instance = WebComunicater(Future.value(value));
+        return testConnection();
+      }
+      return false;
     });
   }
 
@@ -63,19 +76,22 @@ class WebComunicater {
         (value) => List<Aufzug>.from(value.map((e) => Aufzug.fromApiJson(e))));
   }
 
-  Future<List<AufzugWithDistance>> getNearbyAufzug(Position pos, int count) {
-    return requestWithAnalyse("aufzug/nearby", RequestType.GET, {
-      "lat": pos.latitude,
-      "lon": pos.longitude,
-      "count": count,
-    }).then((value) => List<AufzugWithDistance>.from(
-        value.map((e) => AufzugWithDistance.fromApiJson(
-              e,
-            ))));
+  Future<List<AufzugWithDistance>> getNearbyAufzug(
+      Future<Position> position, int count) {
+    return position
+        .then((pos) => requestWithAnalyse("aufzug/nearby", RequestType.GET, {
+              "lat": pos.latitude,
+              "lon": pos.longitude,
+              "count": count,
+            }))
+        .then((value) => List<AufzugWithDistance>.from(
+            value.map((e) => AufzugWithDistance.fromApiJson(
+                  e,
+                ))));
   }
 
-  Future<List<Aufzug>> getHistory() {
-    List<int> afzIdxs = StorageHelper.getHistory();
+  Future<List<Aufzug>> getHistory() async {
+    List<int> afzIdxs = await StorageHelper.getHistory();
     if (afzIdxs.isEmpty) {
       return Future.value([]);
     }
@@ -299,13 +315,13 @@ class WebComunicater {
   }
 
   Future<http.Response> _sendRequest(String path, RequestType rType,
-      [Map<String, dynamic>? body, bool login = false]) {
+      [Map<String, dynamic>? body, bool login = false]) async {
     body ??= {};
-    if (_auth_token == null && !login) {
+    if ((_auth_token == null || (await _auth_token) == null) && !login) {
       throw Exception("notLoggedIn");
     }
     if (!login) {
-      body.addAll({'auth': _auth_token!});
+      body.addAll({'auth': await _auth_token!});
     }
     List<int> compressedBody = gzip.encode(jsonEncode(body).codeUnits);
 

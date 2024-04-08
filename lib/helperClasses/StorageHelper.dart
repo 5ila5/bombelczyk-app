@@ -1,12 +1,20 @@
-class StorageHelper {
-  //TODO: IMPLEMENT
+import 'package:shared_preferences/shared_preferences.dart';
 
-  static void save_auth(String token) {
-    //TODO: IMPLEMENT
+class StorageHelper {
+  static Future<SharedPreferences> prefs = SharedPreferences.getInstance();
+
+  static setAuth(String token) async {
+    return await (await prefs).setString("key", token);
   }
 
-  static List<int> getHistory() {
-    //TODO: IMPLEMENT
-    return [];
+  static Future<String?> getAuth() {
+    return prefs.then((value) => value.getString("key"));
+  }
+
+  static Future<List<int>> getHistory() {
+    return prefs
+        .then((value) => value.getStringList("lastAFZs"))
+        .then((value) => value ?? [])
+        .then((value) => value.map((e) => int.parse(e)).toList());
   }
 }

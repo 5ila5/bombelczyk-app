@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:Bombelczyk/helperClasses/Address.dart';
 import 'package:Bombelczyk/helperClasses/Arbeit.dart';
+import 'package:Bombelczyk/helperClasses/Position.dart';
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/ToDo.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
@@ -30,15 +31,15 @@ class Aufzug {
 }
 
 class AufzugWithDistance extends Aufzug {
-  final double _distance;
+  final Distance _distance;
 
   AufzugWithDistance(int afzIdx, String anr, String fKZeit, String zgTxt,
       Address address, this._distance)
       : super(afzIdx, anr, fKZeit, zgTxt, address);
-  double get distance => _distance;
+  Distance get distance => _distance;
 
   AufzugWithDistance.fromApiJson(Map<String, dynamic> json)
-      : _distance = json['distance'],
+      : _distance = Distance.fromApiJson(json),
         super.fromApiJson(json);
 }
 
@@ -64,10 +65,24 @@ class AufzugWithToDos extends Aufzug {
   AufzugWithToDos.fromAufzug(Aufzug afz, List<ToDo> todos)
       : super(afz.afzIdx, afz.anr, afz.fKZeit, afz.zgTxt, afz.address) {
     _todos = todos;
+    _todos.forEach((element) {
+      element.registerListener(this.replaceToDo, this.addTodo, this.removeToDo);
+    });
   }
 
   void addTodo(ToDo todo) {
     _todos.add(todo);
+  }
+
+  void replaceToDo(ToDo oldTodo, ToDo newTodo) {
+    int index = _todos.indexOf(oldTodo);
+    if (index != -1) {
+      _todos[index] = newTodo;
+    }
+  }
+
+  void removeToDo(ToDo todo) {
+    _todos.remove(todo);
   }
 
   List<ToDo> get todos => _todos;

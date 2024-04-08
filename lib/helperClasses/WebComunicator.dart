@@ -150,7 +150,7 @@ class WebComunicater {
   }
 
   Future<List<AufzugWithToDos>> getToDos(
-      {Sort? sort, bool? show_checked, bool? show_unchecked}) {
+      {Sort? sort, bool? show_checked, bool? show_unchecked, String? search}) {
     Map<String, dynamic> body = {};
     if (sort != null) {
       body["sort_key"] = sort.type.name;
@@ -161,6 +161,9 @@ class WebComunicater {
     }
     if (show_unchecked != null) {
       body["show_unchec"] = show_unchecked;
+    }
+    if (search != null) {
+      body["search"] = search;
     }
 
     return requestWithAnalyse("todo", RequestType.GET, body).then((value) =>

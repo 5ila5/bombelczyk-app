@@ -160,13 +160,41 @@ class CollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
 }
 
 class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
-  UnCollapsedToDoAufzugBar(AufzugWithToDos aufzug, void Function() collapse,
-      void Function() uncollapse)
+  final void Function(void Function()) update;
+
+  List<Widget> getAddTodoBar() {
+    return [
+      InkWell(
+          child: Icon(Icons.add, size: 40, color: Colors.blue),
+          onTap: () => update(() => aufzug.addTodo(
+                ToDo(-1, aufzug, "", DateTime.now(), null),
+              ))),
+      Divider(thickness: 1, color: Colors.grey)
+    ];
+  }
+
+  static List<Widget> getToDoBars(
+      AufzugWithToDos aufzug, void Function() collapse) {
+    List<Widget> toReturn = [];
+    for (ToDo todo in aufzug.todos) {
+      if (todo.id == -1) {
+        toReturn.add(NewToDoBar(todo, collapse));
+        toReturn.add(Divider(thickness: 1, color: Colors.grey));
+        continue;
+      }
+      toReturn.add(ToDoBar(todo, collapse));
+    }
+    return toReturn;
+  }
+
+  UnCollapsedToDoAufzugBar(
+      AufzugWithToDos aufzug, void Function() collapse, this.update)
       : super(aufzug,
             rightIcon: Column(children: [ClickableAfzIcon(aufzug)]),
             onTap: collapse,
             belowWidgets: [
-              for (ToDo todo in aufzug.todos) ToDoBar(todo, collapse)
+              for (ToDo todo in aufzug.todos) ToDoBar(todo, collapse),
+              Divider(thickness: 1, color: Colors.grey)
             ],
             leftIcon: [
               Icon(Icons.keyboard_arrow_down, color: Colors.blue),
@@ -175,4 +203,45 @@ class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
                     right: 0, left: 5.0, bottom: 0, top: 0),
               )
             ]);
+}
+
+class ToDoAufzugBar extends StatefulWidget {
+  final AufzugWithToDos aufzug;
+  final bool? initalCollapsed;
+
+  ToDoAufzugBar(this.aufzug, [this.initalCollapsed]);
+
+  @override
+  _ToDoAufzugBarState createState() =>
+      _ToDoAufzugBarState(aufzug, this.initalCollapsed);
+}
+
+class _ToDoAufzugBarState extends State<ToDoAufzugBar> {
+  final AufzugWithToDos aufzug;
+  bool collapsed = false;
+
+  _ToDoAufzugBarState(this.aufzug, bool? initalCollapsed) {
+    collapsed = initalCollapsed ?? false;
+  }
+
+  void collapse() {
+    setState(() {
+      collapsed = true;
+    });
+  }
+
+  void uncollapse() {
+    setState(() {
+      collapsed = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (collapsed) {
+      return CollapsedToDoAufzugBar(aufzug, uncollapse);
+    } else {
+      return UnCollapsedToDoAufzugBar(aufzug, collapse, setState);
+    }
+  }
 }

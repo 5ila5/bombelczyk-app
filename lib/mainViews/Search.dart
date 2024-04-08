@@ -25,6 +25,7 @@ class _SearchState extends State<Search> {
   }
 
   void searchChange([String? newSearch]) {
+    search = newSearch ?? search;
     if ((newSearch ?? search).length < 3) {
       setState(() {
         contentList =

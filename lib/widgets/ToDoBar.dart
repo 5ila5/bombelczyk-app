@@ -133,7 +133,7 @@ class _UncreatedToDoBarState extends _ToDoBarState {
 
 class NewToDoBar extends StatefulWidget {
   final ToDo todo;
-  void Function() informDelete;
+  final void Function() informDelete;
   NewToDoBar(this.todo, this.informDelete);
 
   @override

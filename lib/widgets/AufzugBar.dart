@@ -1,7 +1,8 @@
+import 'package:Bombelczyk/helperClasses/Arbeit.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/ToDo.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
-import 'package:Bombelczyk/widgets/Inkwells.dart';
+import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/Styles.dart';
 import 'package:Bombelczyk/widgets/ToDoBar.dart';
 import 'package:flutter/material.dart';
@@ -86,14 +87,15 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
 }
 
 class SimpleAufzugBar extends AufzugBar<Aufzug> {
-  SimpleAufzugBar(Aufzug aufzug)
+  SimpleAufzugBar(Aufzug aufzug, BuildContext context)
       : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: () => AufzugPage.showPage(aufzug));
+            onTap: () => AufzugPageHandler.showPage(context, aufzug));
 }
 
 class TourAufzugBar extends AufzugBar<TourAufzug> {
-  TourAufzugBar(TourAufzug aufzug, void Function(void Function()?) update)
+  TourAufzugBar(TourAufzug aufzug, void Function(void Function()?) update,
+      BuildContext context)
       : super(aufzug,
             rightIcon: Column(
               children: [
@@ -101,7 +103,7 @@ class TourAufzugBar extends AufzugBar<TourAufzug> {
                 ClickableMapIcon(aufzug.address),
               ],
             ),
-            onTap: () => AufzugPage.showPage(aufzug));
+            onTap: () => AufzugPageHandler.showPage(context, aufzug));
 }
 
 mixin DistanceText on AufzugBar<AufzugWithDistance> {
@@ -114,10 +116,10 @@ mixin DistanceText on AufzugBar<AufzugWithDistance> {
 
 class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
     with DistanceText {
-  SimpleAufzugBarWithDistance(AufzugWithDistance aufzug)
+  SimpleAufzugBarWithDistance(AufzugWithDistance aufzug, BuildContext context)
       : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: () => AufzugPage.showPage(aufzug));
+            onTap: () => AufzugPageHandler.showPage(context, aufzug));
 }
 
 class TourAufzugBarWithState extends StatefulWidget {
@@ -141,14 +143,15 @@ class _TourAufzugBarWithStateState extends State<TourAufzugBarWithState> {
 
   @override
   Widget build(BuildContext context) {
-    return TourAufzugBar(aufzug, update);
+    return TourAufzugBar(aufzug, update, context);
   }
 }
 
 class CollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
-  CollapsedToDoAufzugBar(AufzugWithToDos aufzug, void Function() uncollapse)
+  CollapsedToDoAufzugBar(
+      AufzugWithToDos aufzug, void Function() uncollapse, BuildContext context)
       : super(aufzug,
-            rightIcon: Column(children: [ClickableAfzIcon(aufzug)]),
+            rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
             onTap: uncollapse,
             leftIcon: [
               Icon(Icons.keyboard_arrow_up, color: Colors.blue),
@@ -162,7 +165,24 @@ class CollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
 class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
   final void Function(void Function()) update;
 
-  List<Widget> getAddTodoBar() {
+  UnCollapsedToDoAufzugBar(AufzugWithToDos aufzug, void Function() collapse,
+      this.update, BuildContext context)
+      : super(aufzug,
+            rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
+            onTap: collapse,
+            belowWidgets: ToDosBar.getToDoBars(aufzug, update),
+            leftIcon: [
+              Icon(Icons.keyboard_arrow_down, color: Colors.blue),
+              Padding(
+                padding: const EdgeInsets.only(
+                    right: 0, left: 5.0, bottom: 0, top: 0),
+              )
+            ]);
+}
+
+class ToDosBar {
+  static List<Widget> getAddTodoBar(
+      AufzugWithToDos aufzug, final void Function(void Function()) update) {
     return [
       InkWell(
           child: Icon(Icons.add, size: 40, color: Colors.blue),
@@ -174,35 +194,49 @@ class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
   }
 
   static List<Widget> getToDoBars(
-      AufzugWithToDos aufzug, void Function() collapse) {
-    List<Widget> toReturn = [];
+      AufzugWithToDos aufzug, void Function(void Function()) update) {
+    List<Widget> toReturn = getAddTodoBar(aufzug, update);
     for (ToDo todo in aufzug.todos) {
+      void Function() informDelete = () {
+        update(() {
+          todo.delete();
+        });
+      };
+
       if (todo.id == -1) {
-        toReturn.add(NewToDoBar(todo, collapse));
-        toReturn.add(Divider(thickness: 1, color: Colors.grey));
-        continue;
+        toReturn.add(NewToDoBar(todo, informDelete));
+      } else {
+        toReturn.add(ToDoBar(todo, informDelete));
       }
-      toReturn.add(ToDoBar(todo, collapse));
+      toReturn.add(Divider(thickness: 1, color: Colors.grey));
     }
     return toReturn;
   }
+}
 
-  UnCollapsedToDoAufzugBar(
-      AufzugWithToDos aufzug, void Function() collapse, this.update)
-      : super(aufzug,
-            rightIcon: Column(children: [ClickableAfzIcon(aufzug)]),
-            onTap: collapse,
-            belowWidgets: [
-              for (ToDo todo in aufzug.todos) ToDoBar(todo, collapse),
-              Divider(thickness: 1, color: Colors.grey)
-            ],
-            leftIcon: [
-              Icon(Icons.keyboard_arrow_down, color: Colors.blue),
-              Padding(
-                padding: const EdgeInsets.only(
-                    right: 0, left: 5.0, bottom: 0, top: 0),
-              )
-            ]);
+class WorkBar extends Table {
+  WorkBar(Arbeit work)
+      : super(
+          children: [
+            TableRow(children: [
+              SelectableText("Datum"),
+              SelectableText(work.dateString),
+            ]),
+            TableRow(children: [
+              SelectableText("Monteur(e)"),
+              SelectableText(work.workersString),
+              //Text(value["MitarbeiterName"]),
+            ]),
+            TableRow(children: [
+              SelectableText("Arbeit"),
+              SelectableText(work.work),
+            ]),
+            TableRow(children: [
+              SelectableText("Kurztext"),
+              SelectableText(work.description),
+            ]),
+          ],
+        );
 }
 
 class ToDoAufzugBar extends StatefulWidget {
@@ -239,9 +273,9 @@ class _ToDoAufzugBarState extends State<ToDoAufzugBar> {
   @override
   Widget build(BuildContext context) {
     if (collapsed) {
-      return CollapsedToDoAufzugBar(aufzug, uncollapse);
+      return CollapsedToDoAufzugBar(aufzug, uncollapse, context);
     } else {
-      return UnCollapsedToDoAufzugBar(aufzug, collapse, setState);
+      return UnCollapsedToDoAufzugBar(aufzug, collapse, setState, context);
     }
   }
 }

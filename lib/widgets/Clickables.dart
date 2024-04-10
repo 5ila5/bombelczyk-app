@@ -34,14 +34,14 @@ class ClickableMapIcon extends InkWell {
 class ClickableAfzIcon extends InkWell {
   final Aufzug aufzug;
 
-  ClickableAfzIcon(this.aufzug)
+  ClickableAfzIcon(BuildContext context, this.aufzug)
       : super(
             child: Icon(
               Icons.elevator_outlined,
               size: 50,
               color: Colors.blue,
             ),
-            onTap: () => AufzugPage.showPage(aufzug));
+            onTap: () => AufzugPageHandler.showPage(context, aufzug));
 }
 
 class TourCheckIcon extends InkWell {
@@ -123,4 +123,17 @@ class DeleteInkWell extends InkWell {
           child: Icon(Icons.delete_outlined, size: 40, color: Colors.red),
           onTap: delete,
         );
+}
+
+class MyButton extends ElevatedButton {
+  MyButton(String text, void Function() onPressed, bool active)
+      : super(
+            child: Text(text),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[active ? 400 : 200],
+              elevation: 10,
+              shape: const BeveledRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5))),
+            ),
+            onPressed: onPressed);
 }

@@ -44,8 +44,8 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      AfzSearchBar("Suche Aufzüge", searchChange),
-      SortDropDownWithDir(currentSort, sortChange),
+      AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
+      SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
       WidgetColumnFutureBuilder(contentList)
     ]);
   }

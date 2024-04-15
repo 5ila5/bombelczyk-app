@@ -1,9 +1,220 @@
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
+import 'package:Bombelczyk/helperClasses/Tour.dart';
+import 'package:Bombelczyk/widgets/AufzugBar.dart';
+import 'package:collapsible/collapsible.dart';
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class TourWidgetHelper {
   static void showAddToTourDialog(BuildContext context, Aufzug aufzug) {
     // TODO: implement
     print("Showing dialog for adding Aufzug ${aufzug.anr} to tour");
+  }
+
+  static void showCreateDialog(DateTime date) {
+    // TODO: implement
+  }
+
+  static void editTour(BuildContext context, Tour tour) {
+    //TODO: implement
+  }
+  static void confimDeleteTour(BuildContext context, Tour tour,
+      final void Function(void Function()) updateParent) {
+    _deleteConfirmDialog(BuildContext context) {
+      // set up the buttons
+      Widget remindButton = TextButton(
+        child: Text("Ja"),
+        onPressed: () {
+          updateParent(() => tour.delete());
+
+          Navigator.pop(context);
+        },
+      );
+      Widget cancelButton = TextButton(
+        child: Text("Abbrechen"),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      );
+      AlertDialog alert = AlertDialog(
+        title: Text("Notice"),
+        content: Text("Bist du sicher, dass du diese Tour entfernen möchtest?"),
+        actions: [
+          remindButton,
+          cancelButton,
+        ],
+      ); // show the dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
+  }
+}
+
+class TourCalendar extends StatefulWidget {
+  final void Function(DateTime, DateTime)? onDaySelected;
+
+  TourCalendar(this.onDaySelected);
+
+  @override
+  _TourCalendarState createState() => _TourCalendarState();
+}
+
+class _TourCalendarState extends State<TourCalendar> {
+  CalendarFormat _calendarFormat = CalendarFormat.week;
+  DateTime _selectedDay = DateTime.now();
+  @override
+  Widget build(BuildContext context) {
+    return TableCalendar<Tour>(
+      calendarBuilders: CalendarBuilders(
+          //headerTitleBuilder: test,
+          //headerTitleBuilder: headerBuilder,
+          ),
+      availableCalendarFormats: {
+        CalendarFormat.month: "L",
+        CalendarFormat.twoWeeks: "M",
+        CalendarFormat.week: "S"
+      },
+      availableGestures: AvailableGestures.horizontalSwipe,
+      headerStyle: HeaderStyle(),
+      calendarStyle: CalendarStyle(
+        outsideDaysVisible: true,
+        weekendTextStyle: TextStyle(
+          color: Colors.red,
+        ),
+      ),
+      onFormatChanged: (format) {
+        if (_calendarFormat != format) {
+          setState(() {
+            _calendarFormat = format;
+          });
+        }
+      },
+      weekendDays: [DateTime.saturday, DateTime.sunday],
+      locale: 'de_DE',
+      calendarFormat: _calendarFormat,
+      focusedDay: _selectedDay,
+      firstDay: DateTime.utc(2021),
+      lastDay: DateTime.now().add(const Duration(days: 365)),
+      selectedDayPredicate: (day) {
+        return isSameDay(_selectedDay, day);
+      },
+      onDaySelected: (DateTime oldDay, DateTime newDay) {
+        setState(() {
+          _selectedDay = _selectedDay;
+          if (widget.onDaySelected != null) {
+            widget.onDaySelected!(oldDay, newDay);
+          }
+        });
+      },
+      startingDayOfWeek: StartingDayOfWeek.monday,
+      eventLoader: (day) => ToursHandler.instance.eventLoader(day, setState),
+    );
+  }
+}
+
+class TourHeader extends StatelessWidget {
+  final Tour tour;
+  final bool collapsed;
+  final void Function()? onTap;
+  final void Function(void Function()) updateParent;
+
+  Widget buttons(Tour tour, BuildContext context) {
+    return Row(children: [
+      InkWell(
+          onTap: () => TourWidgetHelper.editTour(context, tour),
+          child: Icon(Icons.edit, color: Colors.green, size: 30)),
+      InkWell(
+          onTap: () =>
+              TourWidgetHelper.confimDeleteTour(context, tour, updateParent),
+          child: Icon(Icons.delete, color: Colors.red, size: 30)),
+    ]);
+  }
+
+  TourHeader(this.onTap, this.collapsed, this.tour, this.updateParent);
+
+  @override
+  Widget build(BuildContext context) => Container(
+      margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
+      child: Material(
+          elevation: 20,
+          child: Container(
+            color: Colors.blue,
+            padding: EdgeInsets.only(bottom: 5, top: 5),
+            child: Row(children: [
+              Expanded(
+                  child: InkWell(
+                onTap: onTap,
+                child: Row(
+                  children: [
+                    Icon(
+                        (collapsed)
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        color: Colors.white),
+                    Text(
+                      tour.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+              Container(
+                margin: EdgeInsets.only(right: 20),
+                child: buttons(
+                  tour,
+                  context,
+                ),
+              ),
+            ]),
+          )));
+}
+
+class TourWidget extends StatefulWidget {
+  final Tour tour;
+
+  TourWidget(this.tour);
+
+  @override
+  _TourWidgetState createState() => _TourWidgetState();
+}
+
+class _TourWidgetState extends State<TourWidget> {
+  bool _collapsed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TourHeader(
+                  () => setState(() {
+                        _collapsed = !_collapsed;
+                      }),
+                  _collapsed,
+                  widget.tour,
+                  setState),
+            )
+          ],
+        ),
+        Collapsible(
+            child: Column(
+              children: widget.tour.aufzuege
+                  .map((e) => TourAufzugBarWithState(e))
+                  .toList(),
+            ),
+            collapsed: _collapsed,
+            axis: CollapsibleAxis.both),
+      ],
+    );
   }
 }

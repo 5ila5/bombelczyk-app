@@ -4,7 +4,7 @@ import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
 import 'package:flutter/material.dart';
 
 class HistoryState extends StatelessWidget {
-  Future<List<Widget>> getAfzWidgets() {
+  Future<List<Widget>> getAfzWidgets(BuildContext context) {
     return WebComunicater.instance.getHistory().then((value) {
       return value.map((e) => SimpleAufzugBar(e)).toList();
     });
@@ -12,7 +12,7 @@ class HistoryState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future<List<Widget>> widgets = getAfzWidgets();
+    Future<List<Widget>> widgets = getAfzWidgets(context);
 
     return Center(
         child:

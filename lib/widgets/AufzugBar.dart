@@ -26,17 +26,27 @@ class AufzugBarRow extends Row {
 class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
   final AufzugType aufzug;
   final Widget? rightIcon;
-  final void Function()? onTap;
+  final void Function(BuildContext) onTap;
   final Color? backgroundColor;
   final List<Widget>? leftIcon;
   final List<Widget>? belowWidgets;
 
   AufzugBar(this.aufzug,
-      {this.onTap,
+      {required this.onTap,
       this.rightIcon,
       this.backgroundColor,
       this.leftIcon,
       this.belowWidgets});
+
+  AufzugBar.simpleOntap(this.aufzug,
+      {void Function()? onTap,
+      this.rightIcon,
+      this.backgroundColor,
+      this.leftIcon,
+      this.belowWidgets})
+      : this.onTap = ((BuildContext context) {
+          if (onTap != null) onTap();
+        });
 
   List<String> getBodyTexts() {
     List<String> toReturn = [
@@ -73,7 +83,7 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
                       children:
                           getBodyTexts().map((e) => AufzugBarRow(e)).toList(),
                     ),
-                    onTap: this.onTap),
+                    onTap: () => this.onTap(context)),
               ),
               if (rightIcon != null) rightIcon!,
             ],
@@ -87,23 +97,24 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
 }
 
 class SimpleAufzugBar extends AufzugBar<Aufzug> {
-  SimpleAufzugBar(Aufzug aufzug, BuildContext context)
+  SimpleAufzugBar(Aufzug aufzug)
       : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: () => AufzugPageHandler.showPage(context, aufzug));
+            onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
 }
 
 class TourAufzugBar extends AufzugBar<TourAufzug> {
-  TourAufzugBar(TourAufzug aufzug, void Function(void Function()?) update,
-      BuildContext context)
-      : super(aufzug,
+  TourAufzugBar(
+    TourAufzug aufzug,
+    void Function(void Function()?) update,
+  ) : super(aufzug,
             rightIcon: Column(
               children: [
                 TourCheckIcon(aufzug, update),
                 ClickableMapIcon(aufzug.address),
               ],
             ),
-            onTap: () => AufzugPageHandler.showPage(context, aufzug));
+            onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
 }
 
 mixin DistanceText on AufzugBar<AufzugWithDistance> {
@@ -116,10 +127,11 @@ mixin DistanceText on AufzugBar<AufzugWithDistance> {
 
 class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
     with DistanceText {
-  SimpleAufzugBarWithDistance(AufzugWithDistance aufzug, BuildContext context)
-      : super(aufzug,
+  SimpleAufzugBarWithDistance(
+    AufzugWithDistance aufzug,
+  ) : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: () => AufzugPageHandler.showPage(context, aufzug));
+            onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
 }
 
 class TourAufzugBarWithState extends StatefulWidget {
@@ -143,7 +155,7 @@ class _TourAufzugBarWithStateState extends State<TourAufzugBarWithState> {
 
   @override
   Widget build(BuildContext context) {
-    return TourAufzugBar(aufzug, update, context);
+    return TourAufzugBar(aufzug, update);
   }
 }
 
@@ -152,7 +164,7 @@ class CollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
       AufzugWithToDos aufzug, void Function() uncollapse, BuildContext context)
       : super(aufzug,
             rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
-            onTap: uncollapse,
+            onTap: (c) => uncollapse(),
             leftIcon: [
               Icon(Icons.keyboard_arrow_up, color: Colors.blue),
               Padding(
@@ -169,7 +181,7 @@ class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
       this.update, BuildContext context)
       : super(aufzug,
             rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
-            onTap: collapse,
+            onTap: (c) => collapse(),
             belowWidgets: ToDosBar.getToDoBars(aufzug, update),
             leftIcon: [
               Icon(Icons.keyboard_arrow_down, color: Colors.blue),

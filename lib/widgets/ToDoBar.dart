@@ -1,7 +1,7 @@
 import 'package:Bombelczyk/helperClasses/SavedVisualizer.dart';
 import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
 import 'package:Bombelczyk/helperClasses/ToDo.dart';
-import 'package:Bombelczyk/widgets/Inkwells.dart';
+import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

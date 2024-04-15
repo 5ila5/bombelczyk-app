@@ -1,5 +1,5 @@
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
-import 'package:Bombelczyk/widgets/Inkwells.dart';
+import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:flutter/material.dart';
 
 class SimpleAmountChooser extends StatefulWidget {

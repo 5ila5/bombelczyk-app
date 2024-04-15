@@ -1,5 +1,6 @@
 import 'package:Bombelczyk/helperClasses/Address.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
+import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
 import 'package:Bombelczyk/widgets/ImgHandling.dart';
 import 'package:flutter/material.dart';
@@ -136,4 +137,25 @@ class MyButton extends ElevatedButton {
                   borderRadius: BorderRadius.all(Radius.circular(5))),
             ),
             onPressed: onPressed);
+}
+
+class AddTour extends Container {
+  AddTour({required void Function()? onPressed})
+      : super(
+          margin: EdgeInsets.only(right: 5, top: 5),
+          alignment: Alignment.topRight,
+          height: 40,
+          child: FloatingActionButton.extended(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            onPressed: onPressed,
+            label: Text("Neue Tour Anlegen"),
+            icon: Icon(
+              Icons.add_circle,
+              color: Colors.black,
+
+              //size: 35,
+            ),
+          ),
+        );
 }

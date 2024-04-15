@@ -10,6 +10,7 @@ import 'package:Bombelczyk/helperClasses/ToDo.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/helperClasses/User.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -194,8 +195,16 @@ class WebComunicater {
             (key, value) => (TourWorkType(int.parse(key.toString()), value)))));
   }
 
-  Future<List<Tour>> getTours() {
-    Future<dynamic> tours = requestWithAnalyse("tour", RequestType.GET);
+  Future<List<Tour>> getTours({DateTime? from, DateTime? to}) {
+    Map<String, dynamic> body = {};
+    if (from != null) {
+      body["from"] = from.toIso8601String().substring(0, 10);
+    }
+    if (to != null) {
+      body["to"] = to.toIso8601String().substring(0, 10);
+    }
+
+    Future<dynamic> tours = requestWithAnalyse("tour", RequestType.GET, body);
     Future<List<TourWorkType>> workTypes = TourWorkTypes.getTypes();
 
     return Future.wait([tours, workTypes]).then((value) =>
@@ -308,6 +317,24 @@ class WebComunicater {
       [Map<String, dynamic>? body]) {
     return _sendRequest(path, rType, body).then((value) {
       Map<String, dynamic> total_response = jsonDecode(value.body);
+      if (!kReleaseMode) {
+        if (total_response.containsKey("exceptions")) {
+          print("Requesting with exceptions: " +
+              total_response["exceptions"] +
+              ", on: " +
+              path +
+              ", body: " +
+              body.toString());
+        }
+        if (total_response.containsKey("errors")) {
+          print("Requesting with errors: " +
+              total_response["errors"] +
+              ", on: " +
+              path +
+              ", body: " +
+              body.toString());
+        }
+      }
 
       if (total_response["status"] == "success") {
         return total_response["content"];

@@ -3,7 +3,6 @@ import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:collapsible/collapsible.dart';
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class TourWidgetHelper {
   static void showAddToTourDialog(BuildContext context, Aufzug aufzug) {
@@ -51,68 +50,6 @@ class TourWidgetHelper {
         },
       );
     }
-  }
-}
-
-class TourCalendar extends StatefulWidget {
-  final void Function(DateTime, DateTime)? onDaySelected;
-
-  TourCalendar(this.onDaySelected);
-
-  @override
-  _TourCalendarState createState() => _TourCalendarState();
-}
-
-class _TourCalendarState extends State<TourCalendar> {
-  CalendarFormat _calendarFormat = CalendarFormat.week;
-  DateTime _selectedDay = DateTime.now();
-  @override
-  Widget build(BuildContext context) {
-    return TableCalendar<Tour>(
-      calendarBuilders: CalendarBuilders(
-          //headerTitleBuilder: test,
-          //headerTitleBuilder: headerBuilder,
-          ),
-      availableCalendarFormats: {
-        CalendarFormat.month: "L",
-        CalendarFormat.twoWeeks: "M",
-        CalendarFormat.week: "S"
-      },
-      availableGestures: AvailableGestures.horizontalSwipe,
-      headerStyle: HeaderStyle(),
-      calendarStyle: CalendarStyle(
-        outsideDaysVisible: true,
-        weekendTextStyle: TextStyle(
-          color: Colors.red,
-        ),
-      ),
-      onFormatChanged: (format) {
-        if (_calendarFormat != format) {
-          setState(() {
-            _calendarFormat = format;
-          });
-        }
-      },
-      weekendDays: [DateTime.saturday, DateTime.sunday],
-      locale: 'de_DE',
-      calendarFormat: _calendarFormat,
-      focusedDay: _selectedDay,
-      firstDay: DateTime.utc(2021),
-      lastDay: DateTime.now().add(const Duration(days: 365)),
-      selectedDayPredicate: (day) {
-        return isSameDay(_selectedDay, day);
-      },
-      onDaySelected: (DateTime oldDay, DateTime newDay) {
-        setState(() {
-          _selectedDay = _selectedDay;
-          if (widget.onDaySelected != null) {
-            widget.onDaySelected!(oldDay, newDay);
-          }
-        });
-      },
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      eventLoader: (day) => ToursHandler.instance.eventLoader(day, setState),
-    );
   }
 }
 

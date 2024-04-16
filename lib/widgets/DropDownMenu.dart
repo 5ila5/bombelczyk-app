@@ -1,4 +1,6 @@
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
+import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
+import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:flutter/material.dart';
 
@@ -88,4 +90,74 @@ class SortDropDownWithDirCollapsed extends Row {
           ExpandAll(collapsed, (e) => setCollapsed(e)),
           ...SortDropDownWithDir.getChildren(sort, onChanged)
         ]);
+}
+
+class DatePicker extends StatefulWidget {
+  final DateTime defaultDate;
+
+  DatePicker(this.defaultDate);
+
+  @override
+  DatePickerState createState() => DatePickerState(defaultDate);
+}
+
+class DatePickerState extends State<DatePicker> {
+  DateTime _selectedDay;
+
+  DatePickerState(this._selectedDay);
+
+  Widget dialogueBuilder(BuildContext context) {
+    return Dialog(
+        child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Container(
+                child: Column(children: [
+              StatefulBuilder(builder: (context, StateSetter setState) {
+                return MyCalendar((p0, p1) {
+                  setState(() {
+                    _selectedDay = p0;
+                  });
+                });
+              }),
+              FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    Navigator.pop(context);
+                  });
+                },
+                child: Text("OK"),
+              ),
+            ]))));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      child: Column(children: [
+        Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue, style: BorderStyle.solid),
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
+            child: Row(children: [
+              Text(
+                TimeFormatter.germanDateString(_selectedDay),
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              Icon(
+                Icons.calendar_today_outlined,
+                color: Colors.blue,
+              )
+            ]))
+      ]),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: dialogueBuilder,
+        );
+      },
+    );
+  }
 }

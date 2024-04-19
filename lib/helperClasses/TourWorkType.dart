@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 
 class TourWorkType {
@@ -12,6 +14,8 @@ class TourWorkType {
 
 class TourWorkTypes {
   static List<TourWorkType>? _types;
+  static TourWorkType get defaultType =>
+      _types!.reduce((curr, next) => curr.idx < next.idx ? curr : next);
 
   static Future<List<TourWorkType>> getTypes() {
     if (_types == null) {

@@ -1,3 +1,4 @@
+import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
@@ -7,6 +8,10 @@ import 'package:Bombelczyk/widgets/TextFields.dart';
 import 'package:flutter/material.dart';
 
 class Search extends StatefulWidget {
+  final void Function(BuildContext)? customOnTap;
+
+  Search({this.customOnTap}) : super();
+
   @override
   _SearchState createState() => _SearchState();
 }
@@ -16,11 +21,18 @@ class _SearchState extends State<Search> {
   Sort currentSort = Sort(AfzSortType.STREET, SortDirection.ASC);
   String search = "";
 
+  SimpleAufzugBar getBar(Aufzug afz) {
+    if (widget.customOnTap != null) {
+      return SimpleAufzugBar.withOnTap(afz, widget.customOnTap!);
+    }
+    return SimpleAufzugBar(afz);
+  }
+
   void updateContent() {
     setState(() {
       contentList = WebComunicater.instance
           .searchAufzug(search, currentSort)
-          .then((value) => value.map((afz) => SimpleAufzugBar(afz)).toList());
+          .then((value) => value.map((afz) => this.getBar(afz)).toList());
     });
   }
 

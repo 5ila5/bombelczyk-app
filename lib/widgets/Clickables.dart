@@ -47,7 +47,7 @@ class ClickableAfzIcon extends InkWell {
 
 class TourCheckIcon extends InkWell {
   final TourAufzug aufzug;
-  final void Function(void Function()?) updateParent;
+  final void Function(void Function()) updateParent;
 
   TourCheckIcon(this.aufzug, this.updateParent)
       : super(
@@ -158,4 +158,30 @@ class AddTour extends Container {
             ),
           ),
         );
+}
+
+class SmallIconButton extends Expanded {
+  SmallIconButton(IconData icon, void Function()? onTap, Color? color)
+      : super(
+            flex: 1,
+            child: InkWell(
+              onTap: onTap,
+              child: Icon(icon, color: color, size: 30),
+            ));
+}
+
+class TourAufzugEditButtons {
+  static List<Widget> getButtons(
+      TourAufzug aufzug, void Function(void Function()) update) {
+    return [
+      if (!aufzug.isFirst)
+        SmallIconButton(Icons.arrow_upward_outlined,
+            () => update(() => aufzug.moveUp()), Colors.green),
+      if (!aufzug.isLast)
+        SmallIconButton(Icons.arrow_downward_outlined,
+            () => update(() => aufzug.moveDown()), Colors.green),
+      SmallIconButton(Icons.delete, () => update(() => aufzug.removeFromTour()),
+          Colors.red),
+    ];
+  }
 }

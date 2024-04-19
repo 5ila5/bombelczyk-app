@@ -25,7 +25,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   Tour.fromApiJson(Map<String, dynamic> json, List<TourWorkType> workTypes)
       : _idx = json['idx'],
         _name = json['name'],
-        _date = DateTime.parse(json['date']) {
+        _date = DateTime.parse(json['date']),
+        this._sharedWith = List<User>.from(
+            json['sharedWith'].map((e) => Users.get(e)).toList()) {
     this._aufzuege = List<TourAufzug>.from(json['afzs']
         .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
         .toList());
@@ -57,13 +59,20 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
         this.date.day == date.day;
   }
 
-  void addAufzug(TourAufzug aufzug) {
+  void addAufzug(Aufzug aufzug) {
+    TourAufzug tourAufzug;
+    if (aufzug is TourAufzug) {
+      tourAufzug = aufzug;
+    } else {
+      tourAufzug = TourAufzug.fromAufzug(this, aufzug);
+    }
+
     TourChange<dynamic>? afzChange =
         this.changes.firstWhereOrNull((element) => element.attr == "aufzuege");
     if (afzChange != null) {
-      afzChange.newValue.add(aufzug);
+      afzChange.newValue.add(tourAufzug);
     } else {
-      edit(TourChange("aufzuege", this._aufzuege, [..._aufzuege, aufzug]));
+      edit(TourChange("aufzuege", this._aufzuege, [..._aufzuege, tourAufzug]));
     }
   }
 
@@ -74,7 +83,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     }
     List<TourAufzug> afzList = _aufzuege;
 
-    if (!immediate) {
+    if (immediate) {
+      WebComunicater.instance.tourModifyAfz(this, afz, dir: dir);
+    } else {
       afzList = [..._aufzuege];
       TourChange<dynamic>? afzChange = this
           .changes

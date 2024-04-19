@@ -20,3 +20,33 @@ class AfzSearchBar extends TextField {
           ),
         );
 }
+
+class TourEditTitle extends Container {
+  TourEditTitle(void Function(String)? onChanged)
+      : super(
+          margin: EdgeInsets.only(bottom: 10),
+          child: Row(
+            children: [
+              Text("Titel"),
+              Expanded(
+                  child: Container(
+                      padding: EdgeInsets.only(left: 20, right: 5),
+                      child: TextField(
+                        autocorrect: true,
+                        onChanged: onChanged,
+                        style: TextStyle(
+                          color: Colors.black,
+                          //backgroundColor: ,
+                        ),
+                        strutStyle: StrutStyle(
+                          fontSize: 20,
+                        ),
+                        decoration: InputDecoration(
+                          fillColor: Colors.grey[600],
+                        ),
+                        maxLength: 100,
+                      )))
+            ],
+          ),
+        );
+}

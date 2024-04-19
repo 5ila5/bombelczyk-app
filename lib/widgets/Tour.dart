@@ -116,8 +116,9 @@ class TourHeader extends StatelessWidget {
 
 class TourWidget extends StatefulWidget {
   final Tour tour;
+  final bool edit_mode;
 
-  TourWidget(this.tour);
+  TourWidget(this.tour, {this.edit_mode = false});
 
   @override
   _TourWidgetState createState() => _TourWidgetState();
@@ -146,7 +147,9 @@ class _TourWidgetState extends State<TourWidget> {
         Collapsible(
             child: Column(
               children: widget.tour.aufzuege
-                  .map((e) => TourAufzugBarWithState(e))
+                  .map((e) => widget.edit_mode
+                      ? TourModifiableAufzugBar(e, setState)
+                      : TourAufzugBarWithState(e))
                   .toList(),
             ),
             collapsed: _collapsed,

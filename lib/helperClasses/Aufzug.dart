@@ -21,6 +21,10 @@ class Aufzug {
       : this(json['AfzIdx'], json['Anr'], json['FK_zeit'], json['Zg_txt'],
             Address.fromApiJson(json));
 
+  Aufzug.fromAufzug(Aufzug aufzug)
+      : this(aufzug.afzIdx, aufzug.anr, aufzug.fKZeit, aufzug.zgTxt,
+            aufzug.address);
+
   Address get address => _address;
   int get afzIdx => _afzIdx;
   String get anr => _anr;
@@ -132,27 +136,38 @@ class TourAufzug extends Aufzug {
         _amount_images = json["anzImg"],
         super.fromApiJson(json);
 
+  TourAufzug.fromAufzug(this._tour, Aufzug aufzug,
+      {TourWorkType? workType, int amountImages = 0, finished = false})
+      : this._workType = TourWorkTypes.defaultType,
+        super.fromAufzug(aufzug);
+
   TourWorkType get workType => _workType;
 
   bool get hasImages => _amount_images > 0;
   int get amountImages => _amount_images;
   bool get finished => _finished;
+  bool get isFirst => _tour.aufzuege.first == this;
+  bool get isLast => _tour.aufzuege.last == this;
 
   set finished(bool finished) {
     WebComunicater.instance.tourModifyAfz(_tour, this, done: finished);
     _finished = finished;
   }
 
-  void moveUp({bool immediate = true}) {
+  void moveUp({bool immediate = false}) {
     this._tour.moveAfz(this, MoveDirection.UP, immediate: immediate);
   }
 
-  void moveDown({bool immediate = true}) {
+  void moveDown({bool immediate = false}) {
     this._tour.moveAfz(
           this,
           MoveDirection.DOWN,
           immediate: immediate,
         );
+  }
+
+  void removeFromTour() {
+    this._tour.removeAufzug(this);
   }
 
   Future<List<MemoryImage>> get images =>

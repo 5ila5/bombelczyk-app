@@ -98,23 +98,33 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
 
 class SimpleAufzugBar extends AufzugBar<Aufzug> {
   SimpleAufzugBar(Aufzug aufzug)
+      : this.withOnTap(aufzug, (c) => AufzugPageHandler.showPage(c, aufzug));
+
+  SimpleAufzugBar.withOnTap(Aufzug aufzug, void Function(BuildContext) onTap)
       : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
             onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
 }
 
 class TourAufzugBar extends AufzugBar<TourAufzug> {
-  TourAufzugBar(
-    TourAufzug aufzug,
-    void Function(void Function()?) update,
-  ) : super(aufzug,
+  TourAufzugBar(TourAufzug aufzug, void Function(void Function()) update,
+      {List<Widget>? belowWidgets})
+      : super(aufzug,
             rightIcon: Column(
               children: [
                 TourCheckIcon(aufzug, update),
                 ClickableMapIcon(aufzug.address),
               ],
             ),
-            onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
+            onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+            belowWidgets: belowWidgets);
+}
+
+class TourModifiableAufzugBar extends TourAufzugBar {
+  TourModifiableAufzugBar(
+      TourAufzug aufzug, void Function(void Function()) update)
+      : super(aufzug, update,
+            belowWidgets: TourAufzugEditButtons.getButtons(aufzug, update));
 }
 
 mixin DistanceText on AufzugBar<AufzugWithDistance> {

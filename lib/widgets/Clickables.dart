@@ -1,7 +1,9 @@
 import 'package:Bombelczyk/helperClasses/Address.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
+import 'package:Bombelczyk/helperClasses/User.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
+import 'package:Bombelczyk/widgets/DropDownMenu.dart';
 import 'package:Bombelczyk/widgets/ImgHandling.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -184,4 +186,87 @@ class TourAufzugEditButtons {
           Colors.red),
     ];
   }
+}
+
+class ShareButton extends StatelessWidget {
+  final Tour tour;
+
+  void _showShare(BuildContext context) async {
+    MultiSelect select = MultiSelect<User>(
+        items: await Users.getUsers(), selected: this.tour.sharedWith);
+    List<User>? sharedWith = await (showDialog(
+      context: context,
+      builder: (c) {
+        return select;
+      },
+    ));
+    if (sharedWith != null) {
+      this.tour.sharedWith = sharedWith;
+    }
+  }
+
+  ShareButton(this.tour) : super();
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+      child: Container(
+          child: Row(
+            children: [Text("Teilen"), Icon(Icons.share, size: 30)],
+          ),
+          color: Colors.green),
+      onTap: () => _showShare(
+            context,
+          ));
+}
+
+class TourEditBottomButtons extends StatelessWidget {
+  final Tour tour;
+
+  void _ok(BuildContext context) {
+    if (tour.idx != -1) {
+      tour.save();
+    } else {
+      tour.create();
+    }
+    Navigator.pop(context);
+  }
+
+  void _cancel(BuildContext context) {
+    if (tour.idx != -1) {
+      tour.cancel();
+    } else {
+      tour.delete();
+    }
+
+    Navigator.pop(context);
+  }
+
+  TourEditBottomButtons(this.tour) : super();
+  @override
+  Widget build(BuildContext context) => Row(
+        children: [
+          Expanded(
+              flex: 1,
+              child: FloatingActionButton(
+                onPressed: () => _ok(context),
+                child: Text("OK"),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                backgroundColor: Colors.green,
+              )),
+          Expanded(
+              flex: 2,
+              child: Container(
+                  padding: EdgeInsets.only(left: 10),
+                  child: FloatingActionButton(
+                    backgroundColor: Colors.red,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Abbrechen"),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                  )))
+        ],
+      );
 }

@@ -1,5 +1,6 @@
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
+import 'package:Bombelczyk/mainViews/TourEdit.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:collapsible/collapsible.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +11,14 @@ class TourWidgetHelper {
     print("Showing dialog for adding Aufzug ${aufzug.anr} to tour");
   }
 
-  static void showCreateDialog(DateTime date) {
-    // TODO: implement
+  static void showCreateDialog(BuildContext context, DateTime date) {
+    TourEdit.showPage(context, Tour.dateOnly(date));
   }
 
   static void editTour(BuildContext context, Tour tour) {
-    //TODO: implement
+    TourEdit.showPage(context, tour);
   }
+
   static void confimDeleteTour(BuildContext context, Tour tour,
       final void Function(void Function()) updateParent) {
     _deleteConfirmDialog(BuildContext context) {

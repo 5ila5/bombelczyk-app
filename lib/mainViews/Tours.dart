@@ -21,7 +21,9 @@ class ToursState extends State<Tours> {
   Widget build(BuildContext context) {
     return Column(children: [
       TourCalendar(onDaySelected),
-      AddTour(onPressed: () => TourWidgetHelper.showCreateDialog(selectedDay)),
+      AddTour(
+          onPressed: () =>
+              TourWidgetHelper.showCreateDialog(context, selectedDay)),
       Column(
           children: ToursHandler.instance
               .eventLoader(selectedDay, setState)

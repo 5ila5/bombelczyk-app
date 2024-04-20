@@ -6,6 +6,7 @@ import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/helperClasses/User.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
+import 'package:Bombelczyk/mainViews/Tours.dart';
 import 'package:collection/collection.dart';
 
 class Tour extends Editable<Tour, TourChange> with Deletable {
@@ -21,6 +22,8 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       _aufzuege = aufzuege;
     }
   }
+
+  Tour.dateOnly(DateTime date) : this(-1, "", date);
 
   Tour.fromApiJson(Map<String, dynamic> json, List<TourWorkType> workTypes)
       : _idx = json['idx'],
@@ -140,8 +143,11 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   }
 
   @override
-  Future<Tour> create() {
-    Future<Tour> newTour = WebComunicater.instance.createTourByTour(this);
+  Future<Tour> create() async {
+    Future<Tour> newTourFuture = WebComunicater.instance.createTourByTour(this);
+    ToursHandler.instance.createTour(this);
+    Tour newTour = await newTourFuture;
+    ToursHandler.instance.updateTour(this, newTour);
     isDeleted = true;
     return newTour;
   }
@@ -156,6 +162,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       listener(this);
     }
     WebComunicater.instance.deleteTour(this);
+    ToursHandler.instance.deleteTour(this);
     super.delete();
   }
 
@@ -181,9 +188,12 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
 
     this.isDeleted = true;
 
-    return Tour(
+    Tour newTour = Tour(
         this.idx, changes["name"] ?? this.name, changes["date"] ?? this.date,
         aufzuege: changes["aufzuege"] ?? this.aufzuege);
+
+    ToursHandler.instance.updateTour(this, newTour);
+    return newTour;
   }
 }
 
@@ -230,12 +240,44 @@ class ToursHandler {
     return _tours.containsKey(DateRange(start, end));
   }
 
+  bool updateTour(Tour oldTour, Tour newTour) {
+    if (!deleteTour(oldTour)) {
+      return false;
+    }
+    return createTour(newTour);
+  }
+
+  bool createTour(Tour newTour) {
+    DateRange newMonth = DateRange.month(newTour.date);
+    if (!_tours.containsKey(newMonth)) {
+      _tours[newMonth] = getchToursRange(newMonth, (f) => {});
+    }
+    _tours[newMonth]!.add(newTour);
+    return true;
+  }
+
+  bool deleteTour(Tour tour) {
+    DateRange month = DateRange.month(tour.date);
+    if (!_tours.containsKey(month)) {
+      return false;
+    }
+    if (!_tours[month]!.remove(tour)) {
+      return false;
+    }
+    return true;
+  }
+
   List<Tour> eventLoader(
       DateTime date, void Function(void Function()) updateParent) {
     DateRange month = DateRange.month(date);
     return fetchTours(month.start, month.end, updateParent)
         .where((element) => element.isSameDay(date))
         .toList();
+  }
+
+  List<Tour> getchToursRange(
+      DateRange range, void Function(void Function()) updateParent) {
+    return fetchTours(range.start, range.end, updateParent);
   }
 
   List<Tour> fetchTours(DateTime start, DateTime end,

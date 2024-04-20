@@ -1,20 +1,16 @@
+import 'package:Bombelczyk/helperClasses/StorageHelper.dart';
+import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
+import 'package:Bombelczyk/mainViews/History.dart';
+import 'package:Bombelczyk/mainViews/Nearby.dart';
+import 'package:Bombelczyk/mainViews/Search.dart';
+import 'package:Bombelczyk/mainViews/ToDo.dart';
 import 'package:Bombelczyk/mainViews/TourEdit.dart';
+import 'package:Bombelczyk/mainViews/Tours.dart';
+import 'package:Bombelczyk/widgets/AufzugPage.dart';
 import 'package:flutter/material.dart';
 
-//import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
-
-//import 'dart:developer' as developer;
-
-import 'old/aufzug_page.dart';
-import 'old/to_do_home.dart';
-import 'old/history.dart';
-import 'old/tour.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'old/key_checker.dart';
-import 'old/suche.dart';
-import 'old/near_by.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(MyApp()));
@@ -26,7 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        AufzugWidget.aufzugRoute: (context) => AufzugWidget(),
+        AufzugPage.aufzugRoute: (context) => AufzugPage.fromContext(),
         TourEdit.TourEditRoute: (context) => TourEdit.fromContext(),
       },
       title: 'Bombelczyk',
@@ -59,7 +55,12 @@ class MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    KeyChecker.checkKey(context);
+    StorageHelper.initWebComunicator();
+    WebComunicater.instance.testConnection().then((v) {
+      if (!v) Login.displayLoginDialog(context);
+    }).catchError((error, stackTrace) {
+      if (error is WrongAuthException) Login.displayLoginDialog(context);
+    });
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
@@ -71,10 +72,10 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     if (_widgetOptions == null || _widgetOptions!.length == 0) {
       _widgetOptions = <Widget>[
-        Suche(),
-        NearBy(),
+        Search(),
+        Nearby(),
         //To Dos Home
-        ToDoHome(),
+        ToDoView(),
 
         Column(children: <Widget>[
           new Expanded(

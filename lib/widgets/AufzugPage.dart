@@ -110,13 +110,20 @@ class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
 }
 
 class AufzugPage extends StatelessWidget {
-  final DetailedAufzug aufzug;
+  final DetailedAufzug? aufzug;
   static const aufzugRoute = '/aufzug_route';
 
-  AufzugPage(this.aufzug);
+  AufzugPage(DetailedAufzug aufzug)
+      : this.aufzug = aufzug,
+        super();
+  AufzugPage.fromContext()
+      : aufzug = null,
+        super();
 
   @override
   Widget build(BuildContext context) {
+    final DetailedAufzug aufzug = this.aufzug ??
+        ModalRoute.of(context)!.settings.arguments as DetailedAufzug;
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [

@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:http/http.dart' as http;
 
 class Aufzug {
   final int? afzIdx;
@@ -20,11 +21,35 @@ class AufzugWithDistance extends Aufzug with Distance {
   }
 }
 
+Future<String> test(int a) async {
+  if (a == -1) {
+    throw Exception("a is -1");
+  }
+  return "a is $a";
+}
+
+Future<String> test2(int a) async {
+  return await test(a).then((value) => value + "!");
+}
+
+Future<String> test3(int a) {
+  return test2(a).then((value) => value + "!");
+}
+
 void main() {
-  List<String> list = ["a", "b", "c"];
+  // test3(0).then(print);
+  // test3(-1)
+  //     .then(print)
+  //     .catchError((error, stackTrace) => print("Error: $error"));
 
-  print(list.map((e) => e + "a"));
-  List<int> numbers = [1, 2, 3, 4, 5];
+  print(Uri.https("bombelczyk-aufzuege.de", "UpP0UH3nFKMsnJk2/login.php"));
 
-  int? firstEven = numbers.firstWhereOrNull((number) => number % 2 == 0);
+  http.patch(
+    Uri.https(DOMAIN, BASE_PATH + path),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+      "Content-Encoding": "gzip",
+    },
+    body: compressedBody,
+  );
 }

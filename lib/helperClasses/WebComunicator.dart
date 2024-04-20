@@ -16,20 +16,67 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
+class WrongAuthException implements Exception {
+  final String message;
+  WrongAuthException(this.message);
+}
+
+class NoAuthException extends WrongAuthException {
+  NoAuthException() : super("No Auth Token");
+}
+
+class RequestSettings {
+  RequestSettings._();
+  static const String DOMAIN = "bombelczyk-aufzuege.de";
+  static final String BASE_PATH = "UpP0UH3nFKMsnJk3/";
+  static final gzip = GZipCodec();
+}
+
 enum RequestType {
-  GET(method: http.get),
-  POST(method: http.post),
-  DELETE(method: http.delete),
-  PATCH(method: http.patch);
+  GET(method: _get),
+  POST(method: _post),
+  DELETE(method: _delete),
+  PATCH(method: _patch);
 
   const RequestType({required this.method});
-  final Function method;
+  final Future<http.Response> Function(String, Map<String, dynamic>?,
+      {Map<String, String>? headers}) method;
+
+  static _uri(String path) =>
+      Uri.https(RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path);
+
+  static _getUri(String path, Map<String, dynamic>? body) =>
+      Uri.https(RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path, body);
+
+  static cBody(Map<String, dynamic>? body) {
+    RequestSettings.gzip.encode(jsonEncode(body).codeUnits);
+  }
+
+  static Future<http.Response> _get(String path, Map<String, dynamic>? body,
+      {Map<String, String>? headers}) {
+    return http.get(_getUri(path, body), headers: headers);
+  }
+
+  static Future<http.Response> _post(String path, Map<String, dynamic>? body,
+      {Map<String, String>? headers}) {
+    return http.post(_uri(path), body: cBody(body), headers: headers);
+  }
+
+  static Future<http.Response> _delete(String path, Map<String, dynamic>? body,
+      {Map<String, String>? headers}) {
+    return http.delete(_uri(path), body: cBody(body), headers: headers);
+  }
+
+  static Future<http.Response> _patch(String path, Map<String, dynamic>? body,
+      {Map<String, String>? headers}) {
+    return http.patch(_uri(path), body: cBody(body), headers: headers);
+  }
 }
 
 class WebComunicater {
   final Future<String?>? _auth_token;
-  static final String BASE_URL = "https://api.bombelczyk.de/UpP0UH3nFKMsnJk3/";
-  static final gzip = GZipCodec();
+  static final String DOMAIN = "bombelczyk-aufzuege.de";
+  static final String BASE_PATH = "UpP0UH3nFKMsnJk3/";
   static WebComunicater? _instance;
 
   static WebComunicater get instance {
@@ -44,9 +91,9 @@ class WebComunicater {
   }
 
   Future<String?> requestAuthToken(String password) {
-    Future<String?> token = requestWithAnalyse("login", RequestType.POST, {
-      "password": password,
-    }).then((value) {
+    Future<String?> token = requestWithAnalyse(
+            "login", RequestType.POST, {"password": password}, true)
+        .then((value) {
       if (value is String && value.isNotEmpty) {
         return value;
       }
@@ -58,7 +105,13 @@ class WebComunicater {
   }
 
   Future<bool> login(String password) {
-    return requestAuthToken(password).then((value) {
+    Future<String?> token = requestAuthToken(password); //test
+    // .catchError(//test
+    //     (error, stackTrace) => null //test
+    //     );
+    _instance = WebComunicater(token);
+
+    return token.then((value) {
       if (value != null) {
         StorageHelper.setAuth(value);
         _instance = WebComunicater(Future.value(value));
@@ -314,8 +367,9 @@ class WebComunicater {
   }
 
   Future<dynamic> requestWithAnalyse(String path, RequestType rType,
-      [Map<String, dynamic>? body]) {
-    return _sendRequest(path, rType, body).then((value) {
+      [Map<String, dynamic>? body, bool login = false]) {
+    return _sendRequest(path, rType, body, login).then((value) {
+      print(value);
       Map<String, dynamic> total_response = jsonDecode(value.body);
       if (!kReleaseMode) {
         if (total_response.containsKey("exceptions")) {
@@ -328,7 +382,7 @@ class WebComunicater {
         }
         if (total_response.containsKey("errors")) {
           print("Requesting with errors: " +
-              total_response["errors"] +
+              total_response["errors"].toString() +
               ", on: " +
               path +
               ", body: " +
@@ -337,8 +391,14 @@ class WebComunicater {
       }
 
       if (total_response["status"] == "success") {
+        print(total_response["content"]);
         return total_response["content"];
       } else {
+        if (total_response["message"] == "invalid authentication token") {
+          print("Invalid Auth Token");
+          throw WrongAuthException(total_response["message"]);
+        }
+        print(total_response["message"]);
         throw Exception(total_response["message"]);
       }
     });
@@ -348,25 +408,30 @@ class WebComunicater {
       [Map<String, dynamic>? body, bool login = false]) async {
     body ??= {};
     if ((_auth_token == null || (await _auth_token) == null) && !login) {
-      throw Exception("notLoggedIn");
+      throw NoAuthException();
     }
     if (!login) {
       body.addAll({'auth': await _auth_token!});
     }
-    List<int> compressedBody = gzip.encode(jsonEncode(body).codeUnits);
 
     return rType.method(
-      Uri.https(BASE_URL + path),
+      path,
+      body,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         "Content-Encoding": "gzip",
       },
-      body: compressedBody, //.codeUnits),
-    );
+    ).then((value) {
+      print(path);
+      print(body);
+      print(value.body);
+      print(value.runtimeType);
+      return value;
+    });
   }
 
-  Future<bool> testConnection() {
-    return _sendRequest("auth", RequestType.GET).then((value) {
+  Future<bool> testConnection() async {
+    return await _sendRequest("auth", RequestType.GET).then((value) {
       if (value.statusCode == 200) {
         return true;
       }

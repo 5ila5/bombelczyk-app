@@ -1,21 +1,30 @@
+import 'package:Bombelczyk/helperClasses/StorageHelper.dart';
+import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:flutter/material.dart';
 
-class CircularProgressIndicatorFutureBuilder<T> extends FutureBuilder<T> {
-  CircularProgressIndicatorFutureBuilder(
-      Future<T> future, Widget Function(T) onData)
-      : super(
-            future: future,
-            builder: (context, snapshot) {
-              Widget toReturn;
-              if (snapshot.hasData) {
-                toReturn = onData(snapshot.data!);
-              } else if (snapshot.hasError) {
-                toReturn = Text("${snapshot.error}");
-              } else {
-                toReturn = CircularProgressIndicator();
-              }
-              return toReturn;
-            });
+class CircularProgressIndicatorFutureBuilder<T> extends StatelessWidget {
+  final Future<T> future;
+  final Widget Function(T) onData;
+
+  CircularProgressIndicatorFutureBuilder(this.future, this.onData) : super();
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<T>(
+      future: future,
+      builder: (context, snapshot) {
+        Widget toReturn;
+        if (snapshot.hasData) {
+          toReturn = onData(snapshot.data!);
+        } else if (snapshot.hasError) {
+          if (snapshot.error is WrongAuthException) {
+            Login.displayLoginDialog(context);
+          }
+          toReturn = Text("${snapshot.error}");
+        } else {
+          toReturn = CircularProgressIndicator();
+        }
+        return toReturn;
+      });
 }
 
 class ColumnFutureBuilder<T> extends FutureBuilder<T> {
@@ -39,6 +48,10 @@ class ColumnFutureBuilder<T> extends FutureBuilder<T> {
     if (snapshot.hasData) {
       children = onData(snapshot.data!);
     } else if (snapshot.hasError) {
+      if (snapshot.error is WrongAuthException) {
+        Login.displayLoginDialog(context);
+      }
+
       children = <Widget>[
         const Icon(
           Icons.error_outline,

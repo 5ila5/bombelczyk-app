@@ -38,7 +38,7 @@ class MainAufzugTable extends DataTable {
             ]),
             DataRow(cells: [
               DataCell(SelectableText("PLZ")),
-              DataCell(SelectableText(aufzug.address.zip)),
+              DataCell(SelectableText(aufzug.address.zipStr)),
             ]),
             DataRow(cells: [
               DataCell(SelectableText("Straße + Hausnummer")),

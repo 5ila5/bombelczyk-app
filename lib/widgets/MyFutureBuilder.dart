@@ -20,6 +20,8 @@ class CircularProgressIndicatorFutureBuilder<T> extends StatelessWidget {
             Login.displayLoginDialog(context);
           }
           toReturn = Text("${snapshot.error}");
+          print(snapshot.error);
+          print(snapshot.stackTrace);
         } else {
           toReturn = CircularProgressIndicator();
         }
@@ -42,14 +44,25 @@ class ColumnFutureBuilder<T> extends FutureBuilder<T> {
     ];
   }
 
+  static Widget getColumn(List<Widget> children) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: children,
+      );
+
   static Widget myBuilder<R>(BuildContext context, AsyncSnapshot<R> snapshot,
-      List<Widget> Function(R) onData) {
+      List<Widget> Function(R) onData,
+      {Widget Function(List<Widget>) columnBuilder = getColumn}) {
     List<Widget> children = [];
     if (snapshot.hasData) {
       children = onData(snapshot.data!);
     } else if (snapshot.hasError) {
       if (snapshot.error is WrongAuthException) {
         Login.displayLoginDialog(context);
+      }
+      print(snapshot.error);
+      if (snapshot.error is Error) {
+        print((snapshot.error as Error).stackTrace);
       }
 
       children = <Widget>[
@@ -66,18 +79,37 @@ class ColumnFutureBuilder<T> extends FutureBuilder<T> {
     } else {
       children = onLoad();
     }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: children,
-    );
+    return columnBuilder(children);
   }
 
-  ColumnFutureBuilder(Future<T> future, List<Widget> Function(T) onData)
+  ColumnFutureBuilder(Future<T> future, List<Widget> Function(T) onData,
+      {Widget Function(List<Widget>) columnBuilder = getColumn})
       : super(
             future: future,
-            builder: (context, snapshot) =>
-                myBuilder<T>(context, snapshot, onData));
+            builder: (context, snapshot) => myBuilder<T>(
+                context, snapshot, onData,
+                columnBuilder: columnBuilder));
+}
+
+class ScrollingColumnFutureBuilder<T> extends ColumnFutureBuilder<T> {
+  static Widget getColumn(List<Widget> children) => SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: children,
+        ),
+      );
+
+  ScrollingColumnFutureBuilder(
+      Future<T> future, List<Widget> Function(T) onData)
+      : super(future, onData, columnBuilder: getColumn);
+}
+
+class WidgetScrollingColumnFutureBuilder
+    extends ScrollingColumnFutureBuilder<List<Widget>> {
+  WidgetScrollingColumnFutureBuilder(Future<List<Widget>> future)
+      : super(future, (data) => data);
 }
 
 class WidgetColumnFutureBuilder extends ColumnFutureBuilder<List<Widget>> {

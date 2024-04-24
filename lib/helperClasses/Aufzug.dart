@@ -18,8 +18,8 @@ class Aufzug {
   Aufzug(this._afzIdx, this._anr, this._fKZeit, this._zgTxt, this._address);
 
   Aufzug.fromApiJson(Map<String, dynamic> json)
-      : this(json['AfzIdx'], json['Anr'], json['FK_zeit'], json['Zg_txt'],
-            Address.fromApiJson(json));
+      : this(json['AfzIdx'], json['Anr'], json['FK_zeit'] ?? "unknown",
+            json['Zg_txt'], Address.fromApiJson(json));
 
   Aufzug.fromAufzug(Aufzug aufzug)
       : this(aufzug.afzIdx, aufzug.anr, aufzug.fKZeit, aufzug.zgTxt,

@@ -26,7 +26,7 @@ class ClickableMapIcon extends InkWell {
                     "+" +
                     address.houseNumber +
                     ",+" +
-                    address.zip +
+                    address.zipStr +
                     "+" +
                     address.city,
                 mode: LaunchMode.externalNonBrowserApplication);

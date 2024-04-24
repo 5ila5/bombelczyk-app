@@ -34,19 +34,27 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
   AufzugBar(this.aufzug,
       {required this.onTap,
       this.rightIcon,
-      this.backgroundColor,
       this.leftIcon,
-      this.belowWidgets});
+      this.belowWidgets,
+      final Color? backgroundColor,
+      bool? odd})
+      : this.backgroundColor = backgroundColor ??
+            ((odd ?? true) ? Colors.white : Colors.grey[300]) {
+    print("background color: " + this.backgroundColor.toString());
+  }
 
   AufzugBar.simpleOntap(this.aufzug,
       {void Function()? onTap,
       this.rightIcon,
-      this.backgroundColor,
       this.leftIcon,
-      this.belowWidgets})
+      this.belowWidgets,
+      final Color? backgroundColor,
+      bool? odd})
       : this.onTap = ((BuildContext context) {
           if (onTap != null) onTap();
-        });
+        }),
+        this.backgroundColor = backgroundColor ??
+            ((odd ?? true) ? Colors.white : Colors.grey[300]);
 
   List<String> getBodyTexts() {
     List<String> toReturn = [
@@ -55,7 +63,7 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
           aufzug.address.street +
           " " +
           aufzug.address.houseNumber,
-      aufzug.address.zip + " " + aufzug.address.city,
+      aufzug.address.zipStr + " " + aufzug.address.city,
       "Anfahrt " + aufzug.fKZeit,
     ];
 
@@ -97,13 +105,16 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
 }
 
 class SimpleAufzugBar extends AufzugBar<Aufzug> {
-  SimpleAufzugBar(Aufzug aufzug)
-      : this.withOnTap(aufzug, (c) => AufzugPageHandler.showPage(c, aufzug));
+  SimpleAufzugBar(Aufzug aufzug, {bool? odd})
+      : this.withOnTap(aufzug, (c) => AufzugPageHandler.showPage(c, aufzug),
+            odd: odd);
 
-  SimpleAufzugBar.withOnTap(Aufzug aufzug, void Function(BuildContext) onTap)
+  SimpleAufzugBar.withOnTap(Aufzug aufzug, void Function(BuildContext) onTap,
+      {bool? odd})
       : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
+            onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+            odd: odd);
 }
 
 class TourAufzugBar extends AufzugBar<TourAufzug> {
@@ -137,11 +148,11 @@ mixin DistanceText on AufzugBar<AufzugWithDistance> {
 
 class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
     with DistanceText {
-  SimpleAufzugBarWithDistance(
-    AufzugWithDistance aufzug,
-  ) : super(aufzug,
+  SimpleAufzugBarWithDistance(AufzugWithDistance aufzug, {bool? odd})
+      : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: (c) => AufzugPageHandler.showPage(c, aufzug));
+            onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+            odd: odd);
 }
 
 class TourAufzugBarWithState extends StatefulWidget {

@@ -1,7 +1,7 @@
 class Address {
   final String _street;
   final String _houseNumber;
-  final String _zip;
+  final int _zip;
   final String _city;
 
   Address(this._street, this._houseNumber, this._zip, this._city);
@@ -22,7 +22,7 @@ class Address {
           json['Ort'],
         );
 
-  Map<String, String> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'street': _street,
       'hNr': _houseNumber,
@@ -33,6 +33,7 @@ class Address {
 
   String get street => _street;
   String get houseNumber => _houseNumber;
-  String get zip => _zip;
+  int get zip => _zip;
+  String get zipStr => _zip.toString();
   String get city => _city;
 }

@@ -41,18 +41,22 @@ class _NearbyState extends State<Nearby> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
         onRefresh: refresh,
-        child: Center(
-            child: SingleChildScrollView(
+        child: SingleChildScrollView(
           physics: AlwaysScrollableScrollPhysics(),
           child: Column(
+            // alignment top
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SimpleAmountChooser([10, 20, 50], setCount, defaultAmount: 10),
-              WidgetColumnFutureBuilder(
-                afzs.then((value) =>
-                    value.map((e) => SimpleAufzugBarWithDistance(e)).toList()),
-              )
+              Center(
+                  child: WidgetColumnFutureBuilder(
+                afzs.then((value) => value
+                    .map((e) => SimpleAufzugBarWithDistance(e,
+                        odd: value.indexOf(e) & 1 == 1))
+                    .toList()),
+              ))
             ],
           ),
-        )));
+        ));
   }
 }

@@ -42,15 +42,17 @@ enum RequestType {
   final Future<http.Response> Function(String, Map<String, dynamic>?,
       {Map<String, String>? headers}) method;
 
-  static _uri(String path) =>
+  static Uri _uri(String path) =>
       Uri.https(RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path);
 
-  static _getUri(String path, Map<String, dynamic>? body) =>
-      Uri.https(RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path, body);
-
-  static cBody(Map<String, dynamic>? body) {
-    RequestSettings.gzip.encode(jsonEncode(body).codeUnits);
+  static Uri _getUri(String path, Map<String, dynamic>? body) {
+    print(body);
+    return Uri.https(
+        RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path, body);
   }
+
+  static List<int> cBody(Map<String, dynamic>? body) =>
+      RequestSettings.gzip.encode(jsonEncode(body).codeUnits);
 
   static Future<http.Response> _get(String path, Map<String, dynamic>? body,
       {Map<String, String>? headers}) {
@@ -70,6 +72,15 @@ enum RequestType {
   static Future<http.Response> _patch(String path, Map<String, dynamic>? body,
       {Map<String, String>? headers}) {
     return http.patch(_uri(path), body: cBody(body), headers: headers);
+  }
+}
+
+class WebComunicaterMock extends WebComunicater {
+  WebComunicaterMock() : super(Future.value("mock"));
+
+  @override
+  Future<String?> requestAuthToken(String password) {
+    return Future.value("mock");
   }
 }
 
@@ -94,9 +105,18 @@ class WebComunicater {
     Future<String?> token = requestWithAnalyse(
             "login", RequestType.POST, {"password": password}, true)
         .then((value) {
+      print("requestAuthToken:");
+      print(value);
       if (value is String && value.isNotEmpty) {
         return value;
       }
+      return null;
+    }).catchError((error, stackTrace) {
+      // Print full error message:
+      print("requestAuthToken error: " + error.toString());
+      // print stacktrace:
+      print(stackTrace);
+
       return null;
     });
 
@@ -115,17 +135,17 @@ class WebComunicater {
       if (value != null) {
         StorageHelper.setAuth(value);
         _instance = WebComunicater(Future.value(value));
-        return testConnection();
+        return _instance!.testConnection();
       }
       return false;
     });
   }
 
   Future<List<Aufzug>> searchAufzug(String search, Sort sort) {
-    return requestWithAnalyse("aufzug/search", RequestType.GET, {
+    return requestWithAnalyse("aufzug", RequestType.GET, {
       "search": search,
       "sort_key": sort.type.name,
-      "sort_order": sort.direction.name,
+      "sort_dir": sort.direction.name,
     }).then(
         (value) => List<Aufzug>.from(value.map((e) => Aufzug.fromApiJson(e))));
   }
@@ -134,9 +154,9 @@ class WebComunicater {
       Future<Position> position, int count) {
     return position
         .then((pos) => requestWithAnalyse("aufzug/nearby", RequestType.GET, {
-              "lat": pos.latitude,
-              "lon": pos.longitude,
-              "count": count,
+              "lat": pos.latitude.toString(),
+              "lon": pos.longitude.toString(),
+              "count": count.toString(),
             }))
         .then((value) => List<AufzugWithDistance>.from(
             value.map((e) => AufzugWithDistance.fromApiJson(
@@ -208,7 +228,7 @@ class WebComunicater {
     Map<String, dynamic> body = {};
     if (sort != null) {
       body["sort_key"] = sort.type.name;
-      body["sort_order"] = sort.direction.name;
+      body["sort_dir"] = sort.direction.name;
     }
     if (show_checked != null) {
       body["show_checked"] = show_checked;
@@ -244,8 +264,11 @@ class WebComunicater {
 
   Future<List<TourWorkType>> getTourWorkTypes() {
     return requestWithAnalyse("tour/types", RequestType.GET).then((value) =>
-        List<TourWorkType>.from((value).map(
-            (key, value) => (TourWorkType(int.parse(key.toString()), value)))));
+        List<TourWorkType>.from((value)
+            .map((key, value) =>
+                MapEntry(key, TourWorkType(int.parse(key.toString()), value)))
+            .values
+            .toList()));
   }
 
   Future<List<Tour>> getTours({DateTime? from, DateTime? to}) {
@@ -390,16 +413,19 @@ class WebComunicater {
         }
       }
 
-      if (total_response["status"] == "success") {
-        print(total_response["content"]);
+      if (total_response["status"] == "ok" ||
+          total_response["status"] == "success") {
+        //to json
+        print(jsonEncode(total_response["content"]));
         return total_response["content"];
       } else {
         if (total_response["message"] == "invalid authentication token") {
           print("Invalid Auth Token");
           throw WrongAuthException(total_response["message"]);
         }
-        print(total_response["message"]);
-        throw Exception(total_response["message"]);
+        print("EXCEPTION" + total_response["message"]);
+        print(total_response);
+        throw Exception(total_response["message"].toString());
       }
     });
   }
@@ -422,10 +448,14 @@ class WebComunicater {
         "Content-Encoding": "gzip",
       },
     ).then((value) {
-      print(path);
-      print(body);
+      print("sending request:");
+      print("path:" + path);
+
+      print("body:" + body.toString());
+      print("response: ");
       print(value.body);
       print(value.runtimeType);
+      print("\n\n");
       return value;
     });
   }

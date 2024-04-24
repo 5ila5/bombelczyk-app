@@ -29,6 +29,8 @@ class SimpleAmountChooserState extends State<SimpleAmountChooser> {
       DropdownButton<int>(
         value: value,
         onChanged: (value) => setState(() {
+          if (value == null) return;
+          this.value = value;
           widget.onAmountChanged(value);
         }),
         items: widget.amounts.map<DropdownMenuItem<int>>((int value) {

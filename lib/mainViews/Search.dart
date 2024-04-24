@@ -21,18 +21,20 @@ class _SearchState extends State<Search> {
   Sort currentSort = Sort(AfzSortType.STREET, SortDirection.ASC);
   String search = "";
 
-  SimpleAufzugBar getBar(Aufzug afz) {
+  SimpleAufzugBar getBar(Aufzug afz, bool odd) {
     if (widget.customOnTap != null) {
-      return SimpleAufzugBar.withOnTap(afz, widget.customOnTap!);
+      return SimpleAufzugBar.withOnTap(afz, widget.customOnTap!, odd: odd);
     }
-    return SimpleAufzugBar(afz);
+    return SimpleAufzugBar(afz, odd: odd);
   }
 
   void updateContent() {
     setState(() {
       contentList = WebComunicater.instance
           .searchAufzug(search, currentSort)
-          .then((value) => value.map((afz) => this.getBar(afz)).toList());
+          .then((value) => value
+              .map((afz) => this.getBar(afz, value.indexOf(afz) & 1 == 1))
+              .toList());
     });
   }
 
@@ -43,6 +45,7 @@ class _SearchState extends State<Search> {
         contentList =
             Future.value([Text("Geben Sie mindestens 3 Zeichen ein")]);
       });
+      return;
     }
     updateContent();
   }
@@ -58,7 +61,7 @@ class _SearchState extends State<Search> {
     return Column(children: [
       AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
       SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
-      WidgetColumnFutureBuilder(contentList)
+      Expanded(child: WidgetScrollingColumnFutureBuilder(contentList))
     ]);
   }
 }

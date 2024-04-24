@@ -10,7 +10,7 @@ class Distance {
   Distance(this._distance);
 
   Distance.fromApiJson(Map<String, dynamic> json)
-      : _distance = json['distance'];
+      : _distance = json['distantz'];
 
   double get distance => _distance;
 

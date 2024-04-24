@@ -32,6 +32,13 @@ class _ToDoViewState extends State<ToDoView> {
 
   void searchChange([String? newSearch]) {
     search = newSearch ?? search;
+    if ((newSearch ?? search).length < 3) {
+      setState(() {
+        contentList =
+            Future.value([Text("Geben Sie mindestens 3 Zeichen ein")]);
+      });
+      return;
+    }
     updateContent();
   }
 

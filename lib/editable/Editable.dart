@@ -23,6 +23,7 @@ abstract class Change<T> {
       }
       Type t = _allowedAttributes![_attr]!;
       if (T != t) {
+        print("T: $T, t: $t");
         throw Exception("Invalid type");
       }
     }
@@ -38,8 +39,28 @@ class TourChange<T> extends Change<T> {
     "sharedWith": List<User>,
   };
 
-  TourChange(attr, oldValue, newValue)
-      : super(attr, oldValue, newValue, TOUR_ATTRS);
+  TourChange._(String attr, T oldValue, T newValue)
+      : super(attr, oldValue, newValue);
+}
+
+class TourChangeAufzuege extends TourChange<List<TourAufzug>> {
+  TourChangeAufzuege(List<TourAufzug> oldValue, List<TourAufzug> newValue)
+      : super._("aufzuege", oldValue, newValue);
+}
+
+class TourChangeName extends TourChange<String> {
+  TourChangeName(String oldValue, String newValue)
+      : super._("name", oldValue, newValue);
+}
+
+class TourChangeDate extends TourChange<DateTime> {
+  TourChangeDate(DateTime oldValue, DateTime newValue)
+      : super._("date", oldValue, newValue);
+}
+
+class TourChangeShared extends TourChange<List<User>> {
+  TourChangeShared(List<User> oldValue, List<User> newValue)
+      : super._("sharedWith", oldValue, newValue);
 }
 
 class ToDoChange<T> extends Change<T> {
@@ -48,8 +69,18 @@ class ToDoChange<T> extends Change<T> {
     "doneDate": DateTime,
   };
 
-  ToDoChange(attr, oldValue, newValue)
+  ToDoChange._(attr, oldValue, newValue)
       : super(attr, oldValue, newValue, TODO_ATTRS);
+}
+
+class ToDoChangeText extends ToDoChange<String> {
+  ToDoChangeText(String oldValue, String newValue)
+      : super._("text", oldValue, newValue);
+}
+
+class ToDoChangeDoneDate extends ToDoChange<DateTime?> {
+  ToDoChangeDoneDate(DateTime? oldValue, DateTime? newValue)
+      : super._("doneDate", oldValue, newValue);
 }
 
 mixin Deletable {

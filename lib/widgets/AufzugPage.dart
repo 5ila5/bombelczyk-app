@@ -1,13 +1,16 @@
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
+import 'package:Bombelczyk/helperClasses/StorageHelper.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:Bombelczyk/widgets/Akku.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
+import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
 import 'package:Bombelczyk/widgets/Tour.dart';
 import 'package:flutter/material.dart';
 
 class AufzugPageHandler {
   static void showPage(BuildContext context, Aufzug aufzug) {
+    StorageHelper.addHistory(aufzug);
     Navigator.pushNamed(
       context,
       AufzugPage.aufzugRoute,
@@ -58,7 +61,7 @@ class MainAufzugTable extends DataTable {
 }
 
 class ToDoWorkSelecter extends StatefulWidget {
-  final DetailedAufzug aufzug;
+  final Future<DetailedAufzug> aufzug;
 
   ToDoWorkSelecter(this.aufzug);
 
@@ -83,37 +86,61 @@ class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
     });
   }
 
-  List<Widget> getWorkBars() {
-    return widget.aufzug.arbeiten
+  List<Widget> getWorkBars(DetailedAufzug afz) {
+    return afz.arbeiten
         .map((work) =>
             [WorkBar(work), Divider(thickness: 1, color: Colors.grey)])
         .expand((e) => e)
         .toList();
   }
 
-  List<Widget> getToDoBars() {
-    return ToDosBar.getToDoBars(widget.aufzug, setState);
+  List<Widget> getToDoBars(DetailedAufzug afz) {
+    return ToDosBar.getToDoBars(afz, setState);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(children: [
-      Table(children: [
-        TableRow(children: [
-          MyButton("To-Do", clickToDo, showToDo),
-          MyButton("Arbeiten", clickWork, !showToDo),
-        ])
-      ]),
-      if (showToDo) ...getToDoBars() else ...getWorkBars()
-    ]);
+    return FutureBuilder(
+        future: widget.aufzug,
+        builder: (context, snapshot) {
+          List<Widget> toReturn = [];
+          if (snapshot.hasData) {
+            toReturn = (showToDo)
+                ? getToDoBars(snapshot.data!)
+                : getWorkBars(snapshot.data!);
+          } else if (snapshot.hasError) {
+            if (snapshot.error is WrongAuthException) {
+              Login.displayLoginDialog(context);
+            }
+            toReturn = [Text("${snapshot.error}")];
+          } else {
+            toReturn = [CircularProgressIndicator()];
+          }
+          print("build");
+          return Column(children: [
+            Table(children: [
+              TableRow(children: [
+                MyButton("To-Do", clickToDo, showToDo),
+                MyButton("Arbeiten", clickWork, !showToDo),
+              ])
+            ]),
+            ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: toReturn.length,
+              itemBuilder: (context, index) => toReturn[index],
+              shrinkWrap: true,
+              cacheExtent: toReturn.length * 200.0,
+            )
+          ]);
+        });
   }
 }
 
 class AufzugPage extends StatelessWidget {
-  final DetailedAufzug? aufzug;
+  final Aufzug? aufzug;
   static const aufzugRoute = '/aufzug_route';
 
-  AufzugPage(DetailedAufzug aufzug)
+  AufzugPage(Aufzug aufzug)
       : this.aufzug = aufzug,
         super();
   AufzugPage.fromContext()
@@ -122,8 +149,10 @@ class AufzugPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DetailedAufzug aufzug = this.aufzug ??
-        ModalRoute.of(context)!.settings.arguments as DetailedAufzug;
+    final Aufzug aufzug =
+        this.aufzug ?? ModalRoute.of(context)!.settings.arguments as Aufzug;
+    Future<DetailedAufzug> detailedAufzug =
+        WebComunicater.instance.getDetailedAufzug(aufzug);
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [
@@ -154,7 +183,7 @@ class AufzugPage extends StatelessWidget {
             Divider(),
             AkkuTableFutureBuilder(WebComunicater.instance.getAkkus(aufzug)),
             Divider(thickness: 3, color: Colors.black),
-            ToDoWorkSelecter(aufzug),
+            ToDoWorkSelecter(detailedAufzug),
             Divider(thickness: 3, color: Colors.black)
           ],
         ),

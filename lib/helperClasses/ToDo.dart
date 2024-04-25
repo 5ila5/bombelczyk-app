@@ -41,14 +41,14 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
 
   void set isDone(bool done) {
     if (done) {
-      edit(ToDoChange("doneDate", this._doneDate, DateTime.now()));
+      edit(ToDoChangeDoneDate(this._doneDate, DateTime.now()));
     } else {
-      edit(ToDoChange("doneDate", this._doneDate, null));
+      edit(ToDoChangeDoneDate(this._doneDate, null));
     }
   }
 
   void set text(String text) {
-    edit(ToDoChange("text", this._text, text));
+    edit(ToDoChangeText(this._text, text));
   }
 
   @override

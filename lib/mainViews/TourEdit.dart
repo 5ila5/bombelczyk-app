@@ -65,23 +65,29 @@ class TourEditBody extends StatefulWidget {
 class TourEditBodyState extends State<TourEditBody> {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        DatePicker(DateTime.now()),
-        TourEditTitle((s) => setState(() {
-              widget.tour.name = s;
-            })),
-        // Todo Share
-        TourWidget(
-          widget.tour,
-          edit_mode: true,
-        ),
-        ShareButton(widget.tour),
-        Search(
-          customOnTap: (b) => setState(() => widget.tour.addAufzug),
-        ),
-        TourEditBottomButtons(widget.tour),
-      ],
-    );
+    return ConstrainedBox(
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
+        child: Column(
+          children: [
+            DatePicker(DateTime.now()),
+            Expanded(
+                child: TourEditTitle((s) => setState(() {
+                      widget.tour.name = s;
+                    }))),
+            // Todo Share
+            Expanded(
+                child: TourWidget(
+              widget.tour,
+              edit_mode: true,
+            )),
+            ShareButton(widget.tour),
+            Expanded(
+                child: Search(
+              customOnTap: (b) => setState(() => widget.tour.addAufzug),
+            )),
+            Expanded(child: TourEditBottomButtons(widget.tour)),
+          ],
+        ));
   }
 }

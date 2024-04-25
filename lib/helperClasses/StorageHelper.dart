@@ -1,3 +1,4 @@
+import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,22 @@ class StorageHelper {
         .then((value) => value.getStringList("lastAFZs"))
         .then((value) => value ?? [])
         .then((value) => value.map((e) => int.parse(e)).toList());
+  }
+
+  static Future<void> _setHistory(List<int> history) {
+    return prefs.then((value) => value.setStringList(
+        "lastAFZs", history.map((e) => e.toString()).toList()));
+  }
+
+  static Future<void> addHistory(Aufzug afz) {
+    return getHistory().then((value) {
+      value.remove(afz.afzIdx);
+      if (value.length > 15) {
+        value.removeLast();
+      }
+      value.insert(0, afz.afzIdx);
+      return _setHistory(value);
+    });
   }
 
   static void initWebComunicator() {

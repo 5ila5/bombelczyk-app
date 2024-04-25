@@ -58,10 +58,18 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
-      SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
-      Expanded(child: WidgetScrollingColumnFutureBuilder(contentList))
-    ]);
+    return SingleChildScrollView(
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
+        child: Column(
+          children: [
+            AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
+            SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
+            Expanded(child: WidgetScrollingColumnFutureBuilder(contentList))
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -138,7 +138,10 @@ class MyButton extends ElevatedButton {
               shape: const BeveledRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(5))),
             ),
-            onPressed: onPressed);
+            onPressed: (active) ? null : onPressed,
+            statesController: (active)
+                ? MaterialStatesController(Set.from([MaterialState.pressed]))
+                : null);
 }
 
 class AddTour extends Container {
@@ -248,6 +251,7 @@ class TourEditBottomButtons extends StatelessWidget {
           Expanded(
               flex: 1,
               child: FloatingActionButton(
+                heroTag: "ok",
                 onPressed: () => _ok(context),
                 child: Text("OK"),
                 shape: RoundedRectangleBorder(
@@ -260,6 +264,7 @@ class TourEditBottomButtons extends StatelessWidget {
                   padding: EdgeInsets.only(left: 10),
                   child: FloatingActionButton(
                     backgroundColor: Colors.red,
+                    heroTag: "cancel",
                     onPressed: () {
                       Navigator.pop(context);
                     },

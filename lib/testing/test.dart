@@ -44,12 +44,9 @@ void main() {
 
   print(Uri.https("bombelczyk-aufzuege.de", "UpP0UH3nFKMsnJk2/login.php"));
 
-  http.patch(
-    Uri.https(DOMAIN, BASE_PATH + path),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-      "Content-Encoding": "gzip",
-    },
-    body: compressedBody,
-  );
+  Map<String, int> map1 = {"a": 1, "b": 2};
+
+  Map<String, dynamic> map2 = {...map1};
+
+  map2["c"] = "hallo";
 }

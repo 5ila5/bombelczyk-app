@@ -56,7 +56,10 @@ enum RequestType {
 
   static Future<http.Response> _get(String path, Map<String, dynamic>? body,
       {Map<String, String>? headers}) {
-    return http.get(_getUri(path, body), headers: headers);
+    Uri uri = _getUri(path, body);
+
+    print("URI: " + uri.toString());
+    return http.get(uri, headers: headers);
   }
 
   static Future<http.Response> _post(String path, Map<String, dynamic>? body,
@@ -173,7 +176,9 @@ class WebComunicater {
   }
 
   Future<List<Aufzug>> getAfzByIdxList(List<int> afzIdxs) {
-    Map<String, List<int>> body = {"list": afzIdxs};
+    Map<String, List<String>> body = {
+      "list[]": afzIdxs.map((e) => e.toString()).toList()
+    };
     return requestWithAnalyse("aufzug/liste", RequestType.GET, body).then(
         (value) => List<Aufzug>.from(
             (value).map((value) => (Aufzug.fromApiJson(value)))));
@@ -257,7 +262,7 @@ class WebComunicater {
   }
 
   Future<List<Akku>> getAkkus(Aufzug afz) {
-    return requestWithAnalyse("aufzug/${afz.afzIdx}/akkus", RequestType.GET)
+    return requestWithAnalyse("aufzug/${afz.afzIdx}/akku", RequestType.GET)
         .then((value) =>
             List<Akku>.from(value.map((e) => Akku.fromApiJson(e, afz))));
   }
@@ -432,7 +437,7 @@ class WebComunicater {
 
   Future<http.Response> _sendRequest(String path, RequestType rType,
       [Map<String, dynamic>? body, bool login = false]) async {
-    body ??= {};
+    body = {...?body};
     if ((_auth_token == null || (await _auth_token) == null) && !login) {
       throw NoAuthException();
     }

@@ -3,7 +3,7 @@ import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
 class Arbeit {
   final int _id;
   final int _arbBeNr;
-  final DateTime _date;
+  final String _date;
   final List<String> _workers;
   final String _work;
   final String _description;
@@ -13,16 +13,15 @@ class Arbeit {
 
   Arbeit.fromApiJson(Map<String, dynamic> json)
       : _id = json["LfdNr"],
-        _arbBeNr = json["arbBeNr"],
-        _date = DateTime.parse(json["ArbDat"]),
-        _workers = json["workers"].split(", "),
+        _arbBeNr = json["ArbBeNr"],
+        _date = json["ArbDat"],
+        _workers = (json["MitarbeiterName"] as String).split(", "),
         _work = json["AusgfArbeit"],
         _description = json["Kurztext"];
 
   int get id => _id;
   int get arbBeNr => _arbBeNr;
-  DateTime get date => _date;
-  String get dateString => TimeFormatter.germanDateString(_date);
+  String get date => _date;
 
   List<String> get workers => _workers;
   String get work => _work;

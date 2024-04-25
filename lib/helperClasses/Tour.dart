@@ -40,20 +40,20 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   String get name => returnIfNotDeleted(changeOr("name", _name));
   DateTime get date => returnIfNotDeleted(changeOr("date", _date));
   List<TourAufzug> get aufzuege =>
-      returnIfNotDeleted(changeOr("aufzuege_", aufzuege));
+      returnIfNotDeleted(changeOr("aufzuege_", _aufzuege));
   List<User> get sharedWith =>
       returnIfNotDeleted(changeOr("sharedWith", _sharedWith));
 
   void set name(String name) {
-    edit(TourChange("name", this._name, name));
+    edit(TourChangeName(this._name, name));
   }
 
   void set date(DateTime date) {
-    edit(TourChange("date", this._date, date));
+    edit(TourChangeDate(this._date, date));
   }
 
   void set aufzuege(List<TourAufzug> aufzuege) {
-    edit(TourChange("aufzuege", this._aufzuege, aufzuege));
+    edit(TourChangeAufzuege(this._aufzuege, aufzuege));
   }
 
   bool isSameDay(DateTime date) {
@@ -75,7 +75,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     if (afzChange != null) {
       afzChange.newValue.add(tourAufzug);
     } else {
-      edit(TourChange("aufzuege", this._aufzuege, [..._aufzuege, tourAufzug]));
+      edit(TourChangeAufzuege(this._aufzuege, [..._aufzuege, tourAufzug]));
     }
   }
 
@@ -119,13 +119,12 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     if (afzChange != null) {
       afzChange.newValue.remove(aufzug);
     } else {
-      edit(TourChange(
-          "aufzuege", this._aufzuege, [..._aufzuege]..remove(aufzug)));
+      edit(TourChangeAufzuege(this._aufzuege, [..._aufzuege]..remove(aufzug)));
     }
   }
 
   void set sharedWith(List<User> sharedWith) {
-    edit(TourChange("sharedWith", this._sharedWith, sharedWith));
+    edit(TourChangeShared(this._sharedWith, sharedWith));
   }
 
   @override
@@ -138,7 +137,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     if (shareChange != null) {
       shareChange.newValue.add(user);
     } else {
-      edit(TourChange("sharedWith", this._aufzuege, [..._sharedWith, user]));
+      edit(TourChangeShared(this._sharedWith, [..._sharedWith, user]));
     }
   }
 

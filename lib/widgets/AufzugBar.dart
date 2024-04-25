@@ -113,7 +113,7 @@ class SimpleAufzugBar extends AufzugBar<Aufzug> {
       {bool? odd})
       : super(aufzug,
             rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+            onTap: onTap,
             odd: odd);
 }
 
@@ -253,7 +253,7 @@ class WorkBar extends Table {
           children: [
             TableRow(children: [
               SelectableText("Datum"),
-              SelectableText(work.dateString),
+              SelectableText(work.date),
             ]),
             TableRow(children: [
               SelectableText("Monteur(e)"),

@@ -47,15 +47,14 @@ class StorageHelper {
 
 class Login {
   static void _login(String password, BuildContext context) {
-    WebComunicater.instance.login(password);
-    Navigator.pop(context);
+    Navigator.pop(context, WebComunicater.instance.login(password));
   }
 
   static final TextEditingController _controller = TextEditingController();
 
-  static Future<void> displayLoginDialog(BuildContext context) async {
-    return showDialog(
-        context: context,
+  static Future<bool?> displayLoginDialog(BuildContext parentContext) async {
+    return await showDialog<Future<bool?>?>(
+        context: parentContext,
         builder: (context) {
           return AlertDialog(
             title: Text('Passwort:'),

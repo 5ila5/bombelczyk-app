@@ -118,7 +118,6 @@ class WebComunicater {
       // Print full error message:
       print("requestAuthToken error: " + error.toString());
       // print stacktrace:
-      print(stackTrace);
 
       return null;
     });

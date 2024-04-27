@@ -52,15 +52,27 @@ class MyHomePageState extends State<MyHomePage> {
 
   Map<String, dynamic>? toDoresponseMap;
 
+  Future<Null> onError(error, stackTrace) async {
+    print("Error: $error");
+
+    if (error is WrongAuthException) loginDialog();
+  }
+
+  Future<void> loginDialog() async {
+    Login.displayLoginDialog(context).then((value) {
+      if (!(value ?? false)) {
+        loginDialog();
+      }
+    }, onError: onError).catchError(onError);
+  }
+
   @override
   void initState() {
     super.initState();
     StorageHelper.initWebComunicator();
     WebComunicater.instance.testConnection().then((v) {
-      if (!v) Login.displayLoginDialog(context);
-    }).catchError((error, stackTrace) {
-      if (error is WrongAuthException) Login.displayLoginDialog(context);
-    });
+      if (!v) loginDialog();
+    }, onError: (e, s) => loginDialog()).catchError(onError);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,

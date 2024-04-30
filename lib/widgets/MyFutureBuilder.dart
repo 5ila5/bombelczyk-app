@@ -106,6 +106,28 @@ class ScrollingColumnFutureBuilder<T> extends ColumnFutureBuilder<T> {
       : super(future, onData, columnBuilder: getColumn);
 }
 
+class ListViewFutureBuilder<T> extends ColumnFutureBuilder<T> {
+  static ListView getListView(List<Widget> children) {
+    if (children.length < 10) {
+      return ListView(
+        children: children,
+      );
+    }
+    return ListView.builder(
+      itemCount: children.length,
+      itemBuilder: (context, index) => children[index],
+    );
+  }
+
+  ListViewFutureBuilder(Future<T> future, List<Widget> Function(T) onData)
+      : super(future, onData, columnBuilder: getListView);
+}
+
+class WidgetListViewFutureBuilder extends ListViewFutureBuilder<List<Widget>> {
+  WidgetListViewFutureBuilder(Future<List<Widget>> future)
+      : super(future, (data) => data);
+}
+
 class WidgetScrollingColumnFutureBuilder
     extends ScrollingColumnFutureBuilder<List<Widget>> {
   WidgetScrollingColumnFutureBuilder(Future<List<Widget>> future)

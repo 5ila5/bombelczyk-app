@@ -30,6 +30,15 @@ class Aufzug {
   String get anr => _anr;
   String get fKZeit => _fKZeit;
   String get zgTxt => _zgTxt;
+
+  String _toStringSpecial(String type) {
+    return "$type: $anr";
+  }
+
+  @override
+  String toString() {
+    return "Aufzug: $anr";
+  }
 }
 
 class AufzugWithDistance extends Aufzug {
@@ -43,6 +52,9 @@ class AufzugWithDistance extends Aufzug {
   AufzugWithDistance.fromApiJson(Map<String, dynamic> json)
       : _distance = Distance.fromApiJson(json),
         super.fromApiJson(json);
+
+  @override
+  String toString() => _toStringSpecial("AufzugWithDistance");
 }
 
 class AufzugWithToDos extends Aufzug {
@@ -88,6 +100,9 @@ class AufzugWithToDos extends Aufzug {
   }
 
   List<ToDo> get todos => _todos;
+
+  @override
+  String toString() => _toStringSpecial("AufzugWithToDos");
 }
 
 class DetailedAufzug extends AufzugWithToDos {
@@ -113,6 +128,8 @@ class DetailedAufzug extends AufzugWithToDos {
   }
 
   List<Arbeit> get arbeiten => _arbeiten;
+  @override
+  String toString() => _toStringSpecial("DetailedAufzug");
 }
 
 class TourAufzug extends Aufzug {
@@ -149,6 +166,10 @@ class TourAufzug extends Aufzug {
   bool get isFirst => _tour.aufzuege.first == this;
   bool get isLast => _tour.aufzuege.last == this;
 
+  void setFinishedWithoutUpdate(bool finished) {
+    _finished = finished;
+  }
+
   set finished(bool finished) {
     WebComunicater.instance.tourModifyAfz(_tour, this, done: finished);
     _finished = finished;
@@ -172,4 +193,7 @@ class TourAufzug extends Aufzug {
 
   Future<List<MemoryImage>> get images =>
       WebComunicater.instance.getTourAfzImages(_tour, this);
+
+  @override
+  String toString() => _toStringSpecial("TourAufzug");
 }

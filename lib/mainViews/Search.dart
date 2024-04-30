@@ -8,7 +8,7 @@ import 'package:Bombelczyk/widgets/TextFields.dart';
 import 'package:flutter/material.dart';
 
 class Search extends StatefulWidget {
-  final void Function(BuildContext)? customOnTap;
+  final void Function(Aufzug)? customOnTap;
 
   Search({this.customOnTap}) : super();
 
@@ -23,7 +23,8 @@ class _SearchState extends State<Search> {
 
   SimpleAufzugBar getBar(Aufzug afz, bool odd) {
     if (widget.customOnTap != null) {
-      return SimpleAufzugBar.withOnTap(afz, widget.customOnTap!, odd: odd);
+      return SimpleAufzugBar.withOnTap(afz, (c) => widget.customOnTap!(afz),
+          odd: odd);
     }
     return SimpleAufzugBar(afz, odd: odd);
   }
@@ -66,7 +67,7 @@ class _SearchState extends State<Search> {
           children: [
             AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
             SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
-            Expanded(child: WidgetScrollingColumnFutureBuilder(contentList))
+            Expanded(child: WidgetListViewFutureBuilder(contentList))
           ],
         ),
       ),

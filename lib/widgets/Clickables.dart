@@ -51,7 +51,7 @@ class TourCheckIcon extends InkWell {
   final TourAufzug aufzug;
   final void Function(void Function()) updateParent;
 
-  TourCheckIcon(this.aufzug, this.updateParent)
+  TourCheckIcon(this.aufzug, this.updateParent, {bool immediate = true})
       : super(
           child: Icon(
             Icons.check_circle,
@@ -59,7 +59,13 @@ class TourCheckIcon extends InkWell {
             size: 50,
           ),
           onTap: () => updateParent(() {
-            aufzug.finished = !aufzug.finished;
+            print(
+                "Toggling finished for ${aufzug.anr} to ${!aufzug.finished} immediate: $immediate");
+            if (immediate) {
+              aufzug.finished = !aufzug.finished;
+            } else {
+              aufzug.setFinishedWithoutUpdate(!aufzug.finished);
+            }
           }),
         );
 }
@@ -176,18 +182,20 @@ class SmallIconButton extends Expanded {
 }
 
 class TourAufzugEditButtons {
-  static List<Widget> getButtons(
+  static ConstrainedBox getButtons(
       TourAufzug aufzug, void Function(void Function()) update) {
-    return [
-      if (!aufzug.isFirst)
-        SmallIconButton(Icons.arrow_upward_outlined,
-            () => update(() => aufzug.moveUp()), Colors.green),
-      if (!aufzug.isLast)
-        SmallIconButton(Icons.arrow_downward_outlined,
-            () => update(() => aufzug.moveDown()), Colors.green),
-      SmallIconButton(Icons.delete, () => update(() => aufzug.removeFromTour()),
-          Colors.red),
-    ];
+    return ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: 60, maxWidth: 100),
+        child: Row(children: [
+          if (!aufzug.isFirst)
+            SmallIconButton(Icons.arrow_upward_outlined,
+                () => update(() => aufzug.moveUp()), Colors.green),
+          if (!aufzug.isLast)
+            SmallIconButton(Icons.arrow_downward_outlined,
+                () => update(() => aufzug.moveDown()), Colors.green),
+          SmallIconButton(Icons.delete,
+              () => update(() => aufzug.removeFromTour()), Colors.red),
+        ]));
   }
 }
 

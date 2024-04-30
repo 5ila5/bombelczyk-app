@@ -131,7 +131,10 @@ class _TourWidgetState extends State<TourWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    print("Building TourWidget: " + widget.tour.aufzuege.toString());
+    return ListView(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
       children: [
         Row(
           children: [
@@ -147,11 +150,18 @@ class _TourWidgetState extends State<TourWidget> {
           ],
         ),
         Collapsible(
-            child: Column(
+            child: ListView(
+              shrinkWrap: true,
               children: widget.tour.aufzuege
-                  .map((e) => widget.edit_mode
-                      ? TourModifiableAufzugBar(e, setState)
-                      : TourAufzugBarWithState(e))
+                  .map((e) => Flexible(
+                      fit: FlexFit.loose,
+                      child: widget.edit_mode
+                          ? TourModifiableAufzugBar(e, setState,
+                              odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
+                              finished: e.finished)
+                          : TourAufzugBarWithState(e,
+                              odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
+                              finished: e.finished)))
                   .toList(),
             ),
             collapsed: _collapsed,

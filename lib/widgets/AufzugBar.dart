@@ -41,6 +41,7 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
       : this.backgroundColor = backgroundColor ??
             ((odd ?? true) ? Colors.white : Colors.grey[300]) {
     print("background color: " + this.backgroundColor.toString());
+    print(backgroundColor);
   }
 
   AufzugBar.simpleOntap(this.aufzug,
@@ -75,32 +76,43 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding:
-          const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
-      //padding: const EdgeInsets.only(left: 10.0),
-      color: backgroundColor,
-      child: Column(
-        children: [
-          if (leftIcon != null) ...leftIcon!,
-          Row(
+    List<String> texts = getBodyTexts();
+    List<AufzugBarRow> rows = texts.map((e) => AufzugBarRow(e)).toList();
+    // if text overflows:
+
+    int overflows = texts.where((e) => e.length > 40).length;
+
+    return ConstrainedBox(
+        constraints: BoxConstraints(
+            maxHeight: 50 +
+                10.0 * texts.length +
+                10 * overflows +
+                ((belowWidgets != null) ? 65 : 0)),
+        child: Container(
+          padding: const EdgeInsets.only(
+              right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
+          //padding: const EdgeInsets.only(left: 10.0),
+          color: backgroundColor,
+          child: Column(
             children: [
-              Expanded(
-                child: new InkWell(
-                    child: Column(
-                      children:
-                          getBodyTexts().map((e) => AufzugBarRow(e)).toList(),
-                    ),
-                    onTap: () => this.onTap(context)),
+              if (leftIcon != null) ...leftIcon!,
+              Row(
+                children: [
+                  Expanded(
+                    child: new InkWell(
+                        child: Column(
+                          children: texts.map((e) => AufzugBarRow(e)).toList(),
+                        ),
+                        onTap: () => this.onTap(context)),
+                  ),
+                  if (rightIcon != null) rightIcon!,
+                ],
               ),
-              if (rightIcon != null) rightIcon!,
+              //Divider(thickness: 0.0),
+              if (belowWidgets != null) ...belowWidgets!,
             ],
           ),
-          //Divider(thickness: 0.0),
-          if (belowWidgets != null) ...belowWidgets!,
-        ],
-      ),
-    );
+        ));
   }
 }
 
@@ -119,11 +131,20 @@ class SimpleAufzugBar extends AufzugBar<Aufzug> {
 
 class TourAufzugBar extends AufzugBar<TourAufzug> {
   TourAufzugBar(TourAufzug aufzug, void Function(void Function()) update,
-      {List<Widget>? belowWidgets})
+      {List<Widget>? belowWidgets,
+      bool? odd,
+      bool editMode = false,
+      Color? customColor})
       : super(aufzug,
+            odd: odd,
+            backgroundColor: customColor,
             rightIcon: Column(
               children: [
-                TourCheckIcon(aufzug, update),
+                TourCheckIcon(
+                  aufzug,
+                  update,
+                  immediate: !editMode,
+                ),
                 ClickableMapIcon(aufzug.address),
               ],
             ),
@@ -133,9 +154,13 @@ class TourAufzugBar extends AufzugBar<TourAufzug> {
 
 class TourModifiableAufzugBar extends TourAufzugBar {
   TourModifiableAufzugBar(
-      TourAufzug aufzug, void Function(void Function()) update)
+      TourAufzug aufzug, void Function(void Function()) update,
+      {bool? odd, bool? finished})
       : super(aufzug, update,
-            belowWidgets: TourAufzugEditButtons.getButtons(aufzug, update));
+            editMode: true,
+            odd: odd,
+            customColor: (finished ?? false) ? Colors.green[300] : null,
+            belowWidgets: [TourAufzugEditButtons.getButtons(aufzug, update)]);
 }
 
 mixin DistanceText on AufzugBar<AufzugWithDistance> {
@@ -157,8 +182,10 @@ class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
 
 class TourAufzugBarWithState extends StatefulWidget {
   final TourAufzug aufzug;
+  final bool? odd;
+  final bool finished;
 
-  TourAufzugBarWithState(this.aufzug);
+  TourAufzugBarWithState(this.aufzug, {this.odd, this.finished = false});
 
   @override
   _TourAufzugBarWithStateState createState() =>
@@ -176,7 +203,12 @@ class _TourAufzugBarWithStateState extends State<TourAufzugBarWithState> {
 
   @override
   Widget build(BuildContext context) {
-    return TourAufzugBar(aufzug, update);
+    return TourAufzugBar(
+      aufzug,
+      update,
+      odd: widget.odd,
+      customColor: widget.finished ? Colors.green[300] : null,
+    );
   }
 }
 

@@ -7,7 +7,6 @@ class History extends StatelessWidget {
   Future<List<Widget>> getAfzWidgets(BuildContext context) {
     return WebComunicater.instance.getHistory().then((value) {
       print("getAfzWidgets TESTS");
-      print(value.map((e) => value.indexOf(e) & 1 == 1));
       return value
           .map((e) => SimpleAufzugBar(e, odd: value.indexOf(e) & 1 == 1))
           .toList();

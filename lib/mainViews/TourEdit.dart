@@ -4,6 +4,7 @@ import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/DropDownMenu.dart';
 import 'package:Bombelczyk/widgets/TextFields.dart';
 import 'package:Bombelczyk/widgets/Tour.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TourEdit extends StatelessWidget {
@@ -47,10 +48,7 @@ class TourEdit extends StatelessWidget {
           ),
         ]),
       ),
-      body: Center(
-          child: SingleChildScrollView(
-        child: TourEditBody(tour),
-      )),
+      body: TourEditBody(tour),
     );
   }
 }
@@ -65,29 +63,31 @@ class TourEditBody extends StatefulWidget {
 class TourEditBodyState extends State<TourEditBody> {
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-        constraints:
-            BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
-        child: Column(
-          children: [
-            DatePicker(DateTime.now()),
-            Expanded(
-                child: TourEditTitle((s) => setState(() {
-                      widget.tour.name = s;
-                    }))),
-            // Todo Share
-            Expanded(
-                child: TourWidget(
-              widget.tour,
-              edit_mode: true,
+    return ListView(
+      children: [
+        DatePicker(DateTime.now()),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: 150),
+          child: TourEditTitle((s) => setState(() {
+                widget.tour.name = s;
+              })),
+        ),
+        TourWidget(
+          widget.tour,
+          edit_mode: true,
+        ),
+        ShareButton(widget.tour),
+        ConstrainedBox(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height / 2),
+            child: Search(
+              customOnTap: (b) => setState(() {
+                print("add afz: " + b.toString());
+                widget.tour.addAufzug(b);
+              }),
             )),
-            ShareButton(widget.tour),
-            Expanded(
-                child: Search(
-              customOnTap: (b) => setState(() => widget.tour.addAufzug),
-            )),
-            Expanded(child: TourEditBottomButtons(widget.tour)),
-          ],
-        ));
+        TourEditBottomButtons(widget.tour),
+      ],
+    );
   }
 }

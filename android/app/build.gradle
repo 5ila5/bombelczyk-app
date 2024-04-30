@@ -42,8 +42,8 @@ android {
 
     defaultConfig {
         applicationId "de.bombelczykaufzuege.bombelczyk"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdkVersion 30
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

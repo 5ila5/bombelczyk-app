@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Aufzug {
   final int? afzIdx;
@@ -36,17 +37,15 @@ Future<String> test3(int a) {
   return test2(a).then((value) => value + "!");
 }
 
+class MyClass {
+  final int a;
+  final int b;
+
+  MyClass(this.a, this.b);
+}
+
 void main() {
-  // test3(0).then(print);
-  // test3(-1)
-  //     .then(print)
-  //     .catchError((error, stackTrace) => print("Error: $error"));
-
-  print(Uri.https("bombelczyk-aufzuege.de", "UpP0UH3nFKMsnJk2/login.php"));
-
-  Map<String, int> map1 = {"a": 1, "b": 2};
-
-  Map<String, dynamic> map2 = {...map1};
-
-  map2["c"] = "hallo";
+  List<MyClass> list = [MyClass(1, 2), MyClass(3, 4), MyClass(5, 6)];
+  Map<int, int> map =
+      Map.fromIterable(list, key: (e) => e.a, value: (e) => e.b);
 }

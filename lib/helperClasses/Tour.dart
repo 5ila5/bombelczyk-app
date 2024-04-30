@@ -26,11 +26,12 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   Tour.dateOnly(DateTime date) : this(-1, "", date);
 
   Tour.fromApiJson(Map<String, dynamic> json, List<TourWorkType> workTypes)
-      : _idx = json['idx'],
-        _name = json['name'],
-        _date = DateTime.parse(json['date']),
-        this._sharedWith = List<User>.from(
-            json['sharedWith'].map((e) => Users.get(e)).toList()) {
+      : _idx = json['id'],
+        _name = json['comment'],
+        _date = DateTime.parse(json['Datum']),
+        this._sharedWith = List<User>.from((json['shared_with'] as List<int>)
+            .map((e) => Users.get(e))
+            .toList()) {
     this._aufzuege = List<TourAufzug>.from(json['afzs']
         .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
         .toList());
@@ -40,7 +41,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   String get name => returnIfNotDeleted(changeOr("name", _name));
   DateTime get date => returnIfNotDeleted(changeOr("date", _date));
   List<TourAufzug> get aufzuege =>
-      returnIfNotDeleted(changeOr("aufzuege_", _aufzuege));
+      returnIfNotDeleted(changeOr("aufzuege", _aufzuege));
   List<User> get sharedWith =>
       returnIfNotDeleted(changeOr("sharedWith", _sharedWith));
 
@@ -80,7 +81,8 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   }
 
   void moveAfz(TourAufzug afz, MoveDirection dir, {bool immediate = false}) {
-    int idx = this._aufzuege.indexOf(afz);
+    int idx =
+        immediate ? this._aufzuege.indexOf(afz) : this.aufzuege.indexOf(afz);
     if (idx == -1) {
       throw Exception("Aufzug not in tour");
     }
@@ -95,6 +97,8 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
           .firstWhereOrNull((element) => element.attr == "aufzuege");
       if (afzChange != null) {
         afzList = afzChange.newValue;
+      } else {
+        this.changes.add(TourChangeAufzuege(this._aufzuege, afzList));
       }
     }
 

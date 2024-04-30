@@ -359,13 +359,14 @@ class WebComunicater {
     return createTour(t.name, t.date, t.sharedWith, t.aufzuege);
   }
 
-  Future<Tour> createTour(
-      String name, DateTime date, List<User> share, List<TourAufzug> afzs) {
+  Future<Tour> createTour(String name, DateTime date, List<User> share,
+      List<TourAufzug> afzs) async {
     return requestWithAnalyse("tour", RequestType.POST, {
-      "name": name,
+      "text": name,
       "date": date.toIso8601String().substring(0, 10),
-      "share": share.map((e) => e.id).toList(),
-      "afzs": afzs.map((e) => {e.afzIdx: e.workType.idx}).toList(),
+      "share": share.map<int>((e) => e.id).toList(),
+      "afzs": Map<String, int>.fromIterable(afzs,
+          key: (e) => e.afzIdx.toString(), value: (e) => e.workType.idx),
     }).then((value) => Tour(
         value['idx'] is String ? int.parse(value['idx']) : value['idx'],
         name,
@@ -436,6 +437,9 @@ class WebComunicater {
 
   Future<http.Response> _sendRequest(String path, RequestType rType,
       [Map<String, dynamic>? body, bool login = false]) async {
+    print("sending request:");
+    print("path:" + path);
+    print("body:" + jsonEncode(body));
     body = {...?body};
     if ((_auth_token == null || (await _auth_token) == null) && !login) {
       throw NoAuthException();

@@ -175,6 +175,10 @@ class TourAufzug extends Aufzug {
     _finished = finished;
   }
 
+  set workType(TourWorkType workType) {
+    _workType = workType;
+  }
+
   void moveUp({bool immediate = false}) {
     this._tour.moveAfz(this, MoveDirection.UP, immediate: immediate);
   }

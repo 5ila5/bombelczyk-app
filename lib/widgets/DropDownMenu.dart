@@ -1,5 +1,6 @@
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
+import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +93,38 @@ class SortDropDownWithDirCollapsed extends Row {
           ExpandAll(collapsed, (e) => setCollapsed(e)),
           ...SortDropDownWithDir.getChildren(sort, onChanged)
         ]);
+}
+
+class ArbeitDropDown extends DropdownButton<TourWorkType> {
+  ArbeitDropDown(List<TourWorkType> items, TourWorkType startVal,
+      void Function(TourWorkType?) onChanged)
+      : super(
+          value: startVal,
+          items:
+              items.map<DropdownMenuItem<TourWorkType>>((TourWorkType value) {
+            return DropdownMenuItem<TourWorkType>(
+              value: value,
+              child: Text(value.name),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        );
+}
+
+class ArbeitDropDownFutureBuilder extends FutureBuilder<List<TourWorkType>> {
+  ArbeitDropDownFutureBuilder(
+      TourWorkType startVal, void Function(TourWorkType?) onChanged)
+      : super(
+            future: TourWorkTypes.getTypes(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return ArbeitDropDown(snapshot.data!, startVal, onChanged);
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              } else {
+                return CircularProgressIndicator();
+              }
+            });
 }
 
 class DatePicker extends StatefulWidget {

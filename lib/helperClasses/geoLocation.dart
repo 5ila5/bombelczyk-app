@@ -1,4 +1,5 @@
 import 'package:Bombelczyk/helperClasses/Position.dart' as helper;
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 
 class Geolocation {
@@ -7,7 +8,12 @@ class Geolocation {
     LocationPermission permission;
 
     // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    try {
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    } on MissingPluginException catch (_) {
+      return helper.Position(49.768951, 8.635419);
+    }
+
     if (!serviceEnabled) {
       // Location services are not enabled don't continue
       // accessing the position and request users of the

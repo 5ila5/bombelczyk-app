@@ -3,6 +3,7 @@ import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/ToDo.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
+import 'package:Bombelczyk/widgets/DropDownMenu.dart';
 import 'package:Bombelczyk/widgets/Styles.dart';
 import 'package:Bombelczyk/widgets/ToDoBar.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,7 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
   final Color? backgroundColor;
   final List<Widget>? leftIcon;
   final List<Widget>? belowWidgets;
+  final List<Widget> additioanlRow;
 
   AufzugBar(this.aufzug,
       {required this.onTap,
@@ -37,7 +39,8 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
       this.leftIcon,
       this.belowWidgets,
       final Color? backgroundColor,
-      bool? odd})
+      bool? odd,
+      this.additioanlRow = const []})
       : this.backgroundColor = backgroundColor ??
             ((odd ?? true) ? Colors.white : Colors.grey[300]) {
     print("background color: " + this.backgroundColor.toString());
@@ -50,7 +53,8 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
       this.leftIcon,
       this.belowWidgets,
       final Color? backgroundColor,
-      bool? odd})
+      bool? odd,
+      this.additioanlRow = const []})
       : this.onTap = ((BuildContext context) {
           if (onTap != null) onTap();
         }),
@@ -77,42 +81,39 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<String> texts = getBodyTexts();
-    List<AufzugBarRow> rows = texts.map((e) => AufzugBarRow(e)).toList();
+    // List<AufzugBarRow> rows = texts.map((e) => AufzugBarRow(e)).toList();
     // if text overflows:
 
-    int overflows = texts.where((e) => e.length > 40).length;
+    // int overflows = texts.where((e) => e.length > 40).length;
 
-    return ConstrainedBox(
-        constraints: BoxConstraints(
-            maxHeight: 50 +
-                10.0 * texts.length +
-                10 * overflows +
-                ((belowWidgets != null) ? 65 : 0)),
-        child: Container(
-          padding: const EdgeInsets.only(
-              right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
-          //padding: const EdgeInsets.only(left: 10.0),
-          color: backgroundColor,
-          child: Column(
+    return Container(
+      padding:
+          const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
+      //padding: const EdgeInsets.only(left: 10.0),
+      color: backgroundColor,
+      child: Column(
+        children: [
+          if (leftIcon != null) ...leftIcon!,
+          Row(
             children: [
-              if (leftIcon != null) ...leftIcon!,
-              Row(
-                children: [
-                  Expanded(
-                    child: new InkWell(
-                        child: Column(
-                          children: texts.map((e) => AufzugBarRow(e)).toList(),
-                        ),
-                        onTap: () => this.onTap(context)),
-                  ),
-                  if (rightIcon != null) rightIcon!,
-                ],
+              Expanded(
+                child: new InkWell(
+                    child: Column(
+                      children: [
+                        ...texts.map((e) => AufzugBarRow(e)),
+                        ...additioanlRow
+                      ],
+                    ),
+                    onTap: () => this.onTap(context)),
               ),
-              //Divider(thickness: 0.0),
-              if (belowWidgets != null) ...belowWidgets!,
+              if (rightIcon != null) rightIcon!,
             ],
           ),
-        ));
+          //Divider(thickness: 0.0),
+          if (belowWidgets != null) ...belowWidgets!,
+        ],
+      ),
+    );
   }
 }
 
@@ -134,10 +135,15 @@ class TourAufzugBar extends AufzugBar<TourAufzug> {
       {List<Widget>? belowWidgets,
       bool? odd,
       bool editMode = false,
-      Color? customColor})
+      Color? customColor,
+      Widget? customArbeitWidget})
       : super(aufzug,
             odd: odd,
             backgroundColor: customColor,
+            additioanlRow: [
+              customArbeitWidget ??
+                  AufzugBarRow("arbeit: " + aufzug.workType.name)
+            ],
             rightIcon: Column(
               children: [
                 TourCheckIcon(
@@ -160,7 +166,15 @@ class TourModifiableAufzugBar extends TourAufzugBar {
             editMode: true,
             odd: odd,
             customColor: (finished ?? false) ? Colors.green[300] : null,
-            belowWidgets: [TourAufzugEditButtons.getButtons(aufzug, update)]);
+            belowWidgets: [TourAufzugEditButtons.getButtons(aufzug, update)],
+            customArbeitWidget:
+                ArbeitDropDownFutureBuilder(aufzug.workType, (w) {
+              if (w != null) {
+                update(() {
+                  aufzug.workType = w;
+                });
+              }
+            }));
 }
 
 mixin DistanceText on AufzugBar<AufzugWithDistance> {

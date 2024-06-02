@@ -7,12 +7,10 @@ class StorageHelper {
   static Future<SharedPreferences> prefs = SharedPreferences.getInstance();
 
   static setAuth(String token) async {
-    print("setAuth: $token");
     return await (await prefs).setString("key", token);
   }
 
   static Future<String?> getAuth() {
-    print("getAuth");
     return prefs.then((value) => value.getString("key"));
   }
 
@@ -40,7 +38,6 @@ class StorageHelper {
   }
 
   static void initWebComunicator() {
-    print("initWebComunicator");
     WebComunicater(getAuth());
   }
 }

@@ -11,12 +11,14 @@ class TourWidgetHelper {
     print("Showing dialog for adding Aufzug ${aufzug.anr} to tour");
   }
 
-  static void showCreateDialog(BuildContext context, DateTime date) {
-    TourEdit.showPage(context, Tour.dateOnly(date));
+  static void showCreateDialog(BuildContext context, DateTime date,
+      void Function(void Function()) updateParent) {
+    TourEdit.showPage(context, Tour.dateOnly(date), updateParent);
   }
 
-  static void editTour(BuildContext context, Tour tour) {
-    TourEdit.showPage(context, tour);
+  static void editTour(BuildContext context, Tour tour,
+      void Function(void Function()) updateParent) {
+    TourEdit.showPage(context, tour, updateParent);
   }
 
   static void confimDeleteTour(BuildContext context, Tour tour,
@@ -64,7 +66,7 @@ class TourHeader extends StatelessWidget {
   Widget buttons(Tour tour, BuildContext context) {
     return Row(children: [
       InkWell(
-          onTap: () => TourWidgetHelper.editTour(context, tour),
+          onTap: () => TourWidgetHelper.editTour(context, tour, updateParent),
           child: Icon(Icons.edit, color: Colors.green, size: 30)),
       InkWell(
           onTap: () =>
@@ -153,15 +155,13 @@ class _TourWidgetState extends State<TourWidget> {
             child: ListView(
               shrinkWrap: true,
               children: widget.tour.aufzuege
-                  .map((e) => Flexible(
-                      fit: FlexFit.loose,
-                      child: widget.edit_mode
-                          ? TourModifiableAufzugBar(e, setState,
-                              odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
-                              finished: e.finished)
-                          : TourAufzugBarWithState(e,
-                              odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
-                              finished: e.finished)))
+                  .map((e) => widget.edit_mode
+                      ? TourModifiableAufzugBar(e, setState,
+                          odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
+                          finished: e.finished)
+                      : TourAufzugBarWithState(e,
+                          odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
+                          finished: e.finished))
                   .toList(),
             ),
             collapsed: _collapsed,

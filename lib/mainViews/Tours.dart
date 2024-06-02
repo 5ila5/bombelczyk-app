@@ -15,20 +15,33 @@ class Tours extends StatefulWidget {
 
 class ToursState extends State<Tours> {
   DateTime selectedDay = DateTime.now();
-  void onDaySelected(DateTime selectedDay, DateTime focusedDay) {}
+  void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      this.selectedDay = selectedDay;
+    });
+  }
+
+  Future<void> onRefresh() async {
+    await ToursHandler.instance.refetch();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      TourCalendar(onDaySelected),
-      AddTour(
-          onPressed: () =>
-              TourWidgetHelper.showCreateDialog(context, selectedDay)),
-      Column(
-          children: ToursHandler.instance
-              .eventLoader(selectedDay, setState)
-              .map((e) => TourWidget(e))
-              .toList())
-    ]);
+    return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Column(children: [
+              TourCalendar(onDaySelected),
+              AddTour(
+                  onPressed: () => TourWidgetHelper.showCreateDialog(
+                      context, selectedDay, setState)),
+              Column(
+                  children: ToursHandler.instance
+                      .eventLoader(selectedDay, setState)
+                      .map((e) => TourWidget(e))
+                      .toList())
+            ])));
   }
 }

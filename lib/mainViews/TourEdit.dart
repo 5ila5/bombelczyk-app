@@ -12,11 +12,14 @@ class TourEdit extends StatelessWidget {
 
   static const TourEditRoute = '/TourEdit';
 
-  static void showPage(BuildContext context, Tour tour) {
+  static void showPage(BuildContext context, Tour tour,
+      void Function(void Function()) updateParent) {
     Navigator.pushNamed(
       context,
       TourEdit.TourEditRoute,
       arguments: tour,
+    ).then(
+      (value) => updateParent(() {}),
     );
   }
 

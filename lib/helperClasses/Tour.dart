@@ -29,9 +29,8 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       : _idx = json['id'],
         _name = json['comment'],
         _date = DateTime.parse(json['Datum']),
-        this._sharedWith = List<User>.from((json['shared_with'] as List<int>)
-            .map((e) => Users.get(e))
-            .toList()) {
+        this._sharedWith = List<User>.from(
+            (json['shared_with'] as List).map((e) => Users.get(e)).toList()) {
     this._aufzuege = List<TourAufzug>.from(json['afzs']
         .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
         .toList());
@@ -189,13 +188,13 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
         share: changes["sharedWith"],
         afzs: changes["aufzuege"]);
 
-    this.isDeleted = true;
-
     Tour newTour = Tour(
         this.idx, changes["name"] ?? this.name, changes["date"] ?? this.date,
         aufzuege: changes["aufzuege"] ?? this.aufzuege);
 
     ToursHandler.instance.updateTour(this, newTour);
+    this.isDeleted = true;
+
     return newTour;
   }
 }
@@ -243,6 +242,16 @@ class ToursHandler {
     return _tours.containsKey(DateRange(start, end));
   }
 
+  Future<void> refetch() async {
+    List<DateRange> toRefetch = _tours.keys.toList();
+    _tours = {};
+    List<Future> futures = [];
+    for (DateRange range in toRefetch) {
+      futures.add(acutalFetch(range.start, range.end, (e) => ()));
+    }
+    await Future.wait(futures);
+  }
+
   bool updateTour(Tour oldTour, Tour newTour) {
     if (!deleteTour(oldTour)) {
       return false;
@@ -253,7 +262,7 @@ class ToursHandler {
   bool createTour(Tour newTour) {
     DateRange newMonth = DateRange.month(newTour.date);
     if (!_tours.containsKey(newMonth)) {
-      _tours[newMonth] = getchToursRange(newMonth, (f) => {});
+      _tours[newMonth] = fetchToursRange(newMonth, (f) => {});
     }
     _tours[newMonth]!.add(newTour);
     return true;
@@ -278,7 +287,7 @@ class ToursHandler {
         .toList();
   }
 
-  List<Tour> getchToursRange(
+  List<Tour> fetchToursRange(
       DateRange range, void Function(void Function()) updateParent) {
     return fetchTours(range.start, range.end, updateParent);
   }
@@ -291,19 +300,23 @@ class ToursHandler {
     if (_fetching.contains(DateRange(start, end))) {
       return [];
     }
+    acutalFetch(start, end, updateParent);
+    return [];
+  }
 
-    Future<List<Tour>> futureTours =
-        WebComunicater.instance.getTours(from: start, to: end);
+  Future<List<Tour>> acutalFetch(DateTime start, DateTime end,
+      void Function(void Function()) updateParent) async {
+    List<Tour> futureTours =
+        await WebComunicater.instance.getTours(from: start, to: end);
 
     _fetching.add(DateRange(start, end));
 
-    futureTours.then((value) {
-      _tours[DateRange(start, end)] = value;
-      _fetching.remove(DateRange(start, end));
-      if (_fetching.isEmpty) {
-        updateParent(() => {});
-      }
-    });
-    return [];
+    _tours[DateRange(start, end)] = futureTours;
+    _fetching.remove(DateRange(start, end));
+    if (_fetching.isEmpty) {
+      updateParent(() => {});
+    }
+
+    return futureTours;
   }
 }

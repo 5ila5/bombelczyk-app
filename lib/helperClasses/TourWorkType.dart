@@ -10,6 +10,16 @@ class TourWorkType {
 
   int get idx => _idx;
   String get name => _name;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is TourWorkType && other._idx == _idx && other._name == _name;
+  }
+
+  @override
+  int get hashCode => _idx.hashCode ^ _name.hashCode;
 }
 
 class TourWorkTypes {

@@ -304,7 +304,7 @@ class WebComunicater {
 
   Future<bool> deleteAfzFromTour(Tour tour, Aufzug afz) {
     return requestWithAnalyse(
-            "tour/${tour.idx}/afz/${afz.afzIdx}", RequestType.DELETE)
+            "tour/${tour.idx}/aufzug/${afz.afzIdx}", RequestType.DELETE)
         .then((value) => value is bool ? value : false);
   }
 
@@ -323,7 +323,7 @@ class WebComunicater {
     }
 
     return requestWithAnalyse(
-            "tour/${tour.idx}/afz/${afz.afzIdx}", RequestType.PATCH, body)
+            "tour/${tour.idx}/aufzug/${afz.afzIdx}", RequestType.PATCH, body)
         .then((value) => value is bool ? value : false);
   }
 
@@ -344,7 +344,9 @@ class WebComunicater {
       body["share"] = share.map((e) => e.id).toList();
     }
     if (afzs != null) {
-      body["afzs"] = afzs.map((e) => {e.afzIdx: e.workType.idx}).toList();
+      body["afzs"] = Map<String, int>.fromIterable(afzs,
+          key: (e) => (e as TourAufzug).afzIdx.toString(),
+          value: (e) => (e as TourAufzug).workType.idx);
     }
 
     if (body.isEmpty) {
@@ -368,23 +370,24 @@ class WebComunicater {
       "afzs": Map<String, int>.fromIterable(afzs,
           key: (e) => e.afzIdx.toString(), value: (e) => e.workType.idx),
     }).then((value) => Tour(
-        value['idx'] is String ? int.parse(value['idx']) : value['idx'],
-        name,
-        date,
+        value is String ? int.parse(value) : value, name, date,
         aufzuege: afzs));
   }
 
   Future<bool> tourAddAfz(Tour tour, TourAufzug afz, TourWorkType workType) {
-    return requestWithAnalyse("tour/${tour.idx}/afz", RequestType.POST, {
+    return requestWithAnalyse("tour/${tour.idx}/aufzug", RequestType.POST, {
       "afzIdx": afz.afzIdx,
       "art": workType.idx,
     }).then((value) => value is bool ? value : false);
   }
 
   Future<List<User>> getUsers() {
-    return requestWithAnalyse("user", RequestType.GET).then((value) =>
-        List<User>.from(value.map((key, value) =>
-            User(key is String ? int.parse(key) : key, value))));
+    return requestWithAnalyse("tour/persons", RequestType.GET).then((value) =>
+        List<User>.from((value as Map)
+            .map((key, value) => MapEntry(
+                key, User(key is String ? int.parse(key) : key, value)))
+            .values
+            .toList()));
   }
 
   Future<List<Arbeit>> _getArbeiten(Aufzug afz) {
@@ -447,6 +450,9 @@ class WebComunicater {
     if (!login) {
       body.addAll({'auth': await _auth_token!});
     }
+    if (kDebugMode) {
+      body.addAll({"debug": "1"});
+    }
 
     return rType.method(
       path,
@@ -462,7 +468,10 @@ class WebComunicater {
       print("body:" + body.toString());
       print("response: ");
       print(value.body);
+      print(value.body.length);
       print(value.runtimeType);
+      print(value.statusCode);
+      print(value);
       print("\n\n");
       return value;
     });

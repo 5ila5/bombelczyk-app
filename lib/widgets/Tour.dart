@@ -21,7 +21,7 @@ class TourWidgetHelper {
     TourEdit.showPage(context, tour, updateParent);
   }
 
-  static void confimDeleteTour(BuildContext context, Tour tour,
+  static void confirmDeleteTour(BuildContext context, Tour tour,
       final void Function(void Function()) updateParent) {
     _deleteConfirmDialog(BuildContext context) {
       // set up the buttons
@@ -70,7 +70,7 @@ class TourHeader extends StatelessWidget {
           child: Icon(Icons.edit, color: Colors.green, size: 30)),
       InkWell(
           onTap: () =>
-              TourWidgetHelper.confimDeleteTour(context, tour, updateParent),
+              TourWidgetHelper.confirmDeleteTour(context, tour, updateParent),
           child: Icon(Icons.delete, color: Colors.red, size: 30)),
     ]);
   }

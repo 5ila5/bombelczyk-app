@@ -197,9 +197,8 @@ class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
 class TourAufzugBarWithState extends StatefulWidget {
   final TourAufzug aufzug;
   final bool? odd;
-  final bool finished;
 
-  TourAufzugBarWithState(this.aufzug, {this.odd, this.finished = false});
+  TourAufzugBarWithState(this.aufzug, {this.odd});
 
   @override
   _TourAufzugBarWithStateState createState() =>
@@ -221,7 +220,7 @@ class _TourAufzugBarWithStateState extends State<TourAufzugBarWithState> {
       aufzug,
       update,
       odd: widget.odd,
-      customColor: widget.finished ? Colors.green[300] : null,
+      customColor: widget.aufzug.finished ? Colors.green[300] : null,
     );
   }
 }

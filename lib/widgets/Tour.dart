@@ -159,9 +159,10 @@ class _TourWidgetState extends State<TourWidget> {
                       ? TourModifiableAufzugBar(e, setState,
                           odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
                           finished: e.finished)
-                      : TourAufzugBarWithState(e,
+                      : TourAufzugBarWithState(
+                          e,
                           odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
-                          finished: e.finished))
+                        ))
                   .toList(),
             ),
             collapsed: _collapsed,

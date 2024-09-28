@@ -151,6 +151,7 @@ class TourAufzug extends Aufzug {
       : _workType =
             workTypes.firstWhere((element) => element.idx == json['art']),
         _amount_images = json["anzImg"],
+        _finished = json["erledigt"] == 1,
         super.fromApiJson(json);
 
   TourAufzug.fromAufzug(this._tour, Aufzug aufzug,
@@ -199,5 +200,6 @@ class TourAufzug extends Aufzug {
       WebComunicater.instance.getTourAfzImages(_tour, this);
 
   @override
-  String toString() => _toStringSpecial("TourAufzug");
+  String toString() =>
+      _toStringSpecial("TourAufzug") + (_finished ? " (done)" : "(not done)");
 }

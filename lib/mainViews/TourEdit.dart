@@ -18,9 +18,12 @@ class TourEdit extends StatelessWidget {
       context,
       TourEdit.TourEditRoute,
       arguments: tour,
-    ).then(
-      (value) => updateParent(() {}),
-    );
+    ).then((value) {
+      if (!tour.isDeleted) {
+        tour.cancel();
+      }
+      updateParent(() {});
+    });
   }
 
   TourEdit(Tour tour)

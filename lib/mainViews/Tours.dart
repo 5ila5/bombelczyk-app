@@ -40,7 +40,7 @@ class ToursState extends State<Tours> {
               Column(
                   children: ToursHandler.instance
                       .eventLoader(selectedDay, setState)
-                      .map((e) => TourWidget(e))
+                      .map((e) => TourWidget(e, setState))
                       .toList())
             ])));
   }

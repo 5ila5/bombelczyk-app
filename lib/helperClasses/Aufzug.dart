@@ -169,6 +169,7 @@ class TourAufzug extends Aufzug {
 
   void setFinishedWithoutUpdate(bool finished) {
     _finished = finished;
+    _tour.setAufzuegeModified();
   }
 
   set finished(bool finished) {
@@ -178,6 +179,7 @@ class TourAufzug extends Aufzug {
 
   set workType(TourWorkType workType) {
     _workType = workType;
+    _tour.setAufzuegeModified();
   }
 
   void moveUp({bool immediate = false}) {

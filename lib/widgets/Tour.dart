@@ -121,8 +121,9 @@ class TourHeader extends StatelessWidget {
 class TourWidget extends StatefulWidget {
   final Tour tour;
   final bool edit_mode;
+  final void Function(void Function()) updateParent;
 
-  TourWidget(this.tour, {this.edit_mode = false});
+  TourWidget(this.tour, this.updateParent, {this.edit_mode = false});
 
   @override
   _TourWidgetState createState() => _TourWidgetState();
@@ -147,7 +148,7 @@ class _TourWidgetState extends State<TourWidget> {
                       }),
                   _collapsed,
                   widget.tour,
-                  setState),
+                  widget.updateParent),
             )
           ],
         ),

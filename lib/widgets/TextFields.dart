@@ -22,7 +22,7 @@ class AfzSearchBar extends TextField {
 }
 
 class TourEditTitle extends Container {
-  TourEditTitle(void Function(String)? onChanged)
+  TourEditTitle(void Function(String)? onChanged, String initialName)
       : super(
           margin: EdgeInsets.only(bottom: 10),
           child: Row(
@@ -34,6 +34,7 @@ class TourEditTitle extends Container {
                       child: TextField(
                         autocorrect: true,
                         onChanged: onChanged,
+                        controller: TextEditingController(text: initialName),
                         style: TextStyle(
                           color: Colors.black,
                           //backgroundColor: ,

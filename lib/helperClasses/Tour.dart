@@ -79,6 +79,10 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     }
   }
 
+  void setAufzuegeModified() {
+    this.changes.add(TourChangeAufzuege(this._aufzuege, [..._aufzuege]));
+  }
+
   void moveAfz(TourAufzug afz, MoveDirection dir, {bool immediate = false}) {
     int idx =
         immediate ? this._aufzuege.indexOf(afz) : this.aufzuege.indexOf(afz);

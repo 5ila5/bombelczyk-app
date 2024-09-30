@@ -71,12 +71,17 @@ class TourEditBodyState extends State<TourEditBody> {
         DatePicker(DateTime.now()),
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: 150),
-          child: TourEditTitle((s) => setState(() {
-                widget.tour.name = s;
-              })),
+          child: TourEditTitle(
+              (s) => setState(
+                    () {
+                      widget.tour.name = s;
+                    },
+                  ),
+              widget.tour.name),
         ),
         TourWidget(
           widget.tour,
+          setState,
           edit_mode: true,
         ),
         ShareButton(widget.tour),

@@ -74,3 +74,36 @@ class _SearchState extends State<Search> {
     );
   }
 }
+
+class SearchPopup extends StatelessWidget {
+  static show(BuildContext context, {void Function(Aufzug)? onTap}) {
+    showDialog(
+        context: context,
+        builder: (context) => Dialog(
+              insetPadding:
+                  const EdgeInsets.all(16.0), // Adjust the padding as needed
+
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0), // Rounded corners
+              ),
+              child: SearchPopup(customOnTap: onTap),
+            ));
+  }
+
+  final void Function(Aufzug)? customOnTap;
+
+  SearchPopup({this.customOnTap}) : super();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      child: Search(customOnTap: (a) {
+        if (customOnTap != null) {
+          customOnTap!(a);
+        }
+        Navigator.pop(context);
+      }),
+    );
+  }
+}

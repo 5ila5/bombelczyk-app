@@ -88,12 +88,16 @@ class TourEditBodyState extends State<TourEditBody> {
         ConstrainedBox(
             constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height / 2),
-            child: Search(
-              customOnTap: (b) => setState(() {
-                print("add afz: " + b.toString());
-                widget.tour.addAufzug(b);
-              }),
-            )),
+            child: InkWell(
+                child: Icon(
+                  Icons.add,
+                  size: 50,
+                ),
+                onTap: () => SearchPopup.show(context, onTap: (b) {
+                      setState(() {
+                        widget.tour.addAufzug(b);
+                      });
+                    }))),
         TourEditBottomButtons(widget.tour),
       ],
     );

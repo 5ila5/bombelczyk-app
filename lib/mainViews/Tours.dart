@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
@@ -15,6 +17,7 @@ class Tours extends StatefulWidget {
 
 class ToursState extends State<Tours> {
   DateTime selectedDay = DateTime.now();
+  List<Tour> _listeningOn = [];
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       this.selectedDay = selectedDay;
@@ -28,6 +31,14 @@ class ToursState extends State<Tours> {
 
   @override
   Widget build(BuildContext context) {
+    List<Tour> tours = ToursHandler.instance.eventLoader(selectedDay, setState);
+
+    tours.forEach((element) {
+      if (!_listeningOn.contains(element)) {
+        element.addDeleteListener((t) => setState(() {}));
+        _listeningOn.add(element);
+      }
+    });
     return RefreshIndicator(
         onRefresh: onRefresh,
         child: SingleChildScrollView(
@@ -38,10 +49,7 @@ class ToursState extends State<Tours> {
                   onPressed: () => TourWidgetHelper.showCreateDialog(
                       context, selectedDay, setState)),
               Column(
-                  children: ToursHandler.instance
-                      .eventLoader(selectedDay, setState)
-                      .map((e) => TourWidget(e, setState))
-                      .toList())
+                  children: tours.map((e) => TourWidget(e, setState)).toList())
             ])));
   }
 }

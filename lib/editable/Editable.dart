@@ -29,6 +29,11 @@ abstract class Change<T> {
     }
     _newValue = newValue;
   }
+
+  @override
+  String toString() {
+    return "$_attr: $_oldValue -> $_newValue";
+  }
 }
 
 class TourChange<T> extends Change<T> {
@@ -91,10 +96,11 @@ mixin Deletable {
     return object;
   }
 
-  bool isDeleted = false;
+  bool _isDeleted = false;
+  bool get isDeleted => _isDeleted;
 
   void delete() {
-    isDeleted = true;
+    _isDeleted = true;
   }
 }
 

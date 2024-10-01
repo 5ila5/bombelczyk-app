@@ -65,14 +65,14 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
       });
     });
 
-    this.isDeleted = true;
+    super.delete();
     return newTodo;
   }
 
   @override
   void delete() {
     WebComunicater.instance.deleteToDo(this);
-    this.isDeleted = true;
+    super.delete();
 
     this.deleteNotify.forEach((element) {
       element(this);
@@ -100,7 +100,7 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
       text: changes['text'],
     );
 
-    this.isDeleted = true;
+    super.delete();
 
     ToDo newTodo = ToDo(
       this._id,

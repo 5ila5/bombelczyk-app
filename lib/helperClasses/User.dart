@@ -10,6 +10,11 @@ class User {
 
   int get id => _id;
   FutureOr<String> get name => _name;
+
+  @override
+  String toString() {
+    return "User $_id: $_name";
+  }
 }
 
 class Users {

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
+import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
 import 'package:flutter/material.dart';
 
 class SimpleAmountChooser extends StatefulWidget {
@@ -200,13 +203,14 @@ class DatePickerState extends State<DatePicker> {
 class MultiSelect<T> extends StatefulWidget {
   final List<T>? items;
   final List<T> selected;
-  final String Function(T) nameGetter;
+  final FutureOr<String> Function(T) nameGetter;
   MultiSelect(
-      {String Function(T)? nameGetter,
+      {FutureOr<String> Function(T)? nameGetter,
       Key? key,
       this.items,
-      this.selected = const []})
+      List<T> selected = const []})
       : nameGetter = nameGetter ?? ((T t) => t.toString()),
+        this.selected = [...selected],
         super(key: key);
 
   @override
@@ -249,16 +253,24 @@ class _MultiSelectState<T> extends State<MultiSelect<T>> {
       Text(
           "Personen mit denen die Tour schon geteilt wurde werden hier trotzdem nicht als ausgewählt angezeigt")
     ];
-    widget.items!.forEach(
-      (item) => itemWidgets.add(CheckboxListTile(
+    widget.items!.forEach((item) {
+      Widget titleWideget;
+      FutureOr<String> name = widget.nameGetter(item);
+      if (name is String) {
+        titleWideget = Text(name);
+      } else {
+        titleWideget =
+            CircularProgressIndicatorFutureBuilder(name, (n) => Text(n));
+      }
+      itemWidgets.add(CheckboxListTile(
         value: selected.contains(item),
-        title: Text(widget.nameGetter(item)),
+        title: titleWideget,
         controlAffinity: ListTileControlAffinity.leading,
         onChanged: (isChecked) => _itemChange(item, isChecked),
         dense: true,
         isThreeLine: false,
-      )),
-    );
+      ));
+    });
     return AlertDialog(
       title: const Text('Teilen mit'),
       content: SingleChildScrollView(

@@ -14,12 +14,14 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   final int _idx;
   final String _name;
   final DateTime _date;
-  List<User> _sharedWith = [];
+  final UnmodifiableListView<User> _sharedWith;
   List<Function(Tour)> _deleteListeners = [];
 
-  Tour(this._idx, this._name, this._date, {List<TourAufzug>? aufzuege}) {
+  Tour(this._idx, this._name, this._date, {List<TourAufzug>? aufzuege})
+      : _sharedWith = UnmodifiableListView([]) {
     if (aufzuege != null) {
       _aufzuege = aufzuege;
+      _aufzuege.forEach((element) => element.tour = this);
     }
   }
 
@@ -29,8 +31,8 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       : _idx = json['id'],
         _name = json['comment'],
         _date = DateTime.parse(json['Datum']),
-        this._sharedWith = List<User>.from(
-            (json['shared_with'] as List).map((e) => Users.get(e)).toList()) {
+        this._sharedWith = UnmodifiableListView(List<User>.from(
+            (json['shared_with'] as List).map((e) => Users.get(e)).toList())) {
     this._aufzuege = List<TourAufzug>.from(json['afzs']
         .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
         .toList());
@@ -131,7 +133,15 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   }
 
   void set sharedWith(List<User> sharedWith) {
+    print("Setting shared with");
+    print(this.changes);
+    print("sharedWith:");
+    print(sharedWith);
+    print("this._sharedWith:");
+    print(this._sharedWith);
+
     edit(TourChangeShared(this._sharedWith, sharedWith));
+    print(this.changes);
   }
 
   @override
@@ -154,7 +164,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     ToursHandler.instance.createTour(this);
     Tour newTour = await newTourFuture;
     ToursHandler.instance.updateTour(this, newTour);
-    isDeleted = true;
+    this.delete();
     return newTour;
   }
 
@@ -164,19 +174,23 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
 
   @override
   void delete() {
+    WebComunicater.instance.deleteTour(this);
+    ToursHandler.instance.deleteTour(this);
+    print("Deleting tour and informing listeners");
+    super.delete();
     for (Function(Tour) listener in _deleteListeners) {
       listener(this);
     }
-    WebComunicater.instance.deleteTour(this);
-    ToursHandler.instance.deleteTour(this);
-    super.delete();
   }
 
   @override
   Tour save() {
     if (this.changes.every((element) => !element.isChanged)) {
+      print("No changes");
+      print(this.changes);
       return this;
     }
+    print("Saving changes");
 
     Map<String, dynamic> changes = {};
 
@@ -192,12 +206,14 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
         share: changes["sharedWith"],
         afzs: changes["aufzuege"]);
 
+    List<TourAufzug> afzs = [...(changes["aufzuege"] ?? this.aufzuege)];
+
     Tour newTour = Tour(
         this.idx, changes["name"] ?? this.name, changes["date"] ?? this.date,
-        aufzuege: changes["aufzuege"] ?? this.aufzuege);
+        aufzuege: afzs);
 
     ToursHandler.instance.updateTour(this, newTour);
-    this.isDeleted = true;
+    this.delete();
 
     return newTour;
   }

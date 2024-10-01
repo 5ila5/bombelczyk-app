@@ -62,6 +62,7 @@ class TourEdit extends StatelessWidget {
 class TourEditBody extends StatefulWidget {
   final Tour tour;
   TourEditBody(this.tour) : super();
+
   @override
   TourEditBodyState createState() => TourEditBodyState();
 }

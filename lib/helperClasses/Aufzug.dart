@@ -166,6 +166,9 @@ class TourAufzug extends Aufzug {
   bool get finished => _finished;
   bool get isFirst => _tour.aufzuege.first == this;
   bool get isLast => _tour.aufzuege.last == this;
+  void set tour(Tour tour) {
+    _tour = tour;
+  }
 
   void setFinishedWithoutUpdate(bool finished) {
     _finished = finished;

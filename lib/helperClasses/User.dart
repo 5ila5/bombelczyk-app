@@ -4,12 +4,12 @@ import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 
 class User {
   final int _id;
-  final FutureOr<String> _name;
+  final String _name;
 
   User(this._id, this._name);
 
   int get id => _id;
-  FutureOr<String> get name => _name;
+  String get name => _name;
 
   @override
   String toString() {
@@ -18,28 +18,23 @@ class User {
 }
 
 class Users {
-  static List<User>? _users;
+  static Future<List<User>>? _users;
 
   static Future<List<User>> getUsers() {
     if (_users == null) {
-      return WebComunicater.instance.getUsers().then((value) {
-        _users = value;
-        return value;
-      });
+      _users = WebComunicater.instance.getUsers();
     }
-    return Future.value(_users);
+    return _users!;
   }
 
   Users._();
 
-  static User get(int id) {
-    if (_users == null) {
-      Future<List<User>> u = getUsers();
-      return User(
-          id,
-          u.then(
-              (value) => value.firstWhere((element) => element.id == id).name));
-    }
-    return _users!.firstWhere((element) => element.id == id);
+  static Future<User> get(int id) {
+    Future<List<User>> u = getUsers();
+    return u.then((value) => value.firstWhere((element) => element.id == id));
+  }
+
+  static Future<List<User>> getMultiple(Iterable<int> ids) {
+    return Future.wait(ids.map((e) => get(e)));
   }
 }

@@ -361,12 +361,13 @@ class WebComunicater {
     return createTour(t.name, t.date, t.sharedWith, t.aufzuege);
   }
 
-  Future<Tour> createTour(String name, DateTime date, List<User> share,
+  Future<Tour> createTour(String name, DateTime date, List<Future<User>> share,
       List<TourAufzug> afzs) async {
+    List<User> shareUsr = await Future.wait(share);
     return requestWithAnalyse("tour", RequestType.POST, {
       "text": name,
       "date": date.toIso8601String().substring(0, 10),
-      "share": share.map<int>((e) => e.id).toList(),
+      "share": shareUsr.map((e) => (e).id).toList(),
       "afzs": Map<String, int>.fromIterable(afzs,
           key: (e) => e.afzIdx.toString(), value: (e) => e.workType.idx),
     }).then((value) => Tour(

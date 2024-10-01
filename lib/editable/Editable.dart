@@ -63,8 +63,8 @@ class TourChangeDate extends TourChange<DateTime> {
       : super._("date", oldValue, newValue);
 }
 
-class TourChangeShared extends TourChange<List<User>> {
-  TourChangeShared(List<User> oldValue, List<User> newValue)
+class TourChangeShared extends TourChange<List<Future<User>>> {
+  TourChangeShared(List<Future<User>> oldValue, List<Future<User>> newValue)
       : super._("sharedWith", oldValue, newValue);
 }
 

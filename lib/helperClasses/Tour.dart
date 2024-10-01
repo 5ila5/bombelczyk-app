@@ -14,7 +14,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   final int _idx;
   final String _name;
   final DateTime _date;
-  final UnmodifiableListView<User> _sharedWith;
+  final UnmodifiableListView<Future<User>> _sharedWith;
   List<Function(Tour)> _deleteListeners = [];
 
   Tour(this._idx, this._name, this._date, {List<TourAufzug>? aufzuege})
@@ -31,11 +31,13 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       : _idx = json['id'],
         _name = json['comment'],
         _date = DateTime.parse(json['Datum']),
-        this._sharedWith = UnmodifiableListView(List<User>.from(
+        this._sharedWith = UnmodifiableListView(List<Future<User>>.from(
             (json['shared_with'] as List).map((e) => Users.get(e)).toList())) {
     this._aufzuege = List<TourAufzug>.from(json['afzs']
         .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
         .toList());
+    print(
+        "Tour from api json, shared with: ${this._sharedWith} and json: ${json['shared_with']}");
   }
 
   int get idx => returnIfNotDeleted(_idx);
@@ -43,7 +45,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   DateTime get date => returnIfNotDeleted(changeOr("date", _date));
   List<TourAufzug> get aufzuege =>
       returnIfNotDeleted(changeOr("aufzuege", _aufzuege));
-  List<User> get sharedWith =>
+  List<Future<User>> get sharedWith =>
       returnIfNotDeleted(changeOr("sharedWith", _sharedWith));
 
   void set name(String name) {
@@ -132,7 +134,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     }
   }
 
-  void set sharedWith(List<User> sharedWith) {
+  void set sharedWith(List<Future<User>> sharedWith) {
     print("Setting shared with");
     print(this.changes);
     print("sharedWith:");
@@ -148,7 +150,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   Tour get original =>
       Tour(this._idx, this._name, this._date, aufzuege: this._aufzuege);
 
-  void shareWith(User user) {
+  void shareWith(Future<User> user) {
     TourChange<dynamic>? shareChange =
         this.changes.firstWhereOrNull((element) => element.attr == "aufzuege");
     if (shareChange != null) {

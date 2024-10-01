@@ -206,15 +206,24 @@ class ShareButton extends StatelessWidget {
     MultiSelect select = MultiSelect<User>(
         nameGetter: (User u) => u.name,
         items: await Users.getUsers(),
-        selected: this.tour.sharedWith);
+        selected: await Future.wait(this.tour.sharedWith));
+    print("Shared with:");
+    print(await Future.wait(this.tour.sharedWith));
+    print(await Users.getUsers());
+    print(
+        "${(await Users.getUsers())}.contains(${(await Future.wait(this.tour.sharedWith))[0]})}");
+    print((await Users.getUsers())
+        .contains((await Future.wait(this.tour.sharedWith))[0]));
+
     List<User>? sharedWith = await (showDialog(
       context: context,
       builder: (c) {
         return select;
       },
     ));
+    print("new shared with:");
     if (sharedWith != null) {
-      this.tour.sharedWith = sharedWith;
+      this.tour.sharedWith = sharedWith.map((e) => Future.value(e)).toList();
     }
   }
 

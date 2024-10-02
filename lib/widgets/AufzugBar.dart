@@ -152,6 +152,8 @@ class TourAufzugBar extends AufzugBar<TourAufzug> {
                   immediate: !editMode,
                 ),
                 ClickableMapIcon(aufzug.address),
+                if (aufzug.hasImages)
+                  Builder(builder: (context) => TourShowImage(aufzug, context))
               ],
             ),
             onTap: (c) => AufzugPageHandler.showPage(c, aufzug),

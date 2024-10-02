@@ -170,6 +170,14 @@ class TourAufzug extends Aufzug {
     _tour = tour;
   }
 
+  Future<List<MemoryImage>> get images {
+    if (hasImages) {
+      return WebComunicater.instance.getTourAfzImages(_tour, this);
+    } else {
+      return Future.value([]);
+    }
+  }
+
   void setFinishedWithoutUpdate(bool finished) {
     _finished = finished;
     _tour.setAufzuegeModified();
@@ -200,9 +208,6 @@ class TourAufzug extends Aufzug {
   void removeFromTour() {
     this._tour.removeAufzug(this);
   }
-
-  Future<List<MemoryImage>> get images =>
-      WebComunicater.instance.getTourAfzImages(_tour, this);
 
   @override
   String toString() =>

@@ -23,6 +23,10 @@ class ImgView
 
 class ImgHandling {
   static void showIMGs(BuildContext context, Future<List<MemoryImage>> future) {
+    future.then((value) {
+      print("showing ${value.length} images");
+      print(value);
+    });
     showDialog(
         context: context,
         builder: (BuildContext context) {

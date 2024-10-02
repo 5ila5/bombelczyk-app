@@ -292,9 +292,10 @@ class WebComunicater {
   }
 
   Future<List<MemoryImage>> getTourAfzImages(Tour tour, Aufzug afz) {
-    return requestWithAnalyse("aufzug/${afz.afzIdx}/images", RequestType.GET)
+    return requestWithAnalyse(
+            "tour/${tour.idx}/aufzug/${afz.afzIdx}/images", RequestType.GET)
         .then((value) => List<MemoryImage>.from(
-            value.map((e) => MemoryImage(Uint8List.fromList(e)))));
+            value.map((e) => MemoryImage(base64Decode(e)))));
   }
 
   Future<bool> deleteTour(Tour tour) {

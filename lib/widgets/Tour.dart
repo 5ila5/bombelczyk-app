@@ -62,6 +62,7 @@ class TourHeader extends StatelessWidget {
   final bool collapsed;
   final void Function()? onTap;
   final void Function(void Function()) updateParent;
+  final bool showEditButtons;
 
   Widget buttons(Tour tour, BuildContext context) {
     return Row(children: [
@@ -75,7 +76,8 @@ class TourHeader extends StatelessWidget {
     ]);
   }
 
-  TourHeader(this.onTap, this.collapsed, this.tour, this.updateParent);
+  TourHeader(this.onTap, this.collapsed, this.tour, this.updateParent,
+      {this.showEditButtons = true});
 
   @override
   Widget build(BuildContext context) => Container(
@@ -107,13 +109,14 @@ class TourHeader extends StatelessWidget {
                   ],
                 ),
               )),
-              Container(
-                margin: EdgeInsets.only(right: 20),
-                child: buttons(
-                  tour,
-                  context,
+              if (showEditButtons)
+                Container(
+                  margin: EdgeInsets.only(right: 20),
+                  child: buttons(
+                    tour,
+                    context,
+                  ),
                 ),
-              ),
             ]),
           )));
 }
@@ -137,6 +140,7 @@ class _TourWidgetState extends State<TourWidget> {
     print("Building TourWidget: " + widget.tour.aufzuege.toString());
     return ListView(
       shrinkWrap: true,
+      // physics:
       physics: NeverScrollableScrollPhysics(),
       children: [
         Row(
@@ -147,6 +151,7 @@ class _TourWidgetState extends State<TourWidget> {
                         _collapsed = !_collapsed;
                       }),
                   _collapsed,
+                  showEditButtons: !widget.edit_mode,
                   widget.tour,
                   widget.updateParent),
             )
@@ -155,6 +160,7 @@ class _TourWidgetState extends State<TourWidget> {
         Collapsible(
             child: ListView(
               shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
               children: widget.tour.aufzuege
                   .map((e) => widget.edit_mode
                       ? TourModifiableAufzugBar(e, setState,

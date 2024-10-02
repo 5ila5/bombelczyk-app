@@ -72,7 +72,7 @@ class TourEditBodyState extends State<TourEditBody> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        DatePicker(DateTime.now()),
+        DatePicker(widget.tour.date, (d) => widget.tour.date = d),
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: 150),
           child: TourEditTitle(

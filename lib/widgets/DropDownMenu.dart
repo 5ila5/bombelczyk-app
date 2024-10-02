@@ -132,8 +132,8 @@ class ArbeitDropDownFutureBuilder extends FutureBuilder<List<TourWorkType>> {
 
 class DatePicker extends StatefulWidget {
   final DateTime defaultDate;
-
-  DatePicker(this.defaultDate);
+  final void Function(DateTime) onDateChanged;
+  DatePicker(this.defaultDate, this.onDateChanged);
 
   @override
   DatePickerState createState() => DatePickerState(defaultDate);
@@ -151,16 +151,17 @@ class DatePickerState extends State<DatePicker> {
             child: Container(
                 child: Column(children: [
               StatefulBuilder(builder: (context, StateSetter setState) {
-                return MyCalendar((p0, p1) {
+                return MyCalendar((selectedDate, focusedDate) {
+                  widget.onDateChanged(selectedDate);
                   setState(() {
-                    _selectedDay = p0;
+                    _selectedDay = selectedDate;
                   });
-                });
+                }, defaultDate: _selectedDay);
               }),
               FloatingActionButton(
                 onPressed: () {
                   setState(() {
-                    Navigator.pop(context);
+                    Navigator.pop(context, _selectedDay);
                   });
                 },
                 child: Text("OK"),
@@ -191,10 +192,15 @@ class DatePickerState extends State<DatePicker> {
             ]))
       ]),
       onTap: () {
-        showDialog(
+        Future<DateTime?> newDate = showDialog(
           context: context,
           builder: dialogueBuilder,
         );
+        newDate.then((value) {
+          if (value != null) {
+            widget.onDateChanged(value);
+          }
+        });
       },
     );
   }

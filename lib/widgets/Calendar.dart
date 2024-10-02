@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class MyCalendar<T> extends StatefulWidget {
-  final void Function(DateTime, DateTime)? onDaySelected;
+  final void Function(DateTime selectedDay, DateTime focusedDay)? onDaySelected;
   final CalendarFormat defaultFormat;
   final DateTime defaultDate;
   final List<T> Function(DateTime)? eventLoader;

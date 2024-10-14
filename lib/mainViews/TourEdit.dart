@@ -4,7 +4,6 @@ import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/DropDownMenu.dart';
 import 'package:Bombelczyk/widgets/TextFields.dart';
 import 'package:Bombelczyk/widgets/Tour.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TourEdit extends StatelessWidget {

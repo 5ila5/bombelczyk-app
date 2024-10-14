@@ -146,7 +146,7 @@ class MyButton extends ElevatedButton {
             ),
             onPressed: (active) ? null : onPressed,
             statesController: (active)
-                ? MaterialStatesController(Set.from([MaterialState.pressed]))
+                ? WidgetStatesController(Set.from([WidgetState.pressed]))
                 : null);
 }
 
@@ -284,9 +284,7 @@ class TourEditBottomButtons extends StatelessWidget {
                   child: FloatingActionButton(
                     backgroundColor: Colors.red,
                     heroTag: "cancel",
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => _cancel(context),
                     child: Text("Abbrechen"),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0)),

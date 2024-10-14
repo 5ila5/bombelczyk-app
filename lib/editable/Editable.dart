@@ -18,10 +18,10 @@ abstract class Change<T> {
 
   void set newValue(T? newValue) {
     if (_allowedAttributes != null) {
-      if (!_allowedAttributes!.containsKey(_attr)) {
+      if (!_allowedAttributes.containsKey(_attr)) {
         throw Exception("Invalid attribute");
       }
-      Type t = _allowedAttributes![_attr]!;
+      Type t = _allowedAttributes[_attr]!;
       if (T != t) {
         print("T: $T, t: $t");
         throw Exception("Invalid type");

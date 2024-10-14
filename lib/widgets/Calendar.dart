@@ -1,5 +1,4 @@
 import 'package:Bombelczyk/helperClasses/Tour.dart';
-import 'package:Bombelczyk/widgets/Tour.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';

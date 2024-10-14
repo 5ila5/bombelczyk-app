@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:Bombelczyk/editable/Editable.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/SortTypes.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/helperClasses/User.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
-import 'package:Bombelczyk/mainViews/Tours.dart';
 import 'package:collection/collection.dart';
 
 class Tour extends Editable<Tour, TourChange> with Deletable {

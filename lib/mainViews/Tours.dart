@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';

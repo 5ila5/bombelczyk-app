@@ -1,5 +1,3 @@
-import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
-
 class Arbeit {
   final int _id;
   final int _arbBeNr;

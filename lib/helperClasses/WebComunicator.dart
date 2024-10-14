@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:Bombelczyk/helperClasses/Akku.dart';
 import 'package:Bombelczyk/helperClasses/Arbeit.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';

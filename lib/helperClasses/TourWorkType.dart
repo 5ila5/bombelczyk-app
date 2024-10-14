@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 
 class TourWorkType {

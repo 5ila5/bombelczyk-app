@@ -1,4 +1,3 @@
-import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/mainViews/TourEdit.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
@@ -6,11 +5,6 @@ import 'package:collapsible/collapsible.dart';
 import 'package:flutter/material.dart';
 
 class TourWidgetHelper {
-  static void showAddToTourDialog(BuildContext context, Aufzug aufzug) {
-    // TODO: implement
-    print("Showing dialog for adding Aufzug ${aufzug.anr} to tour");
-  }
-
   static void showCreateDialog(BuildContext context, DateTime date,
       void Function(void Function()) updateParent) {
     TourEdit.showPage(context, Tour.dateOnly(date), updateParent);
@@ -23,37 +17,35 @@ class TourWidgetHelper {
 
   static void confirmDeleteTour(BuildContext context, Tour tour,
       final void Function(void Function()) updateParent) {
-    _deleteConfirmDialog(BuildContext context) {
-      // set up the buttons
-      Widget remindButton = TextButton(
-        child: Text("Ja"),
-        onPressed: () {
-          updateParent(() => tour.delete());
+    // set up the buttons
+    Widget remindButton = TextButton(
+      child: Text("Ja"),
+      onPressed: () {
+        updateParent(() => tour.delete());
 
-          Navigator.pop(context);
-        },
-      );
-      Widget cancelButton = TextButton(
-        child: Text("Abbrechen"),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      );
-      AlertDialog alert = AlertDialog(
-        title: Text("Notice"),
-        content: Text("Bist du sicher, dass du diese Tour entfernen möchtest?"),
-        actions: [
-          remindButton,
-          cancelButton,
-        ],
-      ); // show the dialog
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return alert;
-        },
-      );
-    }
+        Navigator.pop(context);
+      },
+    );
+    Widget cancelButton = TextButton(
+      child: Text("Abbrechen"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+    AlertDialog alert = AlertDialog(
+      title: Text("Notice"),
+      content: Text("Bist du sicher, dass du diese Tour entfernen möchtest?"),
+      actions: [
+        remindButton,
+        cancelButton,
+      ],
+    ); // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 }
 

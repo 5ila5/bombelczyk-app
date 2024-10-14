@@ -4,8 +4,6 @@ import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:Bombelczyk/widgets/Akku.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
-import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
-import 'package:Bombelczyk/widgets/Tour.dart';
 import 'package:flutter/material.dart';
 
 class AufzugPageHandler {
@@ -71,7 +69,8 @@ class ToDoWorkSelecter extends StatefulWidget {
 
 class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
   bool showToDo = false;
-
+  Map<DetailedAufzug, List<Widget>> _toDoBars = {};
+  Map<DetailedAufzug, List<Widget>> _workBars = {};
   _ToDoWorkSelecterState();
 
   void clickToDo() {
@@ -86,16 +85,29 @@ class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
     });
   }
 
+  Widget get _buttons => Table(children: [
+        TableRow(children: [
+          MyButton("To-Do", clickToDo, showToDo),
+          MyButton("Arbeiten", clickWork, !showToDo),
+        ])
+      ]);
+
   List<Widget> getWorkBars(DetailedAufzug afz) {
-    return afz.arbeiten
-        .map((work) =>
-            [WorkBar(work), Divider(thickness: 1, color: Colors.grey)])
-        .expand((e) => e)
-        .toList();
+    if (!_workBars.containsKey(afz)) {
+      _workBars[afz] = afz.arbeiten
+          .map((work) =>
+              [WorkBar(work), Divider(thickness: 1, color: Colors.grey)])
+          .expand((e) => e)
+          .toList();
+    }
+    return _workBars[afz]!;
   }
 
   List<Widget> getToDoBars(DetailedAufzug afz) {
-    return ToDosBar.getToDoBars(afz, setState);
+    if (!_toDoBars.containsKey(afz)) {
+      _toDoBars[afz] = ToDosBar.getToDoBars(afz, setState);
+    }
+    return _toDoBars[afz]!;
   }
 
   @override
@@ -104,6 +116,7 @@ class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
         future: widget.aufzug,
         builder: (context, snapshot) {
           List<Widget> toReturn = [];
+
           if (snapshot.hasData) {
             toReturn = (showToDo)
                 ? getToDoBars(snapshot.data!)
@@ -116,22 +129,12 @@ class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
           } else {
             toReturn = [CircularProgressIndicator()];
           }
-          print("build");
-          return Column(children: [
-            Table(children: [
-              TableRow(children: [
-                MyButton("To-Do", clickToDo, showToDo),
-                MyButton("Arbeiten", clickWork, !showToDo),
-              ])
-            ]),
-            ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: toReturn.length,
-              itemBuilder: (context, index) => toReturn[index],
-              shrinkWrap: true,
-              cacheExtent: toReturn.length * 200.0,
-            )
-          ]);
+
+          toReturn.insert(0, _buttons);
+          return SliverList(
+              delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) => toReturn[index],
+                  childCount: toReturn.length));
         });
   }
 }
@@ -165,26 +168,23 @@ class AufzugPage extends StatelessWidget {
               ),
             ),
           ),
-          Container(
-            child: InkWell(
-              child: Icon(Icons.add_location_alt_sharp),
-              onTap: () =>
-                  TourWidgetHelper.showAddToTourDialog(context, aufzug),
-            ),
-          ),
         ]),
       ),
       body: Center(
-        child: ListView(
+        child: CustomScrollView(
           physics: ClampingScrollPhysics(),
           shrinkWrap: true,
-          children: [
-            MainAufzugTable(aufzug),
-            Divider(),
-            AkkuTableFutureBuilder(WebComunicater.instance.getAkkus(aufzug)),
-            Divider(thickness: 3, color: Colors.black),
+          slivers: [
+            SliverToBoxAdapter(child: MainAufzugTable(aufzug)),
+            SliverToBoxAdapter(child: Divider()),
+            SliverToBoxAdapter(
+                child: AkkuTableFutureBuilder(
+                    WebComunicater.instance.getAkkus(aufzug))),
+            SliverToBoxAdapter(
+                child: Divider(thickness: 3, color: Colors.black)),
             ToDoWorkSelecter(detailedAufzug),
-            Divider(thickness: 3, color: Colors.black)
+            SliverToBoxAdapter(
+                child: Divider(thickness: 3, color: Colors.black))
           ],
         ),
       ),

@@ -65,8 +65,16 @@ class _SearchState extends State<Search> {
             BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
         child: Column(
           children: [
-            AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
-            SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
+            Padding(
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child:
+                  AfzSearchBar("Suche Aufzüge", (String s) => searchChange(s)),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child:
+                  SortDropDownWithDir(currentSort, (Sort? s) => sortChange(s)),
+            ),
             Expanded(child: WidgetListViewFutureBuilder(contentList))
           ],
         ),

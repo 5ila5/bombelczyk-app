@@ -47,7 +47,10 @@ class _NearbyState extends State<Nearby> {
             // alignment top
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SimpleAmountChooser([10, 20, 50], setCount, defaultAmount: 10),
+              Padding(
+                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: SimpleAmountChooser([10, 20, 50], setCount,
+                      defaultAmount: 10)),
               Center(
                   child: WidgetColumnFutureBuilder(
                 afzs.then((value) => value

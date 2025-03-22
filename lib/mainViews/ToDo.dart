@@ -64,7 +64,9 @@ class _ToDoViewState extends State<ToDoView> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      AfzSearchBar("Suche To-Dos", searchChange),
+      Padding(
+          padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+          child: AfzSearchBar("Suche To-Dos", searchChange)),
       SortDropDownWithDirCollapsed(
           currentSort, sortChange, true, changeAllCollapsed),
       WidgetColumnFutureBuilder(contentList)

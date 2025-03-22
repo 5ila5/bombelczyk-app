@@ -45,6 +45,10 @@ enum RequestType {
 
   static Uri _getUri(String path, Map<String, dynamic>? body) {
     print(body);
+    if (body != null)
+      body = body.map((key, value) => (value is bool)
+          ? MapEntry(key, value.toString())
+          : MapEntry(key, value));
     return Uri.https(
         RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path, body);
   }

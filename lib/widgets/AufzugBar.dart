@@ -38,7 +38,7 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
       this.rightIcon,
       this.leftIcon,
       this.belowWidgets,
-      final Color? backgroundColor,
+      Color? backgroundColor,
       bool? odd,
       this.additioanlRow = const []})
       : this.backgroundColor = backgroundColor ??
@@ -52,7 +52,7 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
       this.rightIcon,
       this.leftIcon,
       this.belowWidgets,
-      final Color? backgroundColor,
+      Color? backgroundColor,
       bool? odd,
       this.additioanlRow = const []})
       : this.onTap = ((BuildContext context) {
@@ -262,7 +262,7 @@ class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
 
 class ToDosBar {
   static List<Widget> getAddTodoBar(
-      AufzugWithToDos aufzug, final void Function(void Function()) update) {
+      AufzugWithToDos aufzug, void Function(void Function()) update) {
     return [
       InkWell(
           child: Icon(Icons.add, size: 40, color: Colors.blue),

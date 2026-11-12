@@ -16,7 +16,7 @@ class TourWidgetHelper {
   }
 
   static void confirmDeleteTour(BuildContext context, Tour tour,
-      final void Function(void Function()) updateParent) {
+      void Function(void Function()) updateParent) {
     // set up the buttons
     Widget remindButton = TextButton(
       child: Text("Ja"),

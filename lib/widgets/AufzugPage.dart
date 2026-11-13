@@ -147,7 +147,7 @@ class _ToDoWorkSelecterState extends State<ToDoWorkSelecter> {
           toReturn = [CircularProgressIndicator()];
         }
 
-        toReturn.insert(0, _buttons);
+        toReturn = [_buttons, ...toReturn];
         return SliverList(
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) => toReturn[index],

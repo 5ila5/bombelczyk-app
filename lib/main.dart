@@ -6,6 +6,7 @@ import 'package:Bombelczyk/mainViews/Search.dart';
 import 'package:Bombelczyk/mainViews/ToDo.dart';
 import 'package:Bombelczyk/mainViews/TourEdit.dart';
 import 'package:Bombelczyk/mainViews/Tours.dart';
+import 'package:Bombelczyk/mainViews/Wartungen.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -111,6 +112,7 @@ class MyHomePageState extends State<MyHomePage> {
           ],
         ),
         Tours(),
+        Wartungen(),
       ];
     }
     //refreshTable("");
@@ -140,6 +142,10 @@ class MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.tour_rounded),
             label: 'Touren',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.build_circle_outlined),
+            label: 'Wartungen',
+          ),
         ],
         showSelectedLabels: true,
         showUnselectedLabels: true,
@@ -151,7 +157,7 @@ class MyHomePageState extends State<MyHomePage> {
           //backgroundColor: Colors.green,
         ),
         //fixedColor: Colors.red,
-
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
 
         onTap: _onItemTapped,

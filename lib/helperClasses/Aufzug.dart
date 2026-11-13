@@ -252,3 +252,28 @@ class TourAufzug extends Aufzug {
   String toString() =>
       _toStringSpecial("TourAufzug") + (_finished ? " (done)" : "(not done)");
 }
+
+class AufzugWithMonth extends Aufzug {
+  final int _year, _month;
+
+  AufzugWithMonth(
+    int afzIdx,
+    String anr,
+    String fKZeit,
+    String zgTxt,
+    Address address,
+    this._year,
+    this._month,
+  ) : super(afzIdx, anr, fKZeit, zgTxt, address);
+
+  AufzugWithMonth.fromApiJson(Map<String, dynamic> json)
+    : _year = json['Year'],
+      _month = json['Month'],
+      super.fromApiJson(json);
+
+  int get month => _month;
+  int get year => _year;
+
+  @override
+  String toString() => _toStringSpecial("AufzugWithMonth");
+}

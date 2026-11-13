@@ -180,6 +180,14 @@ class WebComunicater {
     );
   }
 
+  Future<List<AufzugWithMonth>> getWartungen() {
+    return requestWithAnalyse("wartung", RequestType.GET).then(
+      (value) => List<AufzugWithMonth>.from(
+        value.map((e) => AufzugWithMonth.fromApiJson(e)),
+      ),
+    );
+  }
+
   Future<List<AufzugWithDistance>> getNearbyAufzug(
     Future<Position> position,
     int count,

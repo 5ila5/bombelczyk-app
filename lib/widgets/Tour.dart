@@ -2,7 +2,7 @@ import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/mainViews/TourEdit.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:collapsible/collapsible.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class TourWidgetHelper {
   static void showCreateDialog(BuildContext context, DateTime date,

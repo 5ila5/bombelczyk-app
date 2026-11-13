@@ -7,7 +7,7 @@ import 'package:Bombelczyk/mainViews/ToDo.dart';
 import 'package:Bombelczyk/mainViews/TourEdit.dart';
 import 'package:Bombelczyk/mainViews/Tours.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -59,20 +59,25 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> loginDialog() async {
-    Login.displayLoginDialog(context).then((value) {
-      if (!(value ?? false)) {
-        loginDialog();
-      }
-    }, onError: onError).catchError(onError);
+    Login.displayLoginDialog(context)
+        .then((value) {
+          if (!(value ?? false)) {
+            loginDialog();
+          }
+        }, onError: onError)
+        .catchError(onError);
   }
 
   @override
   void initState() {
     super.initState();
     StorageHelper.initWebComunicator();
-    WebComunicater.instance.testConnection().then((v) {
-      if (!v) loginDialog();
-    }, onError: (e, s) => loginDialog()).catchError(onError);
+    WebComunicater.instance
+        .testConnection()
+        .then((v) {
+          if (!v) loginDialog();
+        }, onError: (e, s) => loginDialog())
+        .catchError(onError);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
@@ -89,38 +94,36 @@ class MyHomePageState extends State<MyHomePage> {
         //To Dos Home
         ToDoView(),
 
-        Column(children: <Widget>[
-          new Expanded(
+        Column(
+          children: <Widget>[
+            new Expanded(
               child: Padding(
-            padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-            //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
-            child: SingleChildScrollView(
-              //  child: Column(
-              //children:
-              child: History(), //_ToDotabelle,
-              //)
+                padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
+                //padding:const EdgeInsets.fromLTRB(5, 0, 0, 3),
+                child: SingleChildScrollView(
+                  //  child: Column(
+                  //children:
+                  child: History(), //_ToDotabelle,
+                  //)
+                ),
+              ),
             ),
-          )),
-        ]),
+          ],
+        ),
         Tours(),
       ];
     }
     //refreshTable("");
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title!),
-      ),
+      appBar: AppBar(title: Text(widget.title!)),
       body: //Center(
           //child:
           _widgetOptions!.elementAt(_selectedIndex),
       //),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Suche',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Suche'),
           BottomNavigationBarItem(
             icon: Icon(Icons.location_pin),
             label: 'In der Nähe',

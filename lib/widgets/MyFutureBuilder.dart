@@ -1,6 +1,6 @@
 import 'package:Bombelczyk/helperClasses/StorageHelper.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class CircularProgressIndicatorFutureBuilder<T> extends StatelessWidget {
   final Future<T> future;

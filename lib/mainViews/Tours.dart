@@ -2,7 +2,7 @@ import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/Tour.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class Tours extends StatefulWidget {
   Tours({

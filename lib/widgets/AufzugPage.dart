@@ -4,7 +4,7 @@ import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:Bombelczyk/widgets/Akku.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AufzugPageHandler {
   static void showPage(BuildContext context, Aufzug aufzug) {

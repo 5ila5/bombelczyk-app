@@ -6,7 +6,7 @@ import 'package:Bombelczyk/helperClasses/ToDo.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class Aufzug {
   final int _afzIdx;

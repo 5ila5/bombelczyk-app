@@ -1,7 +1,7 @@
 import 'package:Bombelczyk/helperClasses/Akku.dart';
 import 'package:Bombelczyk/helperClasses/TimeFomratter.dart';
 import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AkkuTable extends Table {
   AkkuTable(Akku akku)

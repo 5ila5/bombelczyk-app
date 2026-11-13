@@ -1,5 +1,5 @@
 import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:photo_view/photo_view.dart';
 

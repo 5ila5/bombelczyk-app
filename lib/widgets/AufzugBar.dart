@@ -6,7 +6,7 @@ import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/DropDownMenu.dart';
 import 'package:Bombelczyk/widgets/Styles.dart';
 import 'package:Bombelczyk/widgets/ToDoBar.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AufzugBarRow extends Row {
   AufzugBarRow(String text)

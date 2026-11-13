@@ -1,7 +1,7 @@
 import 'package:Bombelczyk/helperClasses/WebComunicator.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
 import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class History extends StatelessWidget {
   Future<List<Widget>> getAfzWidgets(BuildContext context) {

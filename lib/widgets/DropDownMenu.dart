@@ -6,7 +6,7 @@ import 'package:Bombelczyk/helperClasses/TourWorkType.dart';
 import 'package:Bombelczyk/widgets/Calendar.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
 import 'package:Bombelczyk/widgets/MyFutureBuilder.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SimpleAmountChooser extends StatefulWidget {
   final void Function(int?) onAmountChanged;

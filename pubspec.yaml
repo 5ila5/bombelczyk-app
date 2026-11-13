@@ -44,6 +44,9 @@ dependencies:
   collapsible: ^1.0.0
   photo_view: ^0.15.0
 
+  collection: any
+  cupertino_ui: any
+  material_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

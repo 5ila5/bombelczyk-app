@@ -29,7 +29,8 @@ class Geolocation {
         // Permissions are denied forever, handle appropriately.
         //print('Location permissions are permanently denied, we cannot request permissions.');
         return Future.error(
-            'Keine berechtigung um auf Standort zuzugreifen, Wenn Sie diese Feature nutzen möchten ändern sie bitte ihre Einstellungen');
+          'Keine berechtigung um auf Standort zuzugreifen, Wenn Sie diese Feature nutzen möchten ändern sie bitte ihre Einstellungen',
+        );
       }
 
       if (permission == LocationPermission.denied) {

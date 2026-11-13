@@ -5,18 +5,27 @@ import 'package:collapsible/collapsible.dart';
 import 'package:material_ui/material_ui.dart';
 
 class TourWidgetHelper {
-  static void showCreateDialog(BuildContext context, DateTime date,
-      void Function(void Function()) updateParent) {
+  static void showCreateDialog(
+    BuildContext context,
+    DateTime date,
+    void Function(void Function()) updateParent,
+  ) {
     TourEdit.showPage(context, Tour.dateOnly(date), updateParent);
   }
 
-  static void editTour(BuildContext context, Tour tour,
-      void Function(void Function()) updateParent) {
+  static void editTour(
+    BuildContext context,
+    Tour tour,
+    void Function(void Function()) updateParent,
+  ) {
     TourEdit.showPage(context, tour, updateParent);
   }
 
-  static void confirmDeleteTour(BuildContext context, Tour tour,
-      void Function(void Function()) updateParent) {
+  static void confirmDeleteTour(
+    BuildContext context,
+    Tour tour,
+    void Function(void Function()) updateParent,
+  ) {
     // set up the buttons
     Widget remindButton = TextButton(
       child: Text("Ja"),
@@ -35,10 +44,7 @@ class TourWidgetHelper {
     AlertDialog alert = AlertDialog(
       title: Text("Notice"),
       content: Text("Bist du sicher, dass du diese Tour entfernen möchtest?"),
-      actions: [
-        remindButton,
-        cancelButton,
-      ],
+      actions: [remindButton, cancelButton],
     ); // show the dialog
     showDialog(
       context: context,
@@ -57,39 +63,50 @@ class TourHeader extends StatelessWidget {
   final bool showEditButtons;
 
   Widget buttons(Tour tour, BuildContext context) {
-    return Row(children: [
-      InkWell(
+    return Row(
+      children: [
+        InkWell(
           onTap: () => TourWidgetHelper.editTour(context, tour, updateParent),
-          child: Icon(Icons.edit, color: Colors.green, size: 30)),
-      InkWell(
+          child: Icon(Icons.edit, color: Colors.green, size: 30),
+        ),
+        InkWell(
           onTap: () =>
               TourWidgetHelper.confirmDeleteTour(context, tour, updateParent),
-          child: Icon(Icons.delete, color: Colors.red, size: 30)),
-    ]);
+          child: Icon(Icons.delete, color: Colors.red, size: 30),
+        ),
+      ],
+    );
   }
 
-  TourHeader(this.onTap, this.collapsed, this.tour, this.updateParent,
-      {this.showEditButtons = true});
+  TourHeader(
+    this.onTap,
+    this.collapsed,
+    this.tour,
+    this.updateParent, {
+    this.showEditButtons = true,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
-      margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
-      child: Material(
-          elevation: 20,
-          child: Container(
-            color: Colors.blue,
-            padding: EdgeInsets.only(bottom: 5, top: 5),
-            child: Row(children: [
-              Expanded(
-                  child: InkWell(
+    margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
+    child: Material(
+      elevation: 20,
+      child: Container(
+        color: Colors.blue,
+        padding: EdgeInsets.only(bottom: 5, top: 5),
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
                 onTap: onTap,
                 child: Row(
                   children: [
                     Icon(
-                        (collapsed)
-                            ? Icons.keyboard_arrow_up_rounded
-                            : Icons.keyboard_arrow_down_rounded,
-                        color: Colors.white),
+                      (collapsed)
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: Colors.white,
+                    ),
                     Text(
                       tour.name,
                       style: TextStyle(
@@ -100,17 +117,18 @@ class TourHeader extends StatelessWidget {
                     ),
                   ],
                 ),
-              )),
-              if (showEditButtons)
-                Container(
-                  margin: EdgeInsets.only(right: 20),
-                  child: buttons(
-                    tour,
-                    context,
-                  ),
-                ),
-            ]),
-          )));
+              ),
+            ),
+            if (showEditButtons)
+              Container(
+                margin: EdgeInsets.only(right: 20),
+                child: buttons(tour, context),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class TourWidget extends StatefulWidget {
@@ -139,33 +157,40 @@ class _TourWidgetState extends State<TourWidget> {
           children: [
             Expanded(
               child: TourHeader(
-                  () => setState(() {
-                        _collapsed = !_collapsed;
-                      }),
-                  _collapsed,
-                  showEditButtons: !widget.edit_mode,
-                  widget.tour,
-                  widget.updateParent),
-            )
+                () => setState(() {
+                  _collapsed = !_collapsed;
+                }),
+                _collapsed,
+                showEditButtons: !widget.edit_mode,
+                widget.tour,
+                widget.updateParent,
+              ),
+            ),
           ],
         ),
         Collapsible(
-            child: ListView(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              children: widget.tour.aufzuege
-                  .map((e) => widget.edit_mode
-                      ? TourModifiableAufzugBar(e, setState,
+          child: ListView(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            children: widget.tour.aufzuege
+                .map(
+                  (e) => widget.edit_mode
+                      ? TourModifiableAufzugBar(
+                          e,
+                          setState,
                           odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
-                          finished: e.finished)
+                          finished: e.finished,
+                        )
                       : TourAufzugBarWithState(
                           e,
                           odd: widget.tour.aufzuege.indexOf(e) & 1 == 1,
-                        ))
-                  .toList(),
-            ),
-            collapsed: _collapsed,
-            axis: CollapsibleAxis.both),
+                        ),
+                )
+                .toList(),
+          ),
+          collapsed: _collapsed,
+          axis: CollapsibleAxis.both,
+        ),
       ],
     );
   }

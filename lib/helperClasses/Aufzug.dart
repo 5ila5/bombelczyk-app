@@ -18,12 +18,22 @@ class Aufzug {
   Aufzug(this._afzIdx, this._anr, this._fKZeit, this._zgTxt, this._address);
 
   Aufzug.fromApiJson(Map<String, dynamic> json)
-      : this(json['AfzIdx'], json['Anr'], json['FK_zeit'] ?? "unknown",
-            json['Zg_txt'], Address.fromApiJson(json));
+    : this(
+        json['AfzIdx'],
+        json['Anr'],
+        json['FK_zeit'] ?? "unknown",
+        json['Zg_txt'],
+        Address.fromApiJson(json),
+      );
 
   Aufzug.fromAufzug(Aufzug aufzug)
-      : this(aufzug.afzIdx, aufzug.anr, aufzug.fKZeit, aufzug.zgTxt,
-            aufzug.address);
+    : this(
+        aufzug.afzIdx,
+        aufzug.anr,
+        aufzug.fKZeit,
+        aufzug.zgTxt,
+        aufzug.address,
+      );
 
   Address get address => _address;
   int get afzIdx => _afzIdx;
@@ -44,14 +54,19 @@ class Aufzug {
 class AufzugWithDistance extends Aufzug {
   final Distance _distance;
 
-  AufzugWithDistance(int afzIdx, String anr, String fKZeit, String zgTxt,
-      Address address, this._distance)
-      : super(afzIdx, anr, fKZeit, zgTxt, address);
+  AufzugWithDistance(
+    int afzIdx,
+    String anr,
+    String fKZeit,
+    String zgTxt,
+    Address address,
+    this._distance,
+  ) : super(afzIdx, anr, fKZeit, zgTxt, address);
   Distance get distance => _distance;
 
   AufzugWithDistance.fromApiJson(Map<String, dynamic> json)
-      : _distance = Distance.fromApiJson(json),
-        super.fromApiJson(json);
+    : _distance = Distance.fromApiJson(json),
+      super.fromApiJson(json);
 
   @override
   String toString() => _toStringSpecial("AufzugWithDistance");
@@ -61,23 +76,28 @@ class AufzugWithToDos extends Aufzug {
   List<ToDo> _todos = [];
 
   AufzugWithToDos(
-      int afzIdx, String anr, String fKZeit, String zgTxt, Address address,
-      {List<ToDo>? todos})
-      : super(afzIdx, anr, fKZeit, zgTxt, address) {
+    int afzIdx,
+    String anr,
+    String fKZeit,
+    String zgTxt,
+    Address address, {
+    List<ToDo>? todos,
+  }) : super(afzIdx, anr, fKZeit, zgTxt, address) {
     if (todos != null) {
       _todos = todos;
     }
   }
 
   AufzugWithToDos.fromApiJson(Map<String, dynamic> json)
-      : super.fromApiJson(json) {
+    : super.fromApiJson(json) {
     if (json['todos'] != null) {
       _todos = List<ToDo>.from(
-          json['todos'].map((e) => ToDo.fromApiJson(e, this)).toList());
+        json['todos'].map((e) => ToDo.fromApiJson(e, this)).toList(),
+      );
     }
   }
   AufzugWithToDos.fromAufzug(Aufzug afz, List<ToDo> todos)
-      : super(afz.afzIdx, afz.anr, afz.fKZeit, afz.zgTxt, afz.address) {
+    : super(afz.afzIdx, afz.anr, afz.fKZeit, afz.zgTxt, afz.address) {
     _todos = todos;
     _todos.forEach((element) {
       element.registerListener(this.replaceToDo, this.addTodo, this.removeToDo);
@@ -110,16 +130,27 @@ class DetailedAufzug extends AufzugWithToDos {
   List<ToDo> _todos = [];
 
   DetailedAufzug(
-      int afzIdx, String anr, Address address, String fKZeit, String zgTxt,
-      {List<Arbeit>? arbeiten, List<ToDo>? todos})
-      : super(afzIdx, anr, fKZeit, zgTxt, address, todos: todos) {
+    int afzIdx,
+    String anr,
+    Address address,
+    String fKZeit,
+    String zgTxt, {
+    List<Arbeit>? arbeiten,
+    List<ToDo>? todos,
+  }) : super(afzIdx, anr, fKZeit, zgTxt, address, todos: todos) {
     if (arbeiten != null) {
       _arbeiten = arbeiten;
     }
   }
   DetailedAufzug.fromAufzugWithToDos(AufzugWithToDos afz, List<Arbeit> arbeiten)
-      : super(afz.afzIdx, afz.anr, afz.fKZeit, afz.zgTxt, afz.address,
-            todos: afz.todos) {
+    : super(
+        afz.afzIdx,
+        afz.anr,
+        afz.fKZeit,
+        afz.zgTxt,
+        afz.address,
+        todos: afz.todos,
+      ) {
     _arbeiten = arbeiten;
   }
 
@@ -138,26 +169,38 @@ class TourAufzug extends Aufzug {
   Tour _tour;
   int _amount_images = 0;
 
-  TourAufzug(this._tour, int afzIdx, String anr, String fKZeit, String zgTxt,
-      Address address, this._workType,
-      {int amountImages = 0, finished = false})
-      : super(afzIdx, anr, fKZeit, zgTxt, address) {
+  TourAufzug(
+    this._tour,
+    int afzIdx,
+    String anr,
+    String fKZeit,
+    String zgTxt,
+    Address address,
+    this._workType, {
+    int amountImages = 0,
+    finished = false,
+  }) : super(afzIdx, anr, fKZeit, zgTxt, address) {
     _amount_images = amountImages;
     _finished = finished;
   }
 
   TourAufzug.fromApiJson(
-      this._tour, Map<String, dynamic> json, List<TourWorkType> workTypes)
-      : _workType =
-            workTypes.firstWhere((element) => element.idx == json['art']),
-        _amount_images = json["anzImg"],
-        _finished = json["erledigt"] == 1,
-        super.fromApiJson(json);
+    this._tour,
+    Map<String, dynamic> json,
+    List<TourWorkType> workTypes,
+  ) : _workType = workTypes.firstWhere((element) => element.idx == json['art']),
+      _amount_images = json["anzImg"],
+      _finished = json["erledigt"] == 1,
+      super.fromApiJson(json);
 
-  TourAufzug.fromAufzug(this._tour, Aufzug aufzug,
-      {TourWorkType? workType, int amountImages = 0, finished = false})
-      : this._workType = TourWorkTypes.defaultType,
-        super.fromAufzug(aufzug);
+  TourAufzug.fromAufzug(
+    this._tour,
+    Aufzug aufzug, {
+    TourWorkType? workType,
+    int amountImages = 0,
+    finished = false,
+  }) : this._workType = TourWorkTypes.defaultType,
+       super.fromAufzug(aufzug);
 
   TourWorkType get workType => _workType;
 
@@ -198,11 +241,7 @@ class TourAufzug extends Aufzug {
   }
 
   void moveDown({bool immediate = false}) {
-    this._tour.moveAfz(
-          this,
-          MoveDirection.DOWN,
-          immediate: immediate,
-        );
+    this._tour.moveAfz(this, MoveDirection.DOWN, immediate: immediate);
   }
 
   void removeFromTour() {

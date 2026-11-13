@@ -15,7 +15,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   List<Function(Tour)> _deleteListeners = [];
 
   Tour(this._idx, this._name, this._date, {List<TourAufzug>? aufzuege})
-      : _sharedWith = UnmodifiableListView([]) {
+    : _sharedWith = UnmodifiableListView([]) {
     if (aufzuege != null) {
       _aufzuege = aufzuege;
       _aufzuege.forEach((element) => element.tour = this);
@@ -25,16 +25,22 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   Tour.dateOnly(DateTime date) : this(-1, "", date);
 
   Tour.fromApiJson(Map<String, dynamic> json, List<TourWorkType> workTypes)
-      : _idx = json['id'],
-        _name = json['comment'],
-        _date = DateTime.parse(json['Datum']),
-        this._sharedWith = UnmodifiableListView(List<Future<User>>.from(
-            (json['shared_with'] as List).map((e) => Users.get(e)).toList())) {
-    this._aufzuege = List<TourAufzug>.from(json['afzs']
-        .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
-        .toList());
+    : _idx = json['id'],
+      _name = json['comment'],
+      _date = DateTime.parse(json['Datum']),
+      this._sharedWith = UnmodifiableListView(
+        List<Future<User>>.from(
+          (json['shared_with'] as List).map((e) => Users.get(e)).toList(),
+        ),
+      ) {
+    this._aufzuege = List<TourAufzug>.from(
+      json['afzs']
+          .map((e) => TourAufzug.fromApiJson(this, e, workTypes))
+          .toList(),
+    );
     print(
-        "Tour from api json, shared with: ${this._sharedWith} and json: ${json['shared_with']}");
+      "Tour from api json, shared with: ${this._sharedWith} and json: ${json['shared_with']}",
+    );
   }
 
   int get idx => returnIfNotDeleted(_idx);
@@ -71,8 +77,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       tourAufzug = TourAufzug.fromAufzug(this, aufzug);
     }
 
-    TourChange<dynamic>? afzChange =
-        this.changes.firstWhereOrNull((element) => element.attr == "aufzuege");
+    TourChange<dynamic>? afzChange = this.changes.firstWhereOrNull(
+      (element) => element.attr == "aufzuege",
+    );
     if (afzChange != null) {
       afzChange.newValue.add(tourAufzug);
     } else {
@@ -85,8 +92,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   }
 
   void moveAfz(TourAufzug afz, MoveDirection dir, {bool immediate = false}) {
-    int idx =
-        immediate ? this._aufzuege.indexOf(afz) : this.aufzuege.indexOf(afz);
+    int idx = immediate
+        ? this._aufzuege.indexOf(afz)
+        : this.aufzuege.indexOf(afz);
     if (idx == -1) {
       throw Exception("Aufzug not in tour");
     }
@@ -96,9 +104,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       WebComunicater.instance.tourModifyAfz(this, afz, dir: dir);
     } else {
       afzList = [..._aufzuege];
-      TourChange<dynamic>? afzChange = this
-          .changes
-          .firstWhereOrNull((element) => element.attr == "aufzuege");
+      TourChange<dynamic>? afzChange = this.changes.firstWhereOrNull(
+        (element) => element.attr == "aufzuege",
+      );
       if (afzChange != null) {
         afzList = afzChange.newValue;
       } else {
@@ -122,8 +130,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
   }
 
   void removeAufzug(TourAufzug aufzug) {
-    TourChange<dynamic>? afzChange =
-        this.changes.firstWhereOrNull((element) => element.attr == "aufzuege");
+    TourChange<dynamic>? afzChange = this.changes.firstWhereOrNull(
+      (element) => element.attr == "aufzuege",
+    );
     if (afzChange != null) {
       afzChange.newValue.remove(aufzug);
     } else {
@@ -148,8 +157,9 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       Tour(this._idx, this._name, this._date, aufzuege: this._aufzuege);
 
   void shareWith(Future<User> user) {
-    TourChange<dynamic>? shareChange =
-        this.changes.firstWhereOrNull((element) => element.attr == "aufzuege");
+    TourChange<dynamic>? shareChange = this.changes.firstWhereOrNull(
+      (element) => element.attr == "aufzuege",
+    );
     if (shareChange != null) {
       shareChange.newValue.add(user);
     } else {
@@ -199,17 +209,22 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
       }
     }
 
-    WebComunicater.instance.modifyTour(this,
-        name: changes["name"],
-        date: changes["date"],
-        share: changes["sharedWith"],
-        afzs: changes["aufzuege"]);
+    WebComunicater.instance.modifyTour(
+      this,
+      name: changes["name"],
+      date: changes["date"],
+      share: changes["sharedWith"],
+      afzs: changes["aufzuege"],
+    );
 
     List<TourAufzug> afzs = [...(changes["aufzuege"] ?? this.aufzuege)];
 
     Tour newTour = Tour(
-        this.idx, changes["name"] ?? this.name, changes["date"] ?? this.date,
-        aufzuege: afzs);
+      this.idx,
+      changes["name"] ?? this.name,
+      changes["date"] ?? this.date,
+      aufzuege: afzs,
+    );
 
     ToursHandler.instance.updateTour(this, newTour);
     this.delete();
@@ -242,8 +257,8 @@ class DateRange {
 
   DateRange(this.start, this.end);
   DateRange.month(DateTime date)
-      : start = DateTime(date.year, date.month, 1),
-        end = DateTime(date.year, date.month + 1, 0);
+    : start = DateTime(date.year, date.month, 1),
+      end = DateTime(date.year, date.month + 1, 0);
 }
 
 class ToursHandler {
@@ -299,20 +314,29 @@ class ToursHandler {
   }
 
   List<Tour> eventLoader(
-      DateTime date, void Function(void Function()) updateParent) {
+    DateTime date,
+    void Function(void Function()) updateParent,
+  ) {
     DateRange month = DateRange.month(date);
-    return fetchTours(month.start, month.end, updateParent)
-        .where((element) => element.isSameDay(date))
-        .toList();
+    return fetchTours(
+      month.start,
+      month.end,
+      updateParent,
+    ).where((element) => element.isSameDay(date)).toList();
   }
 
   List<Tour> fetchToursRange(
-      DateRange range, void Function(void Function()) updateParent) {
+    DateRange range,
+    void Function(void Function()) updateParent,
+  ) {
     return fetchTours(range.start, range.end, updateParent);
   }
 
-  List<Tour> fetchTours(DateTime start, DateTime end,
-      void Function(void Function()) updateParent) {
+  List<Tour> fetchTours(
+    DateTime start,
+    DateTime end,
+    void Function(void Function()) updateParent,
+  ) {
     if (alreadyFetched(start, end)) {
       return _getFetchedTours(start, end)!;
     }
@@ -323,10 +347,15 @@ class ToursHandler {
     return [];
   }
 
-  Future<List<Tour>> acutalFetch(DateTime start, DateTime end,
-      void Function(void Function()) updateParent) async {
-    List<Tour> futureTours =
-        await WebComunicater.instance.getTours(from: start, to: end);
+  Future<List<Tour>> acutalFetch(
+    DateTime start,
+    DateTime end,
+    void Function(void Function()) updateParent,
+  ) async {
+    List<Tour> futureTours = await WebComunicater.instance.getTours(
+      from: start,
+      to: end,
+    );
 
     _fetching.add(DateRange(start, end));
 

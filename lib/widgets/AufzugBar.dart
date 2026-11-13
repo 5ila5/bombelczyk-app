@@ -10,18 +10,18 @@ import 'package:material_ui/material_ui.dart';
 
 class AufzugBarRow extends Row {
   AufzugBarRow(String text)
-      : super(
-          children: [
-            //Text(widget.plz + " ", style: tableRowBottomStyle,overflow: TextOverflow.fade,),
-            Flexible(
-              child: Text(
-                text,
-                style: AufzugBarBodyTextStyle(),
-                overflow: TextOverflow.fade,
-              ),
+    : super(
+        children: [
+          //Text(widget.plz + " ", style: tableRowBottomStyle,overflow: TextOverflow.fade,),
+          Flexible(
+            child: Text(
+              text,
+              style: AufzugBarBodyTextStyle(),
+              overflow: TextOverflow.fade,
             ),
-          ],
-        );
+          ),
+        ],
+      );
 }
 
 class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
@@ -33,33 +33,36 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
   final List<Widget>? belowWidgets;
   final List<Widget> additioanlRow;
 
-  AufzugBar(this.aufzug,
-      {required this.onTap,
-      this.rightIcon,
-      this.leftIcon,
-      this.belowWidgets,
-      Color? backgroundColor,
-      bool? odd,
-      this.additioanlRow = const []})
-      : this.backgroundColor = backgroundColor ??
-            ((odd ?? true) ? Colors.white : Colors.grey[300]) {
+  AufzugBar(
+    this.aufzug, {
+    required this.onTap,
+    this.rightIcon,
+    this.leftIcon,
+    this.belowWidgets,
+    Color? backgroundColor,
+    bool? odd,
+    this.additioanlRow = const [],
+  }) : this.backgroundColor =
+           backgroundColor ??
+           ((odd ?? true) ? Colors.white : Colors.grey[300]) {
     print("background color: " + this.backgroundColor.toString());
     print(backgroundColor);
   }
 
-  AufzugBar.simpleOntap(this.aufzug,
-      {void Function()? onTap,
-      this.rightIcon,
-      this.leftIcon,
-      this.belowWidgets,
-      Color? backgroundColor,
-      bool? odd,
-      this.additioanlRow = const []})
-      : this.onTap = ((BuildContext context) {
-          if (onTap != null) onTap();
-        }),
-        this.backgroundColor = backgroundColor ??
-            ((odd ?? true) ? Colors.white : Colors.grey[300]);
+  AufzugBar.simpleOntap(
+    this.aufzug, {
+    void Function()? onTap,
+    this.rightIcon,
+    this.leftIcon,
+    this.belowWidgets,
+    Color? backgroundColor,
+    bool? odd,
+    this.additioanlRow = const [],
+  }) : this.onTap = ((BuildContext context) {
+         if (onTap != null) onTap();
+       }),
+       this.backgroundColor =
+           backgroundColor ?? ((odd ?? true) ? Colors.white : Colors.grey[300]);
 
   List<String> getBodyTexts() {
     List<String> toReturn = [
@@ -87,8 +90,12 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
     // int overflows = texts.where((e) => e.length > 40).length;
 
     return Container(
-      padding:
-          const EdgeInsets.only(right: 20.0, left: 10.0, bottom: 5.0, top: 5.0),
+      padding: const EdgeInsets.only(
+        right: 20.0,
+        left: 10.0,
+        bottom: 5.0,
+        top: 5.0,
+      ),
       //padding: const EdgeInsets.only(left: 10.0),
       color: backgroundColor,
       child: Column(
@@ -98,13 +105,14 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
             children: [
               Expanded(
                 child: new InkWell(
-                    child: Column(
-                      children: [
-                        ...texts.map((e) => AufzugBarRow(e)),
-                        ...additioanlRow
-                      ],
-                    ),
-                    onTap: () => this.onTap(context)),
+                  child: Column(
+                    children: [
+                      ...texts.map((e) => AufzugBarRow(e)),
+                      ...additioanlRow,
+                    ],
+                  ),
+                  onTap: () => this.onTap(context),
+                ),
               ),
               if (rightIcon != null) rightIcon!,
             ],
@@ -119,64 +127,75 @@ class AufzugBar<AufzugType extends Aufzug> extends StatelessWidget {
 
 class SimpleAufzugBar extends AufzugBar<Aufzug> {
   SimpleAufzugBar(Aufzug aufzug, {bool? odd})
-      : this.withOnTap(aufzug, (c) => AufzugPageHandler.showPage(c, aufzug),
-            odd: odd);
+    : this.withOnTap(
+        aufzug,
+        (c) => AufzugPageHandler.showPage(c, aufzug),
+        odd: odd,
+      );
 
-  SimpleAufzugBar.withOnTap(Aufzug aufzug, void Function(BuildContext) onTap,
-      {bool? odd})
-      : super(aufzug,
-            rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: onTap,
-            odd: odd);
+  SimpleAufzugBar.withOnTap(
+    Aufzug aufzug,
+    void Function(BuildContext) onTap, {
+    bool? odd,
+  }) : super(
+         aufzug,
+         rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
+         onTap: onTap,
+         odd: odd,
+       );
 }
 
 class TourAufzugBar extends AufzugBar<TourAufzug> {
-  TourAufzugBar(TourAufzug aufzug, void Function(void Function()) update,
-      {List<Widget>? belowWidgets,
-      bool? odd,
-      bool editMode = false,
-      Color? customColor,
-      Widget? customArbeitWidget})
-      : super(aufzug,
-            odd: odd,
-            backgroundColor: customColor,
-            additioanlRow: [
-              customArbeitWidget ??
-                  AufzugBarRow("arbeit: " + aufzug.workType.name)
-            ],
-            rightIcon: Column(
-              children: [
-                TourCheckIcon(
-                  aufzug,
-                  update,
-                  immediate: !editMode,
-                ),
-                ClickableMapIcon(aufzug.address),
-                if (aufzug.hasImages)
-                  Builder(builder: (context) => TourShowImage(aufzug, context))
-              ],
-            ),
-            onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
-            belowWidgets: belowWidgets);
+  TourAufzugBar(
+    TourAufzug aufzug,
+    void Function(void Function()) update, {
+    List<Widget>? belowWidgets,
+    bool? odd,
+    bool editMode = false,
+    Color? customColor,
+    Widget? customArbeitWidget,
+  }) : super(
+         aufzug,
+         odd: odd,
+         backgroundColor: customColor,
+         additioanlRow: [
+           customArbeitWidget ??
+               AufzugBarRow("arbeit: " + aufzug.workType.name),
+         ],
+         rightIcon: Column(
+           children: [
+             TourCheckIcon(aufzug, update, immediate: !editMode),
+             ClickableMapIcon(aufzug.address),
+             if (aufzug.hasImages)
+               Builder(builder: (context) => TourShowImage(aufzug, context)),
+           ],
+         ),
+         onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+         belowWidgets: belowWidgets,
+       );
 }
 
 class TourModifiableAufzugBar extends TourAufzugBar {
   TourModifiableAufzugBar(
-      TourAufzug aufzug, void Function(void Function()) update,
-      {bool? odd, bool? finished})
-      : super(aufzug, update,
-            editMode: true,
-            odd: odd,
-            customColor: (finished ?? false) ? Colors.green[300] : null,
-            belowWidgets: [TourAufzugEditButtons.getButtons(aufzug, update)],
-            customArbeitWidget:
-                ArbeitDropDownFutureBuilder(aufzug.workType, (w) {
-              if (w != null) {
-                update(() {
-                  aufzug.workType = w;
-                });
-              }
-            }));
+    TourAufzug aufzug,
+    void Function(void Function()) update, {
+    bool? odd,
+    bool? finished,
+  }) : super(
+         aufzug,
+         update,
+         editMode: true,
+         odd: odd,
+         customColor: (finished ?? false) ? Colors.green[300] : null,
+         belowWidgets: [TourAufzugEditButtons.getButtons(aufzug, update)],
+         customArbeitWidget: ArbeitDropDownFutureBuilder(aufzug.workType, (w) {
+           if (w != null) {
+             update(() {
+               aufzug.workType = w;
+             });
+           }
+         }),
+       );
 }
 
 mixin DistanceText on AufzugBar<AufzugWithDistance> {
@@ -190,10 +209,12 @@ mixin DistanceText on AufzugBar<AufzugWithDistance> {
 class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
     with DistanceText {
   SimpleAufzugBarWithDistance(AufzugWithDistance aufzug, {bool? odd})
-      : super(aufzug,
-            rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
-            onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
-            odd: odd);
+    : super(
+        aufzug,
+        rightIcon: Column(children: [ClickableMapIcon(aufzug.address)]),
+        onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+        odd: odd,
+      );
 }
 
 class TourAufzugBarWithState extends StatefulWidget {
@@ -229,52 +250,74 @@ class _TourAufzugBarWithStateState extends State<TourAufzugBarWithState> {
 
 class CollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
   CollapsedToDoAufzugBar(
-      AufzugWithToDos aufzug, void Function() uncollapse, BuildContext context)
-      : super(aufzug,
-            rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
-            onTap: (c) => uncollapse(),
-            leftIcon: [
-              Icon(Icons.keyboard_arrow_up, color: Colors.blue),
-              Padding(
-                padding: const EdgeInsets.only(
-                    right: 0, left: 5.0, bottom: 0, top: 0),
-              )
-            ]);
+    AufzugWithToDos aufzug,
+    void Function() uncollapse,
+    BuildContext context,
+  ) : super(
+        aufzug,
+        rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
+        onTap: (c) => uncollapse(),
+        leftIcon: [
+          Icon(Icons.keyboard_arrow_up, color: Colors.blue),
+          Padding(
+            padding: const EdgeInsets.only(
+              right: 0,
+              left: 5.0,
+              bottom: 0,
+              top: 0,
+            ),
+          ),
+        ],
+      );
 }
 
 class UnCollapsedToDoAufzugBar extends AufzugBar<AufzugWithToDos> {
   final void Function(void Function()) update;
 
-  UnCollapsedToDoAufzugBar(AufzugWithToDos aufzug, void Function() collapse,
-      this.update, BuildContext context)
-      : super(aufzug,
-            rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
-            onTap: (c) => collapse(),
-            belowWidgets: ToDosBar.getToDoBars(aufzug, update),
-            leftIcon: [
-              Icon(Icons.keyboard_arrow_down, color: Colors.blue),
-              Padding(
-                padding: const EdgeInsets.only(
-                    right: 0, left: 5.0, bottom: 0, top: 0),
-              )
-            ]);
+  UnCollapsedToDoAufzugBar(
+    AufzugWithToDos aufzug,
+    void Function() collapse,
+    this.update,
+    BuildContext context,
+  ) : super(
+        aufzug,
+        rightIcon: Column(children: [ClickableAfzIcon(context, aufzug)]),
+        onTap: (c) => collapse(),
+        belowWidgets: ToDosBar.getToDoBars(aufzug, update),
+        leftIcon: [
+          Icon(Icons.keyboard_arrow_down, color: Colors.blue),
+          Padding(
+            padding: const EdgeInsets.only(
+              right: 0,
+              left: 5.0,
+              bottom: 0,
+              top: 0,
+            ),
+          ),
+        ],
+      );
 }
 
 class ToDosBar {
   static List<Widget> getAddTodoBar(
-      AufzugWithToDos aufzug, void Function(void Function()) update) {
+    AufzugWithToDos aufzug,
+    void Function(void Function()) update,
+  ) {
     return [
       InkWell(
-          child: Icon(Icons.add, size: 40, color: Colors.blue),
-          onTap: () => update(() => aufzug.addTodo(
-                ToDo(-1, aufzug, "", DateTime.now(), null),
-              ))),
-      Divider(thickness: 1, color: Colors.grey)
+        child: Icon(Icons.add, size: 40, color: Colors.blue),
+        onTap: () => update(
+          () => aufzug.addTodo(ToDo(-1, aufzug, "", DateTime.now(), null)),
+        ),
+      ),
+      Divider(thickness: 1, color: Colors.grey),
     ];
   }
 
   static List<Widget> getToDoBars(
-      AufzugWithToDos aufzug, void Function(void Function()) update) {
+    AufzugWithToDos aufzug,
+    void Function(void Function()) update,
+  ) {
     List<Widget> toReturn = getAddTodoBar(aufzug, update);
     for (ToDo todo in aufzug.todos) {
       void Function() informDelete = () {
@@ -296,27 +339,29 @@ class ToDosBar {
 
 class WorkBar extends Table {
   WorkBar(Arbeit work)
-      : super(
-          children: [
-            TableRow(children: [
-              SelectableText("Datum"),
-              SelectableText(work.date),
-            ]),
-            TableRow(children: [
+    : super(
+        children: [
+          TableRow(
+            children: [SelectableText("Datum"), SelectableText(work.date)],
+          ),
+          TableRow(
+            children: [
               SelectableText("Monteur(e)"),
               SelectableText(work.workersString),
               //Text(value["MitarbeiterName"]),
-            ]),
-            TableRow(children: [
-              SelectableText("Arbeit"),
-              SelectableText(work.work),
-            ]),
-            TableRow(children: [
+            ],
+          ),
+          TableRow(
+            children: [SelectableText("Arbeit"), SelectableText(work.work)],
+          ),
+          TableRow(
+            children: [
               SelectableText("Kurztext"),
               SelectableText(work.description),
-            ]),
-          ],
-        );
+            ],
+          ),
+        ],
+      );
 }
 
 class ToDoAufzugBar extends StatefulWidget {

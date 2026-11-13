@@ -18,7 +18,7 @@ class History extends StatelessWidget {
     Future<List<Widget>> widgets = getAfzWidgets(context);
 
     return Center(
-        child:
-            SingleChildScrollView(child: WidgetColumnFutureBuilder(widgets)));
+      child: SingleChildScrollView(child: WidgetColumnFutureBuilder(widgets)),
+    );
   }
 }

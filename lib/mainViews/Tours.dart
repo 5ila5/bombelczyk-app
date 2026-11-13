@@ -5,9 +5,7 @@ import 'package:Bombelczyk/widgets/Tour.dart';
 import 'package:material_ui/material_ui.dart';
 
 class Tours extends StatefulWidget {
-  Tours({
-    Key? key,
-  }) : super(key: key);
+  Tours({Key? key}) : super(key: key);
 
   @override
   ToursState createState() => ToursState();
@@ -38,16 +36,25 @@ class ToursState extends State<Tours> {
       }
     });
     return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            child: Column(children: [
-              TourCalendar(onDaySelected),
-              AddTour(
-                  onPressed: () => TourWidgetHelper.showCreateDialog(
-                      context, selectedDay, setState)),
-              Column(
-                  children: tours.map((e) => TourWidget(e, setState)).toList())
-            ])));
+      onRefresh: onRefresh,
+      child: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            TourCalendar(onDaySelected),
+            AddTour(
+              onPressed: () => TourWidgetHelper.showCreateDialog(
+                context,
+                selectedDay,
+                setState,
+              ),
+            ),
+            Column(
+              children: tours.map((e) => TourWidget(e, setState)).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -45,47 +45,44 @@ class TourChange<T> extends Change<T> {
   };
 
   TourChange._(String attr, T oldValue, T newValue)
-      : super(attr, oldValue, newValue);
+    : super(attr, oldValue, newValue);
 }
 
 class TourChangeAufzuege extends TourChange<List<TourAufzug>> {
   TourChangeAufzuege(List<TourAufzug> oldValue, List<TourAufzug> newValue)
-      : super._("aufzuege", oldValue, newValue);
+    : super._("aufzuege", oldValue, newValue);
 }
 
 class TourChangeName extends TourChange<String> {
   TourChangeName(String oldValue, String newValue)
-      : super._("name", oldValue, newValue);
+    : super._("name", oldValue, newValue);
 }
 
 class TourChangeDate extends TourChange<DateTime> {
   TourChangeDate(DateTime oldValue, DateTime newValue)
-      : super._("date", oldValue, newValue);
+    : super._("date", oldValue, newValue);
 }
 
 class TourChangeShared extends TourChange<List<Future<User>>> {
   TourChangeShared(List<Future<User>> oldValue, List<Future<User>> newValue)
-      : super._("sharedWith", oldValue, newValue);
+    : super._("sharedWith", oldValue, newValue);
 }
 
 class ToDoChange<T> extends Change<T> {
-  static final TODO_ATTRS = {
-    "text": String,
-    "doneDate": DateTime,
-  };
+  static final TODO_ATTRS = {"text": String, "doneDate": DateTime};
 
   ToDoChange._(attr, oldValue, newValue)
-      : super(attr, oldValue, newValue, TODO_ATTRS);
+    : super(attr, oldValue, newValue, TODO_ATTRS);
 }
 
 class ToDoChangeText extends ToDoChange<String> {
   ToDoChangeText(String oldValue, String newValue)
-      : super._("text", oldValue, newValue);
+    : super._("text", oldValue, newValue);
 }
 
 class ToDoChangeDoneDate extends ToDoChange<DateTime?> {
   ToDoChangeDoneDate(DateTime? oldValue, DateTime? newValue)
-      : super._("doneDate", oldValue, newValue);
+    : super._("doneDate", oldValue, newValue);
 }
 
 mixin Deletable {
@@ -111,11 +108,12 @@ abstract class Editable<T, C extends Change> {
   @protected
   void edit(C change) {
     C prevChange = changes.firstWhere(
-        (element) => element.attr == change.attr && element.isChanged,
-        orElse: () {
-      changes.add(change);
-      return change;
-    });
+      (element) => element.attr == change.attr && element.isChanged,
+      orElse: () {
+        changes.add(change);
+        return change;
+      },
+    );
     prevChange.newValue = change.newValue;
   }
 

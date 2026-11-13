@@ -16,14 +16,18 @@ class _NearbyState extends State<Nearby> {
   int _count;
 
   _NearbyState([count])
-      : this._count = count ?? 10,
-        afzs = WebComunicater.instance
-            .getNearbyAufzug(Geolocation.determinePosition(), count ?? 10);
+    : this._count = count ?? 10,
+      afzs = WebComunicater.instance.getNearbyAufzug(
+        Geolocation.determinePosition(),
+        count ?? 10,
+      );
 
   Future<void> refresh() async {
     setState(() {
-      afzs = WebComunicater.instance
-          .getNearbyAufzug(Geolocation.determinePosition(), _count);
+      afzs = WebComunicater.instance.getNearbyAufzug(
+        Geolocation.determinePosition(),
+        _count,
+      );
     });
   }
 
@@ -32,34 +36,48 @@ class _NearbyState extends State<Nearby> {
     if (count == _count) return;
     setState(() {
       _count = count;
-      afzs = WebComunicater.instance
-          .getNearbyAufzug(Geolocation.determinePosition(), count);
+      afzs = WebComunicater.instance.getNearbyAufzug(
+        Geolocation.determinePosition(),
+        count,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-        onRefresh: refresh,
-        child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child: Column(
-            // alignment top
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: SimpleAmountChooser([10, 20, 50], setCount,
-                      defaultAmount: 10)),
-              Center(
-                  child: WidgetColumnFutureBuilder(
-                afzs.then((value) => value
-                    .map((e) => SimpleAufzugBarWithDistance(e,
-                        odd: value.indexOf(e) & 1 == 1))
-                    .toList()),
-              ))
-            ],
-          ),
-        ));
+      onRefresh: refresh,
+      child: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: Column(
+          // alignment top
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              child: SimpleAmountChooser(
+                [10, 20, 50],
+                setCount,
+                defaultAmount: 10,
+              ),
+            ),
+            Center(
+              child: WidgetColumnFutureBuilder(
+                afzs.then(
+                  (value) => value
+                      .map(
+                        (e) => SimpleAufzugBarWithDistance(
+                          e,
+                          odd: value.indexOf(e) & 1 == 1,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

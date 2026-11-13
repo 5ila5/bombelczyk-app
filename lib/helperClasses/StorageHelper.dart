@@ -22,8 +22,12 @@ class StorageHelper {
   }
 
   static Future<void> _setHistory(List<int> history) {
-    return prefs.then((value) => value.setStringList(
-        "lastAFZs", history.map((e) => e.toString()).toList()));
+    return prefs.then(
+      (value) => value.setStringList(
+        "lastAFZs",
+        history.map((e) => e.toString()).toList(),
+      ),
+    );
   }
 
   static Future<void> addHistory(Aufzug afz) {
@@ -51,28 +55,29 @@ class Login {
 
   static Future<bool?> displayLoginDialog(BuildContext parentContext) async {
     return await showDialog<Future<bool?>?>(
-        context: parentContext,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Passwort:'),
-            content: TextField(
-              onSubmitted: (value) => _login(value, context),
-              decoration: InputDecoration(hintText: "Passwort"),
-              controller: _controller,
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  elevation: 10.0,
-                  shadowColor: Colors.blueGrey,
-                  disabledForegroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                ),
-                child: Text('OK'),
-                onPressed: () => _login(_controller.text, context),
+      context: parentContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Passwort:'),
+          content: TextField(
+            onSubmitted: (value) => _login(value, context),
+            decoration: InputDecoration(hintText: "Passwort"),
+            controller: _controller,
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                elevation: 10.0,
+                shadowColor: Colors.blueGrey,
+                disabledForegroundColor: Colors.white,
+                backgroundColor: Colors.blue,
               ),
-            ],
-          );
-        });
+              child: Text('OK'),
+              onPressed: () => _login(_controller.text, context),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

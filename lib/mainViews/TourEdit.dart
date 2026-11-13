@@ -11,13 +11,14 @@ class TourEdit extends StatelessWidget {
 
   static const TourEditRoute = '/TourEdit';
 
-  static void showPage(BuildContext context, Tour tour,
-      void Function(void Function()) updateParent) {
-    Navigator.pushNamed(
-      context,
-      TourEdit.TourEditRoute,
-      arguments: tour,
-    ).then((value) {
+  static void showPage(
+    BuildContext context,
+    Tour tour,
+    void Function(void Function()) updateParent,
+  ) {
+    Navigator.pushNamed(context, TourEdit.TourEditRoute, arguments: tour).then((
+      value,
+    ) {
       if (!tour.isDeleted) {
         tour.cancel();
       }
@@ -25,13 +26,9 @@ class TourEdit extends StatelessWidget {
     });
   }
 
-  TourEdit(Tour tour)
-      : this.tour = tour,
-        super();
+  TourEdit(Tour tour) : this.tour = tour, super();
 
-  TourEdit.fromContext()
-      : tour = null,
-        super();
+  TourEdit.fromContext() : tour = null, super();
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +36,21 @@ class TourEdit extends StatelessWidget {
         this.tour ?? ModalRoute.of(context)!.settings.arguments as Tour;
     return Scaffold(
       appBar: AppBar(
-        title: Row(children: [
-          Flexible(
-            child: Container(
-              //padding: EdgeInsets.only(right: 5),
-              child: Text(
-                tour.idx == -1
-                    ? "Neue Tour"
-                    : "Tour (" + tour.idx.toString() + ") Bearbeiten",
-                overflow: TextOverflow.ellipsis,
+        title: Row(
+          children: [
+            Flexible(
+              child: Container(
+                //padding: EdgeInsets.only(right: 5),
+                child: Text(
+                  tour.idx == -1
+                      ? "Neue Tour"
+                      : "Tour (" + tour.idx.toString() + ") Bearbeiten",
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
       body: TourEditBody(tour),
     );
@@ -75,32 +74,30 @@ class TourEditBodyState extends State<TourEditBody> {
         ConstrainedBox(
           constraints: BoxConstraints(maxHeight: 150),
           child: TourEditTitle(
-              (s) => setState(
-                    () {
-                      widget.tour.name = s;
-                    },
-                  ),
-              widget.tour.name),
+            (s) => setState(() {
+              widget.tour.name = s;
+            }),
+            widget.tour.name,
+          ),
         ),
-        TourWidget(
-          widget.tour,
-          setState,
-          edit_mode: true,
-        ),
+        TourWidget(widget.tour, setState, edit_mode: true),
         ShareButton(widget.tour),
         ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height / 2),
-            child: InkWell(
-                child: Icon(
-                  Icons.add,
-                  size: 50,
-                ),
-                onTap: () => SearchPopup.show(context, onTap: (b) {
-                      setState(() {
-                        widget.tour.addAufzug(b);
-                      });
-                    }))),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height / 2,
+          ),
+          child: InkWell(
+            child: Icon(Icons.add, size: 50),
+            onTap: () => SearchPopup.show(
+              context,
+              onTap: (b) {
+                setState(() {
+                  widget.tour.addAufzug(b);
+                });
+              },
+            ),
+          ),
+        ),
         TourEditBottomButtons(widget.tour),
       ],
     );

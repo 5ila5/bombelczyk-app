@@ -22,10 +22,11 @@ class _ToDoViewState extends State<ToDoView> {
     setState(() {
       contentList = WebComunicater.instance
           .getToDos(
-              search: search,
-              show_checked: show_checked,
-              show_unchecked: show_unchecked,
-              sort: currentSort)
+            search: search,
+            show_checked: show_checked,
+            show_unchecked: show_unchecked,
+            sort: currentSort,
+          )
           .then((value) => value.map((afz) => ToDoAufzugBar(afz)).toList());
     });
   }
@@ -34,8 +35,9 @@ class _ToDoViewState extends State<ToDoView> {
     search = newSearch ?? search;
     if ((newSearch ?? search).length < 3) {
       setState(() {
-        contentList =
-            Future.value([Text("Geben Sie mindestens 3 Zeichen ein")]);
+        contentList = Future.value([
+          Text("Geben Sie mindestens 3 Zeichen ein"),
+        ]);
       });
       return;
     }
@@ -52,24 +54,34 @@ class _ToDoViewState extends State<ToDoView> {
     setState(() {
       contentList = WebComunicater.instance
           .getToDos(
-              search: search,
-              show_checked: show_checked,
-              show_unchecked: show_unchecked,
-              sort: currentSort)
-          .then((value) =>
-              value.map((afz) => ToDoAufzugBar(afz, newCollapsed)).toList());
+            search: search,
+            show_checked: show_checked,
+            show_unchecked: show_unchecked,
+            sort: currentSort,
+          )
+          .then(
+            (value) =>
+                value.map((afz) => ToDoAufzugBar(afz, newCollapsed)).toList(),
+          );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Padding(
+    return Column(
+      children: [
+        Padding(
           padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-          child: AfzSearchBar("Suche To-Dos", searchChange)),
-      SortDropDownWithDirCollapsed(
-          currentSort, sortChange, true, changeAllCollapsed),
-      WidgetColumnFutureBuilder(contentList)
-    ]);
+          child: AfzSearchBar("Suche To-Dos", searchChange),
+        ),
+        SortDropDownWithDirCollapsed(
+          currentSort,
+          sortChange,
+          true,
+          changeAllCollapsed,
+        ),
+        WidgetColumnFutureBuilder(contentList),
+      ],
+    );
   }
 }

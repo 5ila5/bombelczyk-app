@@ -9,19 +9,26 @@ class Akku {
   final DateTime _tauschTag;
   final String _zyklus;
 
-  Akku(this._aufzug, this._kapazitaet, this._spannung, this._ort, this._menge,
-      this._tauschTag, this._zyklus);
+  Akku(
+    this._aufzug,
+    this._kapazitaet,
+    this._spannung,
+    this._ort,
+    this._menge,
+    this._tauschTag,
+    this._zyklus,
+  );
 
   Akku.fromApiJson(Map<String, dynamic> json, Aufzug aufzug)
-      : this(
-          aufzug,
-          json['Kap'],
-          json['Spg'],
-          json['Ort'],
-          json['Menge'],
-          DateTime.parse(json['TauschTag']),
-          json['Zykl'],
-        );
+    : this(
+        aufzug,
+        json['Kap'],
+        json['Spg'],
+        json['Ort'],
+        json['Menge'],
+        DateTime.parse(json['TauschTag']),
+        json['Zykl'],
+      );
 
   Aufzug get aufzug => _aufzug;
   String get kapazitaet => _kapazitaet;

@@ -26,94 +26,103 @@ class _ToDoBarState extends State<ToDoBar> {
   }
 
   DeleteInkWell _getDeleteButton() => DeleteInkWell(() {
-        todo.delete();
-        HapticFeedback.heavyImpact();
-        widget.informDelete();
-      });
+    todo.delete();
+    HapticFeedback.heavyImpact();
+    widget.informDelete();
+  });
 
   Row getBottomRow() {
-    return Row(children: [
-      SaveInkWell(() {
-        setState(() {
-          todo = todo.save();
-          _save();
-          SavedVisualizer.showSavedVisualizer(context);
-          //savedText[key] = textController[key].text;
-        });
-      }, todo.hasChanged),
-      CancelInkWell(() {
-        setState(() {
-          todo.cancel();
-          HapticFeedback.heavyImpact();
-        });
-      }, todo.hasChanged),
-      _getDeleteButton(),
-      Text("erstellt:\n" + TimeFormatter.germanTimeString(todo.creationDate)),
-    ]);
+    return Row(
+      children: [
+        SaveInkWell(() {
+          setState(() {
+            todo = todo.save();
+            _save();
+            SavedVisualizer.showSavedVisualizer(context);
+            //savedText[key] = textController[key].text;
+          });
+        }, todo.hasChanged),
+        CancelInkWell(() {
+          setState(() {
+            todo.cancel();
+            HapticFeedback.heavyImpact();
+          });
+        }, todo.hasChanged),
+        _getDeleteButton(),
+        Text("erstellt:\n" + TimeFormatter.germanTimeString(todo.creationDate)),
+      ],
+    );
   }
 
   Widget _getCheckedText() => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            ConstrainedBox(
-              constraints: new BoxConstraints(
-                minHeight: 35.0,
-                //maxHeight: 60.0,
-              ),
-              child: SelectableText(
-                todo.text,
-              ),
-            ),
-            _getDeleteButton(),
-          ]);
-
-  Widget _getUncheckedText() => Column(children: [
-        TextField(
-          onChanged: (String t) => todo.text = t,
-          controller: TextEditingController(text: todo.text),
-          keyboardType: TextInputType.multiline,
-          maxLines: null,
-          decoration: const InputDecoration(),
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisAlignment: MainAxisAlignment.start,
+    children: [
+      ConstrainedBox(
+        constraints: new BoxConstraints(
+          minHeight: 35.0,
+          //maxHeight: 60.0,
         ),
-        getBottomRow(),
-      ]);
+        child: SelectableText(todo.text),
+      ),
+      _getDeleteButton(),
+    ],
+  );
+
+  Widget _getUncheckedText() => Column(
+    children: [
+      TextField(
+        onChanged: (String t) => todo.text = t,
+        controller: TextEditingController(text: todo.text),
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        decoration: const InputDecoration(),
+      ),
+      getBottomRow(),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Table(columnWidths: {
-      0: FlexColumnWidth(1.19),
-      1: FlexColumnWidth(6),
-    }, children: [
-      TableRow(children: [
-        Column(children: [
-          Checkbox(
-            value: (todo.isDone),
-            onChanged: (bool? newValue) {
-              setState(() {
-                todo.isDone = newValue!;
-              });
-            },
-          ),
-          Text((todo.isDone)
-              ? TimeFormatter.germanTimeString(todo.doneDate!)
-              : ""),
-        ]),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Table(
+      columnWidths: {0: FlexColumnWidth(1.19), 1: FlexColumnWidth(6)},
+      children: [
+        TableRow(
           children: [
-            (todo.isDone) ? _getCheckedText() : _getUncheckedText(),
+            Column(
+              children: [
+                Checkbox(
+                  value: (todo.isDone),
+                  onChanged: (bool? newValue) {
+                    setState(() {
+                      todo.isDone = newValue!;
+                    });
+                  },
+                ),
+                Text(
+                  (todo.isDone)
+                      ? TimeFormatter.germanTimeString(todo.doneDate!)
+                      : "",
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                (todo.isDone) ? _getCheckedText() : _getUncheckedText(),
+              ],
+            ),
           ],
         ),
-      ]),
-    ]);
+      ],
+    );
   }
 }
 
 class UncreatedToDoBar extends ToDoBar {
   final void Function(Future<ToDo>) onCreated;
   UncreatedToDoBar(ToDo todo, void Function() informDelete, this.onCreated)
-      : super(todo, informDelete);
+    : super(todo, informDelete);
 
   @override
   _UncreatedToDoBarState createState() =>
@@ -153,6 +162,8 @@ class _NewToDoBarState extends State<NewToDoBar> {
       });
     }
     return CircularProgressIndicatorFutureBuilder(
-        futureTodo!, (p0) => ToDoBar(p0, widget.informDelete));
+      futureTodo!,
+      (p0) => ToDoBar(p0, widget.informDelete),
+    );
   }
 }

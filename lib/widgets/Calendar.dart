@@ -9,14 +9,15 @@ class MyCalendar<T> extends StatefulWidget {
   final DateTime defaultDate;
   final List<T> Function(DateTime)? eventLoader;
   final List<T> Function(DateTime, void Function(void Function()))?
-      eventLoaderWithSetState;
+  eventLoaderWithSetState;
 
-  MyCalendar(this.onDaySelected,
-      {this.eventLoader,
-      this.eventLoaderWithSetState,
-      DateTime? defaultDate,
-      this.defaultFormat = CalendarFormat.week})
-      : defaultDate = defaultDate ?? DateTime.now();
+  MyCalendar(
+    this.onDaySelected, {
+    this.eventLoader,
+    this.eventLoaderWithSetState,
+    DateTime? defaultDate,
+    this.defaultFormat = CalendarFormat.week,
+  }) : defaultDate = defaultDate ?? DateTime.now();
 
   @override
   _MyCalendarState<T> createState() =>
@@ -29,40 +30,40 @@ class _MyCalendarState<T> extends State<MyCalendar<T>> {
   DateTime _focusedDay;
 
   _MyCalendarState(this._calendarFormat, this._selectedDay)
-      : _focusedDay = _selectedDay;
+    : _focusedDay = _selectedDay;
 
   @override
   Widget build(BuildContext context) {
     return TableCalendar<T>(
       calendarBuilders: CalendarBuilders(
-        headerTitleBuilder: (c, d) =>
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(DateFormat.yMMMM("de_DE").format(d)),
-          IconButton(
-            icon: Icon(Icons.today),
-            onPressed: () {
-              setState(() {
-                _focusedDay = DateTime.now();
-                _selectedDay = DateTime.now();
-              });
-            },
-          ),
-        ]),
+        headerTitleBuilder: (c, d) => Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(DateFormat.yMMMM("de_DE").format(d)),
+            IconButton(
+              icon: Icon(Icons.today),
+              onPressed: () {
+                setState(() {
+                  _focusedDay = DateTime.now();
+                  _selectedDay = DateTime.now();
+                });
+              },
+            ),
+          ],
+        ),
         //headerTitleBuilder: headerBuilder,
       ),
       weekNumbersVisible: true,
       availableCalendarFormats: {
         CalendarFormat.month: "L",
         CalendarFormat.twoWeeks: "M",
-        CalendarFormat.week: "S"
+        CalendarFormat.week: "S",
       },
       availableGestures: AvailableGestures.horizontalSwipe,
       headerStyle: HeaderStyle(),
       calendarStyle: CalendarStyle(
         outsideDaysVisible: true,
-        weekendTextStyle: TextStyle(
-          color: Colors.red,
-        ),
+        weekendTextStyle: TextStyle(color: Colors.red),
       ),
       onFormatChanged: (format) {
         if (_calendarFormat != format) {
@@ -91,7 +92,8 @@ class _MyCalendarState<T> extends State<MyCalendar<T>> {
         });
       },
       startingDayOfWeek: StartingDayOfWeek.monday,
-      eventLoader: widget.eventLoader ??
+      eventLoader:
+          widget.eventLoader ??
           (day) {
             if (widget.eventLoaderWithSetState != null)
               return widget.eventLoaderWithSetState!(day, setState);
@@ -103,9 +105,11 @@ class _MyCalendarState<T> extends State<MyCalendar<T>> {
 
 class TourCalendar extends MyCalendar<Tour> {
   TourCalendar(void Function(DateTime, DateTime)? onDaySelected)
-      : super(onDaySelected,
-            eventLoaderWithSetState: (day, setState) =>
-                ToursHandler.instance.eventLoader(day, setState),
-            defaultDate: DateTime.now(),
-            defaultFormat: CalendarFormat.week);
+    : super(
+        onDaySelected,
+        eventLoaderWithSetState: (day, setState) =>
+            ToursHandler.instance.eventLoader(day, setState),
+        defaultDate: DateTime.now(),
+        defaultFormat: CalendarFormat.week,
+      );
 }

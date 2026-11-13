@@ -13,17 +13,22 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
   List<void Function(ToDo)> addNotify = [];
   List<void Function(ToDo)> deleteNotify = [];
 
-  ToDo(this._id, this._aufzug, this._text, this._creationDate,
-      [this._doneDate]);
+  ToDo(
+    this._id,
+    this._aufzug,
+    this._text,
+    this._creationDate, [
+    this._doneDate,
+  ]);
 
   ToDo.fromApiJson(Map<String, dynamic> json, Aufzug aufzug)
-      : this(
-          json['idx'] is String ? int.parse(json['idx']) : json['idx'],
-          aufzug,
-          json['text'],
-          DateTime.parse(json['created']),
-          json['checked'] == null ? null : DateTime.parse(json['checked']),
-        );
+    : this(
+        json['idx'] is String ? int.parse(json['idx']) : json['idx'],
+        aufzug,
+        json['text'],
+        DateTime.parse(json['created']),
+        json['checked'] == null ? null : DateTime.parse(json['checked']),
+      );
 
   int get id => returnIfNotDeleted(_id);
   Aufzug get aufzug => returnIfNotDeleted(_aufzug);
@@ -32,8 +37,11 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
   DateTime? get doneDate => returnIfNotDeleted(changeOr("doneDate", _doneDate));
   bool get isDone => this.doneDate != null;
 
-  void registerListener(void Function(ToDo, ToDo) replaceNotify,
-      void Function(ToDo) addNotify, void Function(ToDo) deleteNotify) {
+  void registerListener(
+    void Function(ToDo, ToDo) replaceNotify,
+    void Function(ToDo) addNotify,
+    void Function(ToDo) deleteNotify,
+  ) {
     this.replaceNotify.add(replaceNotify);
     this.addNotify.add(addNotify);
     this.deleteNotify.add(deleteNotify);
@@ -56,8 +64,11 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
     if (this.isDeleted) {
       throw Exception("ToDo is already created");
     }
-    Future<ToDo> newTodo = WebComunicater.instance
-        .createToDo(this._aufzug, this._text, this.isDone);
+    Future<ToDo> newTodo = WebComunicater.instance.createToDo(
+      this._aufzug,
+      this._text,
+      this.isDone,
+    );
 
     newTodo.then((value) {
       this.addNotify.forEach((element) {
@@ -95,8 +106,9 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
 
     WebComunicater.instance.setToDo(
       this,
-      done:
-          changes.containsKey('doneDate') ? changes['doneDate'] != null : null,
+      done: changes.containsKey('doneDate')
+          ? changes['doneDate'] != null
+          : null,
       text: changes['text'],
     );
 
@@ -118,5 +130,10 @@ class ToDo extends Editable<ToDo, ToDoChange> with Deletable {
 
   @override
   ToDo get original => ToDo(
-      this._id, this._aufzug, this._text, this._creationDate, this._doneDate);
+    this._id,
+    this._aufzug,
+    this._text,
+    this._creationDate,
+    this._doneDate,
+  );
 }

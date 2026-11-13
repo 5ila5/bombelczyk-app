@@ -11,6 +11,7 @@ import 'package:Bombelczyk/helperClasses/User.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -37,8 +38,12 @@ enum RequestType {
   PATCH(method: _patch);
 
   const RequestType({required this.method});
-  final Future<http.Response> Function(String, Map<String, dynamic>?,
-      {Map<String, String>? headers}) method;
+  final Future<http.Response> Function(
+    String,
+    Map<String, dynamic>?, {
+    Map<String, String>? headers,
+  })
+  method;
 
   static Uri _uri(String path) =>
       Uri.https(RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path);
@@ -46,36 +51,53 @@ enum RequestType {
   static Uri _getUri(String path, Map<String, dynamic>? body) {
     print(body);
     if (body != null)
-      body = body.map((key, value) => (value is bool)
-          ? MapEntry(key, value.toString())
-          : MapEntry(key, value));
+      body = body.map(
+        (key, value) => (value is bool)
+            ? MapEntry(key, value.toString())
+            : MapEntry(key, value),
+      );
     return Uri.https(
-        RequestSettings.DOMAIN, RequestSettings.BASE_PATH + path, body);
+      RequestSettings.DOMAIN,
+      RequestSettings.BASE_PATH + path,
+      body,
+    );
   }
 
   static List<int> cBody(Map<String, dynamic>? body) =>
       RequestSettings.gzip.encode(jsonEncode(body).codeUnits);
 
-  static Future<http.Response> _get(String path, Map<String, dynamic>? body,
-      {Map<String, String>? headers}) {
+  static Future<http.Response> _get(
+    String path,
+    Map<String, dynamic>? body, {
+    Map<String, String>? headers,
+  }) {
     Uri uri = _getUri(path, body);
 
     print("URI: " + uri.toString());
     return http.get(uri, headers: headers);
   }
 
-  static Future<http.Response> _post(String path, Map<String, dynamic>? body,
-      {Map<String, String>? headers}) {
+  static Future<http.Response> _post(
+    String path,
+    Map<String, dynamic>? body, {
+    Map<String, String>? headers,
+  }) {
     return http.post(_uri(path), body: cBody(body), headers: headers);
   }
 
-  static Future<http.Response> _delete(String path, Map<String, dynamic>? body,
-      {Map<String, String>? headers}) {
+  static Future<http.Response> _delete(
+    String path,
+    Map<String, dynamic>? body, {
+    Map<String, String>? headers,
+  }) {
     return http.delete(_uri(path), body: cBody(body), headers: headers);
   }
 
-  static Future<http.Response> _patch(String path, Map<String, dynamic>? body,
-      {Map<String, String>? headers}) {
+  static Future<http.Response> _patch(
+    String path,
+    Map<String, dynamic>? body, {
+    Map<String, String>? headers,
+  }) {
     return http.patch(_uri(path), body: cBody(body), headers: headers);
   }
 }
@@ -107,22 +129,25 @@ class WebComunicater {
   }
 
   Future<String?> requestAuthToken(String password) {
-    Future<String?> token = requestWithAnalyse(
-            "login", RequestType.POST, {"password": password}, true)
-        .then((value) {
-      print("requestAuthToken:");
-      print(value);
-      if (value is String && value.isNotEmpty) {
-        return value;
-      }
-      return null;
-    }).catchError((error, stackTrace) {
-      // Print full error message:
-      print("requestAuthToken error: " + error.toString());
-      // print stacktrace:
+    Future<String?> token =
+        requestWithAnalyse("login", RequestType.POST, {
+              "password": password,
+            }, true)
+            .then((value) {
+              print("requestAuthToken:");
+              print(value);
+              if (value is String && value.isNotEmpty) {
+                return value;
+              }
+              return null;
+            })
+            .catchError((error, stackTrace) {
+              // Print full error message:
+              print("requestAuthToken error: " + error.toString());
+              // print stacktrace:
 
-      return null;
-    });
+              return null;
+            });
 
     _instance = WebComunicater(token);
     return token;
@@ -151,21 +176,27 @@ class WebComunicater {
       "sort_key": sort.type.name,
       "sort_dir": sort.direction.name,
     }).then(
-        (value) => List<Aufzug>.from(value.map((e) => Aufzug.fromApiJson(e))));
+      (value) => List<Aufzug>.from(value.map((e) => Aufzug.fromApiJson(e))),
+    );
   }
 
   Future<List<AufzugWithDistance>> getNearbyAufzug(
-      Future<Position> position, int count) {
+    Future<Position> position,
+    int count,
+  ) {
     return position
-        .then((pos) => requestWithAnalyse("aufzug/nearby", RequestType.GET, {
-              "lat": pos.latitude.toString(),
-              "lon": pos.longitude.toString(),
-              "count": count.toString(),
-            }))
-        .then((value) => List<AufzugWithDistance>.from(
-            value.map((e) => AufzugWithDistance.fromApiJson(
-                  e,
-                ))));
+        .then(
+          (pos) => requestWithAnalyse("aufzug/nearby", RequestType.GET, {
+            "lat": pos.latitude.toString(),
+            "lon": pos.longitude.toString(),
+            "count": count.toString(),
+          }),
+        )
+        .then(
+          (value) => List<AufzugWithDistance>.from(
+            value.map((e) => AufzugWithDistance.fromApiJson(e)),
+          ),
+        );
   }
 
   Future<List<Aufzug>> getHistory() async {
@@ -178,17 +209,22 @@ class WebComunicater {
 
   Future<List<Aufzug>> getAfzByIdxList(List<int> afzIdxs) {
     Map<String, List<String>> body = {
-      "list[]": afzIdxs.map((e) => e.toString()).toList()
+      "list[]": afzIdxs.map((e) => e.toString()).toList(),
     };
     return requestWithAnalyse("aufzug/liste", RequestType.GET, body).then(
-        (value) => List<Aufzug>.from(
-            (value).map((value) => (Aufzug.fromApiJson(value)))));
+      (value) => List<Aufzug>.from(
+        (value).map((value) => (Aufzug.fromApiJson(value))),
+      ),
+    );
   }
 
   Future<DetailedAufzug> getDetailedAufzug(Aufzug aufzug) {
     return Future.wait([getAfzWithToDosOf(aufzug), _getArbeiten(aufzug)]).then(
-        (value) => DetailedAufzug.fromAufzugWithToDos(
-            value[0] as AufzugWithToDos, value[1] as List<Arbeit>));
+      (value) => DetailedAufzug.fromAufzugWithToDos(
+        value[0] as AufzugWithToDos,
+        value[1] as List<Arbeit>,
+      ),
+    );
   }
 
   Future<bool> setToDo(ToDo toDo, {bool? done, String? text, Aufzug? afz}) {
@@ -206,8 +242,11 @@ class WebComunicater {
       throw Exception("setTodo: nothing to set");
     }
 
-    return requestWithAnalyse("todo/${toDo.id}", RequestType.PATCH, body)
-        .then((value) => true);
+    return requestWithAnalyse(
+      "todo/${toDo.id}",
+      RequestType.PATCH,
+      body,
+    ).then((value) => true);
   }
 
   Future<ToDo> createToDo(Aufzug afz, String text, bool done) {
@@ -215,22 +254,30 @@ class WebComunicater {
       "afzIdx": afz.afzIdx,
       "text": text,
       "done": done,
-    }).then((value) => ToDo(
+    }).then(
+      (value) => ToDo(
         value['idx'] is String ? int.parse(value['idx']) : value['idx'],
         afz,
         text,
         DateTime.parse(value["created"]),
-        DateTime.now()));
-  }
-
-  Future<bool> deleteToDo(ToDo todo) {
-    return requestWithAnalyse("todo/${todo.id}", RequestType.DELETE).then(
-      (value) => value is bool ? value : false,
+        DateTime.now(),
+      ),
     );
   }
 
-  Future<List<AufzugWithToDos>> getToDos(
-      {Sort? sort, bool? show_checked, bool? show_unchecked, String? search}) {
+  Future<bool> deleteToDo(ToDo todo) {
+    return requestWithAnalyse(
+      "todo/${todo.id}",
+      RequestType.DELETE,
+    ).then((value) => value is bool ? value : false);
+  }
+
+  Future<List<AufzugWithToDos>> getToDos({
+    Sort? sort,
+    bool? show_checked,
+    bool? show_unchecked,
+    String? search,
+  }) {
     Map<String, dynamic> body = {};
     if (sort != null) {
       body["sort_key"] = sort.type.name;
@@ -246,9 +293,11 @@ class WebComunicater {
       body["search"] = search;
     }
 
-    return requestWithAnalyse("todo", RequestType.GET, body).then((value) =>
-        List<AufzugWithToDos>.from(
-            value.map((e) => AufzugWithToDos.fromApiJson(e))));
+    return requestWithAnalyse("todo", RequestType.GET, body).then(
+      (value) => List<AufzugWithToDos>.from(
+        value.map((e) => AufzugWithToDos.fromApiJson(e)),
+      ),
+    );
   }
 
   Future<AufzugWithToDos> getAfzWithToDosOf(Aufzug afz) {
@@ -257,24 +306,35 @@ class WebComunicater {
   }
 
   Future<List<ToDo>> getToDosOfAfz(Aufzug afz) {
-    return requestWithAnalyse("aufzug/${afz.afzIdx}/todos", RequestType.GET)
-        .then((value) =>
-            List<ToDo>.from(value.map((e) => ToDo.fromApiJson(e, afz))));
+    return requestWithAnalyse(
+      "aufzug/${afz.afzIdx}/todos",
+      RequestType.GET,
+    ).then(
+      (value) => List<ToDo>.from(value.map((e) => ToDo.fromApiJson(e, afz))),
+    );
   }
 
   Future<List<Akku>> getAkkus(Aufzug afz) {
-    return requestWithAnalyse("aufzug/${afz.afzIdx}/akku", RequestType.GET)
-        .then((value) =>
-            List<Akku>.from(value.map((e) => Akku.fromApiJson(e, afz))));
+    return requestWithAnalyse(
+      "aufzug/${afz.afzIdx}/akku",
+      RequestType.GET,
+    ).then(
+      (value) => List<Akku>.from(value.map((e) => Akku.fromApiJson(e, afz))),
+    );
   }
 
   Future<List<TourWorkType>> getTourWorkTypes() {
-    return requestWithAnalyse("tour/types", RequestType.GET).then((value) =>
-        List<TourWorkType>.from((value)
-            .map((key, value) =>
-                MapEntry(key, TourWorkType(int.parse(key.toString()), value)))
+    return requestWithAnalyse("tour/types", RequestType.GET).then(
+      (value) => List<TourWorkType>.from(
+        (value)
+            .map(
+              (key, value) =>
+                  MapEntry(key, TourWorkType(int.parse(key.toString()), value)),
+            )
             .values
-            .toList()));
+            .toList(),
+      ),
+    );
   }
 
   Future<List<Tour>> getTours({DateTime? from, DateTime? to}) {
@@ -289,30 +349,43 @@ class WebComunicater {
     Future<dynamic> tours = requestWithAnalyse("tour", RequestType.GET, body);
     Future<List<TourWorkType>> workTypes = TourWorkTypes.getTypes();
 
-    return Future.wait([tours, workTypes]).then((value) =>
-        List<Tour>.from(value[0].map((e) => Tour.fromApiJson(e, value[1]))));
+    return Future.wait([tours, workTypes]).then(
+      (value) =>
+          List<Tour>.from(value[0].map((e) => Tour.fromApiJson(e, value[1]))),
+    );
   }
 
   Future<List<MemoryImage>> getTourAfzImages(Tour tour, Aufzug afz) {
     return requestWithAnalyse(
-            "tour/${tour.idx}/aufzug/${afz.afzIdx}/images", RequestType.GET)
-        .then((value) => List<MemoryImage>.from(
-            value.map((e) => MemoryImage(base64Decode(e)))));
+      "tour/${tour.idx}/aufzug/${afz.afzIdx}/images",
+      RequestType.GET,
+    ).then(
+      (value) => List<MemoryImage>.from(
+        value.map((e) => MemoryImage(base64Decode(e))),
+      ),
+    );
   }
 
   Future<bool> deleteTour(Tour tour) {
-    return requestWithAnalyse("tour/${tour.idx}", RequestType.DELETE)
-        .then((value) => value is bool ? value : false);
+    return requestWithAnalyse(
+      "tour/${tour.idx}",
+      RequestType.DELETE,
+    ).then((value) => value is bool ? value : false);
   }
 
   Future<bool> deleteAfzFromTour(Tour tour, Aufzug afz) {
     return requestWithAnalyse(
-            "tour/${tour.idx}/aufzug/${afz.afzIdx}", RequestType.DELETE)
-        .then((value) => value is bool ? value : false);
+      "tour/${tour.idx}/aufzug/${afz.afzIdx}",
+      RequestType.DELETE,
+    ).then((value) => value is bool ? value : false);
   }
 
-  Future<bool> tourModifyAfz(Tour tour, Aufzug afz,
-      {bool? done, MoveDirection? dir}) {
+  Future<bool> tourModifyAfz(
+    Tour tour,
+    Aufzug afz, {
+    bool? done,
+    MoveDirection? dir,
+  }) {
     Map<String, dynamic> body = {};
     if (done != null) {
       body["done"] = done;
@@ -326,15 +399,19 @@ class WebComunicater {
     }
 
     return requestWithAnalyse(
-            "tour/${tour.idx}/aufzug/${afz.afzIdx}", RequestType.PATCH, body)
-        .then((value) => value is bool ? value : false);
+      "tour/${tour.idx}/aufzug/${afz.afzIdx}",
+      RequestType.PATCH,
+      body,
+    ).then((value) => value is bool ? value : false);
   }
 
-  Future<bool> modifyTour(Tour tour,
-      {String? name,
-      DateTime? date,
-      List<User>? share,
-      List<TourAufzug>? afzs}) {
+  Future<bool> modifyTour(
+    Tour tour, {
+    String? name,
+    DateTime? date,
+    List<User>? share,
+    List<TourAufzug>? afzs,
+  }) {
     Map<String, dynamic> body = {};
     if (name != null) {
       body["text"] = name;
@@ -347,35 +424,52 @@ class WebComunicater {
       body["share"] = share.map((e) => e.id).toList();
     }
     if (afzs != null) {
-      body["afzs"] = Map<String, int>.fromIterable(afzs,
-          key: (e) => (e as TourAufzug).afzIdx.toString(),
-          value: (e) => (e as TourAufzug).workType.idx);
+      body["afzs"] = Map<String, int>.fromIterable(
+        afzs,
+        key: (e) => (e as TourAufzug).afzIdx.toString(),
+        value: (e) => (e as TourAufzug).workType.idx,
+      );
     }
 
     if (body.isEmpty) {
       throw Exception("modifyTour: nothing to set");
     }
 
-    return requestWithAnalyse("tour/${tour.idx}", RequestType.PATCH, body)
-        .then((value) => value is bool ? value : false);
+    return requestWithAnalyse(
+      "tour/${tour.idx}",
+      RequestType.PATCH,
+      body,
+    ).then((value) => value is bool ? value : false);
   }
 
   Future<Tour> createTourByTour(Tour t) {
     return createTour(t.name, t.date, t.sharedWith, t.aufzuege);
   }
 
-  Future<Tour> createTour(String name, DateTime date, List<Future<User>> share,
-      List<TourAufzug> afzs) async {
+  Future<Tour> createTour(
+    String name,
+    DateTime date,
+    List<Future<User>> share,
+    List<TourAufzug> afzs,
+  ) async {
     List<User> shareUsr = await Future.wait(share);
     return requestWithAnalyse("tour", RequestType.POST, {
       "text": name,
       "date": date.toIso8601String().substring(0, 10),
       "share": shareUsr.map((e) => (e).id).toList(),
-      "afzs": Map<String, int>.fromIterable(afzs,
-          key: (e) => e.afzIdx.toString(), value: (e) => e.workType.idx),
-    }).then((value) => Tour(
-        value is String ? int.parse(value) : value, name, date,
-        aufzuege: afzs));
+      "afzs": Map<String, int>.fromIterable(
+        afzs,
+        key: (e) => e.afzIdx.toString(),
+        value: (e) => e.workType.idx,
+      ),
+    }).then(
+      (value) => Tour(
+        value is String ? int.parse(value) : value,
+        name,
+        date,
+        aufzuege: afzs,
+      ),
+    );
   }
 
   Future<bool> tourAddAfz(Tour tour, TourAufzug afz, TourWorkType workType) {
@@ -386,42 +480,59 @@ class WebComunicater {
   }
 
   Future<List<User>> getUsers() {
-    return requestWithAnalyse("tour/persons", RequestType.GET).then((value) =>
-        List<User>.from((value as Map)
-            .map((key, value) => MapEntry(
-                key, User(key is String ? int.parse(key) : key, value)))
+    return requestWithAnalyse("tour/persons", RequestType.GET).then(
+      (value) => List<User>.from(
+        (value as Map)
+            .map(
+              (key, value) => MapEntry(
+                key,
+                User(key is String ? int.parse(key) : key, value),
+              ),
+            )
             .values
-            .toList()));
+            .toList(),
+      ),
+    );
   }
 
   Future<List<Arbeit>> _getArbeiten(Aufzug afz) {
     return requestWithAnalyse(
-            "aufzug/${afz.afzIdx}/task-history", RequestType.GET)
-        .then((value) =>
-            List<Arbeit>.from(value.map((e) => Arbeit.fromApiJson(e))));
+      "aufzug/${afz.afzIdx}/task-history",
+      RequestType.GET,
+    ).then(
+      (value) => List<Arbeit>.from(value.map((e) => Arbeit.fromApiJson(e))),
+    );
   }
 
-  Future<dynamic> requestWithAnalyse(String path, RequestType rType,
-      [Map<String, dynamic>? body, bool login = false]) {
+  Future<dynamic> requestWithAnalyse(
+    String path,
+    RequestType rType, [
+    Map<String, dynamic>? body,
+    bool login = false,
+  ]) {
     return _sendRequest(path, rType, body, login).then((value) {
       print(value);
       Map<String, dynamic> total_response = jsonDecode(value.body);
       if (!kReleaseMode) {
         if (total_response.containsKey("exceptions")) {
-          print("Requesting with exceptions: " +
-              total_response["exceptions"] +
-              ", on: " +
-              path +
-              ", body: " +
-              body.toString());
+          print(
+            "Requesting with exceptions: " +
+                total_response["exceptions"] +
+                ", on: " +
+                path +
+                ", body: " +
+                body.toString(),
+          );
         }
         if (total_response.containsKey("errors")) {
-          print("Requesting with errors: " +
-              total_response["errors"].toString() +
-              ", on: " +
-              path +
-              ", body: " +
-              body.toString());
+          print(
+            "Requesting with errors: " +
+                total_response["errors"].toString() +
+                ", on: " +
+                path +
+                ", body: " +
+                body.toString(),
+          );
         }
       }
 
@@ -442,8 +553,12 @@ class WebComunicater {
     });
   }
 
-  Future<http.Response> _sendRequest(String path, RequestType rType,
-      [Map<String, dynamic>? body, bool login = false]) async {
+  Future<http.Response> _sendRequest(
+    String path,
+    RequestType rType, [
+    Map<String, dynamic>? body,
+    bool login = false,
+  ]) async {
     print("sending request:");
     print("path:" + path);
     print("body:" + jsonEncode(body));
@@ -458,27 +573,29 @@ class WebComunicater {
       body.addAll({"debug": "1"});
     }
 
-    return rType.method(
-      path,
-      body,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        "Content-Encoding": "gzip",
-      },
-    ).then((value) {
-      print("sending request:");
-      print("path:" + path);
+    return rType
+        .method(
+          path,
+          body,
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            "Content-Encoding": "gzip",
+          },
+        )
+        .then((value) {
+          print("sending request:");
+          print("path:" + path);
 
-      print("body:" + body.toString());
-      print("response: ");
-      print(value.body);
-      print(value.body.length);
-      print(value.runtimeType);
-      print(value.statusCode);
-      print(value);
-      print("\n\n");
-      return value;
-    });
+          print("body:" + body.toString());
+          print("response: ");
+          print(value.body);
+          print(value.body.length);
+          print(value.runtimeType);
+          print(value.statusCode);
+          print(value);
+          print("\n\n");
+          return value;
+        });
   }
 
   Future<bool> testConnection() async {

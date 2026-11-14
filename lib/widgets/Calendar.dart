@@ -2,6 +2,7 @@ import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:flutter/material.dart' as legacy_material;
 
 class MyCalendar<T> extends StatefulWidget {
   final void Function(DateTime selectedDay, DateTime focusedDay)? onDaySelected;
@@ -34,71 +35,73 @@ class _MyCalendarState<T> extends State<MyCalendar<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return TableCalendar<T>(
-      calendarBuilders: CalendarBuilders(
-        headerTitleBuilder: (c, d) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(DateFormat.yMMMM("de_DE").format(d)),
-            IconButton(
-              icon: Icon(Icons.today),
-              onPressed: () {
-                setState(() {
-                  _focusedDay = DateTime.now();
-                  _selectedDay = DateTime.now();
-                });
-              },
-            ),
-          ],
+    return legacy_material.Material(
+      child: TableCalendar<T>(
+        calendarBuilders: CalendarBuilders(
+          headerTitleBuilder: (c, d) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(DateFormat.yMMMM("de_DE").format(d)),
+              IconButton(
+                icon: Icon(Icons.today),
+                onPressed: () {
+                  setState(() {
+                    _focusedDay = DateTime.now();
+                    _selectedDay = DateTime.now();
+                  });
+                },
+              ),
+            ],
+          ),
+          //headerTitleBuilder: headerBuilder,
         ),
-        //headerTitleBuilder: headerBuilder,
-      ),
-      weekNumbersVisible: true,
-      availableCalendarFormats: {
-        CalendarFormat.month: "L",
-        CalendarFormat.twoWeeks: "M",
-        CalendarFormat.week: "S",
-      },
-      availableGestures: AvailableGestures.horizontalSwipe,
-      headerStyle: HeaderStyle(),
-      calendarStyle: CalendarStyle(
-        outsideDaysVisible: true,
-        weekendTextStyle: TextStyle(color: Colors.red),
-      ),
-      onFormatChanged: (format) {
-        if (_calendarFormat != format) {
-          setState(() {
-            _calendarFormat = format;
-          });
-        }
-      },
-      onPageChanged: (focusedDay) => _focusedDay = focusedDay,
-      weekendDays: [DateTime.saturday, DateTime.sunday],
-      locale: 'de_DE',
-      calendarFormat: _calendarFormat,
-      focusedDay: _focusedDay,
-      firstDay: DateTime.utc(2021),
-      lastDay: DateTime.now().add(const Duration(days: 365)),
-      selectedDayPredicate: (day) {
-        return isSameDay(_selectedDay, day);
-      },
-      onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
-        setState(() {
-          _selectedDay = selectedDay;
-          _focusedDay = focusedDay;
-          if (widget.onDaySelected != null) {
-            widget.onDaySelected!(selectedDay, focusedDay);
+        weekNumbersVisible: true,
+        availableCalendarFormats: {
+          CalendarFormat.month: "L",
+          CalendarFormat.twoWeeks: "M",
+          CalendarFormat.week: "S",
+        },
+        availableGestures: AvailableGestures.horizontalSwipe,
+        headerStyle: HeaderStyle(),
+        calendarStyle: CalendarStyle(
+          outsideDaysVisible: true,
+          weekendTextStyle: TextStyle(color: Colors.red),
+        ),
+        onFormatChanged: (format) {
+          if (_calendarFormat != format) {
+            setState(() {
+              _calendarFormat = format;
+            });
           }
-        });
-      },
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      eventLoader:
-          widget.eventLoader ??
-          (day) {
-            if (widget.eventLoaderWithSetState != null)
-              return widget.eventLoaderWithSetState!(day, setState);
-            return [];
-          },
+        },
+        onPageChanged: (focusedDay) => _focusedDay = focusedDay,
+        weekendDays: [DateTime.saturday, DateTime.sunday],
+        locale: 'de_DE',
+        calendarFormat: _calendarFormat,
+        focusedDay: _focusedDay,
+        firstDay: DateTime.utc(2021),
+        lastDay: DateTime.now().add(const Duration(days: 365)),
+        selectedDayPredicate: (day) {
+          return isSameDay(_selectedDay, day);
+        },
+        onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
+          setState(() {
+            _selectedDay = selectedDay;
+            _focusedDay = focusedDay;
+            if (widget.onDaySelected != null) {
+              widget.onDaySelected!(selectedDay, focusedDay);
+            }
+          });
+        },
+        startingDayOfWeek: StartingDayOfWeek.monday,
+        eventLoader:
+            widget.eventLoader ??
+            (day) {
+              if (widget.eventLoaderWithSetState != null)
+                return widget.eventLoaderWithSetState!(day, setState);
+              return [];
+            },
+      ),
     );
   }
 }

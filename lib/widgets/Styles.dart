@@ -1,4 +1,4 @@
-import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AufzugBarBodyTextStyle extends TextStyle {
   AufzugBarBodyTextStyle() : super(fontWeight: FontWeight.normal);

@@ -13,7 +13,8 @@ class Tours extends StatefulWidget {
 
 class ToursState extends State<Tours> {
   DateTime selectedDay = DateTime.now();
-  List<Tour> _listeningOn = [];
+  final Map<Tour, void Function(Tour)> _deleteListeners = {};
+
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       this.selectedDay = selectedDay;
@@ -22,7 +23,18 @@ class ToursState extends State<Tours> {
 
   Future<void> onRefresh() async {
     await ToursHandler.instance.refetch();
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final entry in _deleteListeners.entries) {
+      entry.key.removeDeleteListener(entry.value);
+    }
+    _deleteListeners.clear();
+    super.dispose();
   }
 
   @override
@@ -30,9 +42,15 @@ class ToursState extends State<Tours> {
     List<Tour> tours = ToursHandler.instance.eventLoader(selectedDay, setState);
 
     tours.forEach((element) {
-      if (!_listeningOn.contains(element)) {
-        element.addDeleteListener((t) => setState(() {}));
-        _listeningOn.add(element);
+      if (!_deleteListeners.containsKey(element)) {
+        void onTourDeleted(Tour _) {
+          if (mounted) {
+            setState(() {});
+          }
+        }
+
+        element.addDeleteListener(onTourDeleted);
+        _deleteListeners[element] = onTourDeleted;
       }
     });
     return RefreshIndicator(

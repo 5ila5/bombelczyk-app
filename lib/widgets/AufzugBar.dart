@@ -217,6 +217,26 @@ class SimpleAufzugBarWithDistance extends AufzugBar<AufzugWithDistance>
       );
 }
 
+class SimpleAufzugBarWithDistanceAndTourButton
+    extends AufzugBar<AufzugWithDistance>
+    with DistanceText {
+  SimpleAufzugBarWithDistanceAndTourButton(
+    AufzugWithDistance aufzug,
+    BuildContext context, {
+    bool? odd,
+  }) : super(
+         aufzug,
+         rightIcon: Column(
+           children: [
+             ClickableMapIcon(aufzug.address),
+             AddToTourButton(aufzug, context),
+           ],
+         ),
+         onTap: (c) => AufzugPageHandler.showPage(c, aufzug),
+         odd: odd,
+       );
+}
+
 class TourAufzugBarWithState extends StatefulWidget {
   final TourAufzug aufzug;
   final bool? odd;

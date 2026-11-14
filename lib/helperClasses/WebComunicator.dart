@@ -180,11 +180,23 @@ class WebComunicater {
     );
   }
 
-  Future<List<AufzugWithMonth>> getWartungen() {
-    return requestWithAnalyse("wartung", RequestType.GET).then(
-      (value) => List<AufzugWithMonth>.from(
-        value.map((e) => AufzugWithMonth.fromApiJson(e)),
-      ),
+  Future<List<AufzugWithMonth>> getWartungen(Future<Position?> position) {
+    return position.then(
+      (pos) =>
+          requestWithAnalyse(
+            "wartung",
+            RequestType.GET,
+            pos != null
+                ? {
+                    "lat": pos.latitude.toString(),
+                    "lon": pos.longitude.toString(),
+                  }
+                : null,
+          ).then(
+            (value) => List<AufzugWithMonth>.from(
+              value.map((e) => AufzugWithMonth.fromApiJson(e)),
+            ),
+          ),
     );
   }
 

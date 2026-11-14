@@ -50,4 +50,12 @@ class Geolocation {
 
     return helper.Position(pos.latitude, pos.longitude);
   }
+
+  static Future<helper.Position?> determinePositionOrNull() async {
+    try {
+      return await determinePosition();
+    } catch (e) {
+      return null;
+    }
+  }
 }

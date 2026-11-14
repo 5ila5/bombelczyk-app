@@ -181,9 +181,15 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     _deleteListeners.add(listener);
   }
 
+  void removeDeleteListener(Function(Tour) listener) {
+    _deleteListeners.remove(listener);
+  }
+
   @override
-  void delete() {
-    WebComunicater.instance.deleteTour(this);
+  void delete({bool localOnly = false}) {
+    if (this.idx != -1 && !localOnly) {
+      WebComunicater.instance.deleteTour(this);
+    }
     ToursHandler.instance.deleteTour(this);
     print("Deleting tour and informing listeners");
     super.delete();
@@ -227,7 +233,7 @@ class Tour extends Editable<Tour, TourChange> with Deletable {
     );
 
     ToursHandler.instance.updateTour(this, newTour);
-    this.delete();
+    this.delete(localOnly: true);
 
     return newTour;
   }

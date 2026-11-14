@@ -14,17 +14,25 @@ class Wartungen extends StatefulWidget {
 
 class _WartungenState extends State<Wartungen> {
   Future<List<AufzugWithMonth>> afzs;
+  bool sortedByDistance = true;
 
-  _WartungenState() : afzs = WebComunicater.instance.getWartungen();
+  _WartungenState()
+    : afzs = WebComunicater.instance.getWartungen(
+        Geolocation.determinePositionOrNull(),
+      );
 
   Future<void> refresh() async {
     setState(() {
-      afzs = WebComunicater.instance.getWartungen();
+      afzs = WebComunicater.instance.getWartungen(
+        Geolocation.determinePositionOrNull(),
+      );
     });
   }
 
   List<AufzugWithMonth> _sorted_afzs(List<AufzugWithMonth> afzs) => afzs.sorted(
-    (a, b) => a.year.compareTo(b.year) != 0
+    (a, b) => sortedByDistance
+        ? a.distance.compareTo(b.distance)
+        : a.year.compareTo(b.year) != 0
         ? a.year.compareTo(b.year)
         : a.month.compareTo(b.month) != 0
         ? a.month.compareTo(b.month)
@@ -32,8 +40,19 @@ class _WartungenState extends State<Wartungen> {
   );
 
   List<Widget> _buildWidgets(List<AufzugWithMonth> afzs) {
-    List<Widget> toReturn = [];
+    List<Widget> toReturn = [
+      CheckboxListTile(
+        title: Text("Sortieren nach Entfernung"),
+        value: sortedByDistance,
+        onChanged: (value) {
+          setState(() {
+            sortedByDistance = value ?? true;
+          });
+        },
+      ),
+    ];
     (int, int) lastYearMonth = (-1, -1);
+    int cnt = 0;
     _sorted_afzs(afzs).forEach((e) {
       if (lastYearMonth != (e.year, e.month)) {
         lastYearMonth = (e.year, e.month);
@@ -48,7 +67,13 @@ class _WartungenState extends State<Wartungen> {
         );
       }
 
-      toReturn.add(SimpleAufzugBar(e, odd: afzs.indexOf(e) & 1 == 1));
+      toReturn.add(
+        SimpleAufzugBarWithDistanceAndTourButton(
+          e,
+          context,
+          odd: cnt++ & 1 == 1,
+        ),
+      );
     });
     return toReturn;
   }

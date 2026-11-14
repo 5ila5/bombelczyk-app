@@ -1,3 +1,4 @@
+import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/mainViews/TourEdit.dart';
 import 'package:Bombelczyk/widgets/AufzugBar.dart';
@@ -8,17 +9,33 @@ class TourWidgetHelper {
   static void showCreateDialog(
     BuildContext context,
     DateTime date,
-    void Function(void Function()) updateParent,
-  ) {
-    TourEdit.showPage(context, Tour.dateOnly(date), updateParent);
+    void Function(void Function()) updateParent, {
+    List<Aufzug> preselectedAufzuege = const [],
+    bool replaceView = false,
+  }) {
+    TourEdit.showPage(
+      context,
+      Tour.dateOnly(date),
+      updateParent,
+      preselectedAufzuege: preselectedAufzuege,
+      replace: replaceView,
+    );
   }
 
   static void editTour(
     BuildContext context,
     Tour tour,
-    void Function(void Function()) updateParent,
-  ) {
-    TourEdit.showPage(context, tour, updateParent);
+    void Function(void Function()) updateParent, {
+    List<Aufzug> preselectedAufzuege = const [],
+    bool replaceView = false,
+  }) {
+    TourEdit.showPage(
+      context,
+      tour,
+      updateParent,
+      preselectedAufzuege: preselectedAufzuege,
+      replace: replaceView,
+    );
   }
 
   static void confirmDeleteTour(

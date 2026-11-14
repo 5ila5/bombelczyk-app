@@ -17,31 +17,54 @@ class AfzSearchBar extends TextField {
       );
 }
 
-class TourEditTitle extends Container {
-  TourEditTitle(void Function(String)? onChanged, String initialName)
-    : super(
-        margin: EdgeInsets.only(bottom: 10),
-        child: Row(
-          children: [
-            Text("Titel"),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.only(left: 20, right: 5),
-                child: TextField(
-                  autocorrect: true,
-                  onChanged: onChanged,
-                  controller: TextEditingController(text: initialName),
-                  style: TextStyle(
-                    color: Colors.black,
-                    //backgroundColor: ,
-                  ),
-                  strutStyle: StrutStyle(fontSize: 20),
-                  decoration: InputDecoration(fillColor: Colors.grey[600]),
-                  maxLength: 100,
-                ),
+class TourEditTitle extends StatefulWidget {
+  final void Function(String)? onChanged;
+  final String initialName;
+
+  const TourEditTitle(this.onChanged, this.initialName, {super.key});
+
+  @override
+  State<TourEditTitle> createState() => _TourEditTitleState();
+}
+
+class _TourEditTitleState extends State<TourEditTitle> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Text("Titel"),
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.only(left: 20, right: 5),
+              child: TextField(
+                autocorrect: true,
+                onChanged: widget.onChanged,
+                controller: _controller,
+                style: TextStyle(color: Colors.black),
+                strutStyle: StrutStyle(fontSize: 20),
+                decoration: InputDecoration(fillColor: Colors.grey[600]),
+                maxLength: 100,
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
 }

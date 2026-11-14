@@ -10,13 +10,17 @@ class Distance {
   Distance(this._distance);
 
   Distance.fromApiJson(Map<String, dynamic> json)
-    : _distance = json['distantz'];
+    : _distance = json['distantz'].toDouble() ?? -1.0;
 
   double get distance => _distance;
 
-  String get distnaceString => _distance > 1.0
+  String get distnaceString => _distance < 0.0
+      ? "Unbekannt"
+      : _distance > 1.0
       ? _distance.toStringAsFixed(2).replaceAll(".", ",") + " km"
       : (_distance * 1000.0).toString() + " m";
+
+  int compareTo(Distance other) => _distance.compareTo(other._distance);
 
   @override
   String toString() {

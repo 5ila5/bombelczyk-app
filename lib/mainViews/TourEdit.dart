@@ -1,3 +1,4 @@
+import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/mainViews/Search.dart';
 import 'package:Bombelczyk/widgets/Clickables.dart';
@@ -7,18 +8,34 @@ import 'package:Bombelczyk/widgets/Tour.dart';
 import 'package:material_ui/material_ui.dart';
 
 class TourEdit extends StatelessWidget {
-  final Tour? tour;
+  final Tour tour;
+  final List<Aufzug> preselectedAufzuege;
 
   static const TourEditRoute = '/TourEdit';
 
   static void showPage(
     BuildContext context,
     Tour tour,
-    void Function(void Function()) updateParent,
-  ) {
-    Navigator.pushNamed(context, TourEdit.TourEditRoute, arguments: tour).then((
-      value,
-    ) {
+    void Function(void Function()) updateParent, {
+    bool replace = false,
+    List<Aufzug> preselectedAufzuege = const [],
+  }) {
+    Future<Object?> pushed;
+
+    if (replace) {
+      pushed = Navigator.pushReplacementNamed(
+        context,
+        TourEdit.TourEditRoute,
+        arguments: (tour, preselectedAufzuege),
+      );
+    } else {
+      pushed = Navigator.pushNamed(
+        context,
+        TourEdit.TourEditRoute,
+        arguments: (tour, preselectedAufzuege),
+      );
+    }
+    pushed.then((value) {
       if (!tour.isDeleted) {
         tour.cancel();
       }
@@ -26,14 +43,27 @@ class TourEdit extends StatelessWidget {
     });
   }
 
-  TourEdit(Tour tour) : this.tour = tour, super();
+  TourEdit(this.tour, this.preselectedAufzuege) : super() {
+    for (var aufzug in preselectedAufzuege) {
+      this.tour.addAufzug(aufzug);
+    }
+  }
 
-  TourEdit.fromContext() : tour = null, super();
+  TourEdit.fromContext(BuildContext context)
+    : tour =
+          (ModalRoute.of(context)!.settings.arguments as (Tour, List<Aufzug>))
+              .$1,
+      preselectedAufzuege =
+          (ModalRoute.of(context)!.settings.arguments as (Tour, List<Aufzug>))
+              .$2,
+      super() {
+    for (var aufzug in preselectedAufzuege) {
+      this.tour.addAufzug(aufzug);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Tour tour =
-        this.tour ?? ModalRoute.of(context)!.settings.arguments as Tour;
     return Scaffold(
       appBar: AppBar(
         title: Row(

@@ -2,6 +2,7 @@ import 'package:Bombelczyk/helperClasses/Address.dart';
 import 'package:Bombelczyk/helperClasses/Aufzug.dart';
 import 'package:Bombelczyk/helperClasses/Tour.dart';
 import 'package:Bombelczyk/helperClasses/User.dart';
+import 'package:Bombelczyk/widgets/AddToTour.dart';
 import 'package:Bombelczyk/widgets/AufzugPage.dart';
 import 'package:Bombelczyk/widgets/DropDownMenu.dart';
 import 'package:Bombelczyk/widgets/ImgHandling.dart';
@@ -28,6 +29,17 @@ class ClickableMapIcon extends InkWell {
                 address.city,
             mode: LaunchMode.externalNonBrowserApplication,
           );
+        },
+      );
+}
+
+class AddToTourButton extends InkWell {
+  final Aufzug aufzug;
+  AddToTourButton(this.aufzug, BuildContext context)
+    : super(
+        child: Icon(Icons.tour_rounded, size: 50, color: Colors.blue),
+        onTap: () {
+          AddAfzToTour.showPage(context, aufzug);
         },
       );
 }

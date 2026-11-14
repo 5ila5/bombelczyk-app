@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       routes: {
         AufzugPage.aufzugRoute: (context) => AufzugPage.fromContext(),
-        TourEdit.TourEditRoute: (context) => TourEdit.fromContext(),
+        TourEdit.TourEditRoute: (context) => TourEdit.fromContext(context),
       },
       title: 'Bombelczyk',
       theme: ThemeData(
@@ -144,7 +144,7 @@ class MyHomePageState extends State<MyHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.build_circle_outlined),
-            label: 'Wartungen',
+            label: 'Wartung',
           ),
         ],
         showSelectedLabels: true,
